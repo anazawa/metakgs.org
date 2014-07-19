@@ -251,6 +251,18 @@ DISTRIBUTIONS
       perl 5.008
       strict 0
       warnings 0
+  Class-Method-Modifiers-2.10
+    pathname: E/ET/ETHER/Class-Method-Modifiers-2.10.tar.gz
+    provides:
+      Class::Method::Modifiers 2.10
+    requirements:
+      B 0
+      Carp 0
+      Exporter 0
+      ExtUtils::MakeMaker 6.30
+      base 0
+      strict 0
+      warnings 0
   Class-Singleton-1.4
     pathname: A/AB/ABW/Class-Singleton-1.4.tar.gz
     provides:

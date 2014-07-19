@@ -16,6 +16,8 @@ requires 'perl', '5.010_001';
 requires 'SQL::NamedPlaceholder';
 requires 'Data::FormValidator';
 requires 'Exception::Class';
+requires 'Try::Tiny';
+requires 'Class::Method::Modifiers';
 
 on configure => sub {
     requires 'Module::Build', '0.38';

@@ -8,20 +8,26 @@ use SQL::NamedPlaceholder qw/bind_named/;
 
 sub import {
     my ( $class, $alias ) = @_;
-    my $caller = scalar caller;
+    my $package = caller;
 
     my $TableName = $class;
        $TableName =~ s/.+:://;
 
     my $export = $alias || $TableName;
-       $export = "$caller\::$export";
+       $export = "$package\::$export";
 
-    my $table_name = decamelize $TableName;
-    my $constructor = sub { $class->new( table_name => $table_name, @_ ) };
+    my $builder = sub {
+        my %args = @_ == 1 ? %{$_[0]} : @_;
+
+        $class->new(
+            teng => MetaKGS->context->teng,
+            %args,
+        );
+    };
 
     {
         no strict 'refs';
-        *$export = $constructor;
+        *$export = $builder;
     }
 
     return;
@@ -34,12 +40,20 @@ sub new {
 }
 
 sub teng {
-    my $self = shift;
-    $self->{teng} ||= MetaKGS->context->teng;
+    $_[0]->{teng};
 }
 
 sub table_name {
-    $_[0]->{table_name};
+    my $self = shift;
+    $self->{table_name} ||= $self->_build_table_name;
+}
+
+sub _build_table_name {
+    my $self = shift;
+    my $name = ref $self;
+    $name =~ s/.+:://;
+    $name = decamelize $name;
+    $name;
 }
 
 sub where {
@@ -118,12 +132,11 @@ sub clone {
 }
 
 sub select {
-    my ( $self, @args ) = @_;
-
-    croak "Odd number of arguments passed to 'do_select'" if @args % 2;
+    my $self = shift;
+    my %args = @_ == 1 ? %{$_[0]} : @_;
 
     my @columns;
-    while ( my ($key, $value) = splice @args, 0, 2 ) {
+    while ( my ($key, $value) = each %args ) {
         push @columns, [ $value, $key ];
     }
 

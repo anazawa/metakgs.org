@@ -1,17 +1,15 @@
 use strict;
 use warnings;
-use Test::More;
+use Test::More tests => 7;
 
+BEGIN {
+    use_ok 'MetaKGS';
+    use_ok 'MetaKGS::Web';
+    use_ok 'MetaKGS::Web::View';
+    use_ok 'MetaKGS::Web::ViewFunctions';
 
-use MetaKGS;
-use MetaKGS::Web;
-use MetaKGS::Web::View;
-use MetaKGS::Web::ViewFunctions;
+    use_ok 'MetaKGS::Teng::Schema';
+    use_ok 'MetaKGS::Web::Dispatcher';
 
-use MetaKGS::DB::Schema;
-use MetaKGS::Web::Dispatcher;
-
-
-pass "All modules can load.";
-
-done_testing;
+    use_ok 'MetaKGS::Model::Resources';
+}
