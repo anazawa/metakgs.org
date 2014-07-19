@@ -1,36 +1,38 @@
 package MetaKGS;
+use 5.10.0;
 use strict;
 use warnings;
-use utf8;
-our $VERSION='0.01';
-use 5.008001;
-use MetaKGS::DB::Schema;
-use MetaKGS::DB;
-
 use parent qw/Amon2/;
-# Enable project local mode.
-__PACKAGE__->make_local_context();
+use MetaKGS::Teng;
+use MetaKGS::Teng::Schema;
 
-my $schema = MetaKGS::DB::Schema->instance;
+our $VERSION = '0.01';
 
-sub db {
-    my $c = shift;
-    if (!exists $c->{db}) {
-        my $conf = $c->config->{DBI}
-            or die "Missing configuration about DBI";
-        $c->{db} = MetaKGS::DB->new(
-            schema       => $schema,
-            connect_info => [@$conf],
-            # I suggest to enable following lines if you are using mysql.
-            # on_connect_do => [
-            #     'SET SESSION sql_mode=STRICT_TRANS_TABLES;',
-            # ],
-        );
-    }
-    $c->{db};
+__PACKAGE__->make_local_context;
+
+sub teng {
+    my $self = shift;
+    $self->{teng} ||= $self->_build_teng;
+}
+
+sub _build_teng {
+    my $self = shift;
+    my $config = $self->config->{'DBI'};
+
+    die "Missing configuration for 'DBI'" unless $config;
+
+    MetaKGS::Teng->new(
+        schema => MetaKGS::Teng::Schema->instance,
+        connect_info => [ @$config ],
+        # I suggest to enable following lines if you are using mysql.
+        # on_connect_do => [
+        #     'SET SESSION sql_mode=STRICT_TRANS_TABLES;',
+        # ],
+    );
 }
 
 1;
+
 __END__
 
 =head1 NAME

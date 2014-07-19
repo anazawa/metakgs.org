@@ -4,6 +4,7 @@ CREATE TABLE resources (
      request_date TEXT -- YYYY-MM-DD hh:mm:ss
                   NOT NULL,
       status_code TEXT -- 200, 301, 404, ...
+                  DEFAULT "{unknown}"
                   NOT NULL,
     response_date TEXT -- YYYY-MM-DD hh:mm:ss
                   DEFAULT "{unknown}"
