@@ -1771,6 +1771,15 @@ DISTRIBUTIONS
       HTML::Tagset 3
       XSLoader 0
       perl 5.008
+  HTML-Selector-XPath-0.16
+    pathname: C/CO/CORION/HTML-Selector-XPath-0.16.tar.gz
+    provides:
+      HTML::Selector::XPath 0.16
+    requirements:
+      ExtUtils::MakeMaker 6.59
+      Test::Base 0
+      Test::More 0
+      perl 5.008001
   HTML-Tagset-3.20
     pathname: P/PE/PETDANCE/HTML-Tagset-3.20.tar.gz
     provides:
@@ -1800,6 +1809,35 @@ DISTRIBUTIONS
       base 0
       integer 0
       perl 5.008
+  HTML-TreeBuilder-LibXML-0.23
+    pathname: C/CA/CAFEGRATZ/HTML-TreeBuilder-LibXML-0.23.tar.gz
+    provides:
+      HTML::TreeBuilder::LibXML 0.23
+      HTML::TreeBuilder::LibXML::Node undef
+    requirements:
+      CPAN::Meta 0
+      CPAN::Meta::Prereqs 0
+      HTML::TreeBuilder::XPath 0.14
+      LWP::UserAgent 6
+      Module::Build 0.38
+      URI 0
+      Web::Scraper 0
+      XML::LibXML 1.7
+      perl 5.008001
+  HTML-TreeBuilder-XPath-0.14
+    pathname: M/MI/MIROD/HTML-TreeBuilder-XPath-0.14.tar.gz
+    provides:
+      HTML::Element 0.14
+      HTML::TreeBuilder::XPath 0.14
+      HTML::TreeBuilder::XPath::Attribute 0.14
+      HTML::TreeBuilder::XPath::Node 0.14
+      HTML::TreeBuilder::XPath::Root 0.14
+      HTML::TreeBuilder::XPath::TextNode 0.14
+    requirements:
+      ExtUtils::MakeMaker 0
+      HTML::TreeBuilder 0
+      List::Util 0
+      XML::XPathEngine 0.12
   HTTP-Body-1.19
     pathname: G/GE/GETTY/HTTP-Body-1.19.tar.gz
     provides:
@@ -2673,6 +2711,13 @@ DISTRIBUTIONS
       Thread::SigMask 0
       strict 0
       warnings 0
+  Spiffy-0.35
+    pathname: I/IN/INGY/Spiffy-0.35.tar.gz
+    provides:
+      Spiffy 0.35
+      Spiffy::mixin undef
+    requirements:
+      ExtUtils::MakeMaker 6.30
   Starlet-0.24
     pathname: K/KA/KAZUHO/Starlet-0.24.tar.gz
     provides:
@@ -2698,6 +2743,13 @@ DISTRIBUTIONS
     requirements:
       ExtUtils::MakeMaker 6.30
       IO::File 1.14
+  String-CamelCase-0.02
+    pathname: H/HI/HIO/String-CamelCase-0.02.tar.gz
+    provides:
+      String::CamelCase 0.02
+    requirements:
+      ExtUtils::MakeMaker 0
+      Test::More 0
   Sub-Identify-0.04
     pathname: R/RG/RGARCIA/Sub-Identify-0.04.tar.gz
     provides:
@@ -2768,6 +2820,25 @@ DISTRIBUTIONS
       Test::Requires 0
       Test::SharedFork 0.15
       parent 0
+  Test-Base-0.62
+    pathname: I/IN/INGY/Test-Base-0.62.tar.gz
+    provides:
+      Module::Install::TestBase 0.60
+      Test::Base 0.62
+      Test::Base::Block 0.62
+      Test::Base::Filter undef
+      Test::Base::Handle 0.62
+      TestBass undef
+      TestBass::Block undef
+      TestBass::Filter undef
+      t::BaseTest undef
+      t::Subclass undef
+      t::TestA undef
+      t::TestB undef
+      t::TestC undef
+    requirements:
+      ExtUtils::MakeMaker 6.30
+      Spiffy 0.30
   Test-Differences-0.62
     pathname: D/DC/DCANTRELL/Test-Differences-0.62.tar.gz
     provides:
@@ -3093,6 +3164,16 @@ DISTRIBUTIONS
       constant 0
       strict 0
       warnings 0
+  UNIVERSAL-require-0.17
+    pathname: N/NE/NEILB/UNIVERSAL-require-0.17.tar.gz
+    provides:
+      UNIVERSAL 0.17
+      UNIVERSAL::require 0.17
+    requirements:
+      Carp 0
+      ExtUtils::MakeMaker 0
+      Test::More 0.47
+      perl 5.006
   URI-1.64
     pathname: E/ET/ETHER/URI-1.64.tar.gz
     provides:
@@ -3155,6 +3236,30 @@ DISTRIBUTIONS
       parent 0
       perl 5.008001
       utf8 0
+  WWW-GoKGS-0.20
+    pathname: A/AN/ANAZAWA/WWW-GoKGS-0.20.tar.gz
+    provides:
+      WWW::GoKGS 0.20
+      WWW::GoKGS::LibXML 0.20
+      WWW::GoKGS::Scraper undef
+      WWW::GoKGS::Scraper::Declare undef
+      WWW::GoKGS::Scraper::Filters undef
+      WWW::GoKGS::Scraper::GameArchives undef
+      WWW::GoKGS::Scraper::Top100 undef
+      WWW::GoKGS::Scraper::TournEntrants undef
+      WWW::GoKGS::Scraper::TournGames undef
+      WWW::GoKGS::Scraper::TournInfo undef
+      WWW::GoKGS::Scraper::TournLinks undef
+      WWW::GoKGS::Scraper::TournList undef
+      WWW::GoKGS::Scraper::TzList undef
+    requirements:
+      Carp 0
+      Exporter 0
+      LWP::RobotUA 0
+      URI 1.59
+      Web::Scraper 0
+      parent 0
+      perl v5.8.9
   WWW-Mechanize-1.73
     pathname: E/ET/ETHER/WWW-Mechanize-1.73.tar.gz
     provides:
@@ -3198,6 +3303,160 @@ DISTRIBUTIONS
       Fcntl 0
       URI 1.10
       perl 5.008001
+  Web-Scraper-0.37
+    pathname: M/MI/MIYAGAWA/Web-Scraper-0.37.tar.gz
+    provides:
+      Web::Scraper 0.37
+      Web::Scraper::Filter undef
+      Web::Scraper::LibXML undef
+    requirements:
+      ExtUtils::MakeMaker 6.59
+      HTML::Entities 0
+      HTML::Selector::XPath 0.03
+      HTML::Tagset 0
+      HTML::TreeBuilder 3.23
+      HTML::TreeBuilder::XPath 0.08
+      LWP 5.827
+      Scalar::Util 0
+      Test::Base 0
+      Test::More 0
+      Test::Requires 0
+      UNIVERSAL::require 0
+      URI 0
+      XML::XPathEngine 0.08
+      YAML 0
+      perl 5.008001
+  XML-LibXML-2.0116
+    pathname: S/SH/SHLOMIF/XML-LibXML-2.0116.tar.gz
+    provides:
+      XML::LibXML 2.0116
+      XML::LibXML::Attr 2.0116
+      XML::LibXML::AttributeHash 2.0116
+      XML::LibXML::Boolean 2.0116
+      XML::LibXML::CDATASection 2.0116
+      XML::LibXML::Comment 2.0116
+      XML::LibXML::Common 2.0116
+      XML::LibXML::Devel 2.0116
+      XML::LibXML::Document 2.0116
+      XML::LibXML::DocumentFragment 2.0116
+      XML::LibXML::Dtd 2.0116
+      XML::LibXML::Element 2.0116
+      XML::LibXML::ErrNo 2.0116
+      XML::LibXML::Error 2.0116
+      XML::LibXML::InputCallback 2.0116
+      XML::LibXML::Literal 2.0116
+      XML::LibXML::NamedNodeMap 2.0116
+      XML::LibXML::Namespace 2.0116
+      XML::LibXML::Node 2.0116
+      XML::LibXML::NodeList 2.0116
+      XML::LibXML::Number 2.0116
+      XML::LibXML::PI 2.0116
+      XML::LibXML::Pattern 2.0116
+      XML::LibXML::Reader 2.0116
+      XML::LibXML::RegExp 2.0116
+      XML::LibXML::RelaxNG 2.0116
+      XML::LibXML::SAX 2.0116
+      XML::LibXML::SAX::AttributeNode 2.0116
+      XML::LibXML::SAX::Builder 2.0116
+      XML::LibXML::SAX::Generator 2.0116
+      XML::LibXML::SAX::Parser 2.0116
+      XML::LibXML::Schema 2.0116
+      XML::LibXML::Text 2.0116
+      XML::LibXML::XPathContext 2.0116
+      XML::LibXML::XPathExpression 2.0116
+      XML::LibXML::_SAXParser 2.0116
+    requirements:
+      ExtUtils::MakeMaker 6.56
+      Test::More 0
+      XML::NamespaceSupport 1.07
+      XML::SAX 0.11
+      base 0
+      parent 0
+      perl 5.008
+      strict 0
+      vars 0
+      warnings 0
+  XML-NamespaceSupport-1.11
+    pathname: P/PE/PERIGRIN/XML-NamespaceSupport-1.11.tar.gz
+    provides:
+      XML::NamespaceSupport 1.11
+    requirements:
+      ExtUtils::MakeMaker 6.42
+      Test::More 0.47
+  XML-SAX-0.99
+    pathname: G/GR/GRANTM/XML-SAX-0.99.tar.gz
+    provides:
+      XML::SAX 0.99
+      XML::SAX::DocumentLocator undef
+      XML::SAX::ParserFactory 1.01
+      XML::SAX::PurePerl 0.99
+      XML::SAX::PurePerl::DebugHandler undef
+      XML::SAX::PurePerl::Exception undef
+      XML::SAX::PurePerl::Productions undef
+      XML::SAX::PurePerl::Reader undef
+      XML::SAX::PurePerl::Reader::Stream undef
+      XML::SAX::PurePerl::Reader::String undef
+      XML::SAX::PurePerl::Reader::URI undef
+    requirements:
+      ExtUtils::MakeMaker 0
+      File::Temp 0
+      XML::NamespaceSupport 0.03
+      XML::SAX::Base 1.05
+  XML-SAX-Base-1.08
+    pathname: G/GR/GRANTM/XML-SAX-Base-1.08.tar.gz
+    provides:
+      XML::SAX::Base 1.08
+      XML::SAX::Base::NoHandler 1.08
+      XML::SAX::Exception 1.08
+    requirements:
+      ExtUtils::MakeMaker 6.31
+      Test::More 0.88
+  XML-XPathEngine-0.14
+    pathname: M/MI/MIROD/XML-XPathEngine-0.14.tar.gz
+    provides:
+      XML::XPathEngine 0.14
+      XML::XPathEngine::Boolean undef
+      XML::XPathEngine::Expr undef
+      XML::XPathEngine::Function undef
+      XML::XPathEngine::Literal undef
+      XML::XPathEngine::LocationPath undef
+      XML::XPathEngine::NodeSet undef
+      XML::XPathEngine::Number undef
+      XML::XPathEngine::Root undef
+      XML::XPathEngine::Step undef
+      XML::XPathEngine::Variable undef
+    requirements:
+      ExtUtils::MakeMaker 0
+      Test::More 0
+  YAML-0.97
+    pathname: I/IN/INGY/YAML-0.97.tar.gz
+    provides:
+      Test::YAML undef
+      Test::YAML::Filter undef
+      YAML 0.97
+      YAML::Any undef
+      YAML::Dumper undef
+      YAML::Dumper::Base undef
+      YAML::Error undef
+      YAML::Loader undef
+      YAML::Loader::Base undef
+      YAML::Marshall undef
+      YAML::Mo undef
+      YAML::Node undef
+      YAML::Tag undef
+      YAML::Type::blessed undef
+      YAML::Type::code undef
+      YAML::Type::glob undef
+      YAML::Type::ref undef
+      YAML::Type::regexp undef
+      YAML::Type::undef undef
+      YAML::Types undef
+      YAML::Warning undef
+      yaml_mapping undef
+      yaml_scalar undef
+      yaml_sequence undef
+    requirements:
+      ExtUtils::MakeMaker 6.30
   libwww-perl-6.07
     pathname: M/MS/MSCHILLI/libwww-perl-6.07.tar.gz
     provides:

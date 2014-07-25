@@ -4,7 +4,7 @@ use warnings;
 use parent qw/MetaKGS Amon2::Web/;
 use Class::Method::Modifiers qw/around/;
 use MetaKGS::Web::RouterBoom;
-use MetaKGS::Web::View::Xslate;
+#use MetaKGS::Web::View::Xslate;
 use Try::Tiny;
 
 __PACKAGE__->load_plugins(
@@ -32,9 +32,16 @@ sub create_view {
     MetaKGS::Web::View::Xslate->instance;
 }
 
+sub upstream {
+    my $self = shift;
+    my $config = $self->config->{'MetaKGS::Web'};
+    URI->new( $config->{upstream} );
+}
+
 sub dispatch {
     my $self = shift;
     my $env = $self->request->env;
+    my $request = $self->request;
     my $router = MetaKGS::Web::RouterBoom->instance;
 
     my ( $destination, $captured, $method_not_allowed )
@@ -56,11 +63,17 @@ sub dispatch {
     };
 }
 
+sub render {
+    my ( $self, $content, %args ) = @_;
+    $self->SUPER::render( $args{template} => $content );
+}
+
 around render_json => sub {
-    my ( $orig, $self, $class, $args ) = @_;
+    my ( $orig, $self, $content, %args ) = @_;
+    my $class = $args{template};
     my $method = $class =~ s/\#(\w+)$// && $1;
     $class = Plack::Util::load_class( $class, 'MetaKGS::Web::View::JSON' );
-    $self->$orig( $class->$method({ %$args }) );
+    $self->$orig( $class->$method({ %$content }) );
 };
 
 1;

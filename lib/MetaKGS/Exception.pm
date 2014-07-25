@@ -26,7 +26,7 @@ sub full_message {
     }
 
     my $error = $self->error || 'Validation failed';
-       $error .= ': ', join ' ', @errors if @errors;
+       $error .= ': '. join ' ', @errors if @errors;
 
     $error;
 }

@@ -3,6 +3,7 @@ use 5.10.0;
 use strict;
 use warnings;
 use parent qw/Amon2/;
+use MetaKGS::Exception;
 use MetaKGS::Teng;
 use MetaKGS::Teng::Schema;
 

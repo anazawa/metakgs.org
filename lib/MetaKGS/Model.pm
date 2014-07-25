@@ -5,6 +5,7 @@ use Carp qw/croak/;
 use MetaKGS;
 use MetaKGS::Teng::Cursor;
 use SQL::NamedPlaceholder qw/bind_named/;
+use String::CamelCase qw/decamelize/;
 
 sub import {
     my ( $class, $alias ) = @_;
@@ -131,7 +132,7 @@ sub clone {
     ref( $self )->new( %$self );
 }
 
-sub select {
+sub do_select {
     my $self = shift;
     my %args = @_ == 1 ? %{$_[0]} : @_;
 
@@ -159,13 +160,13 @@ sub select {
     );
 }
 
-sub delete {
+sub do_delete {
     my ( $self, @args ) = @_;
     $self = $self->clone->where( @args ) if @args;
     $self->teng->delete( $self->table_name, $self->where );
 }
 
-sub update {
+sub do_update {
     my $self = shift;
     my %set = @_ == 1 ? %{$_[0]} : @_;
 
@@ -182,7 +183,7 @@ sub update {
     $rows;
 }
 
-sub insert {
+sub do_insert {
     my $self = shift;
     my %values = @_ == 1 ? %{$_[0]} : @_;
 

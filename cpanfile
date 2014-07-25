@@ -18,6 +18,9 @@ requires 'Data::FormValidator';
 requires 'Exception::Class';
 requires 'Try::Tiny';
 requires 'Class::Method::Modifiers';
+requires 'WWW::GoKGS';
+requires 'String::CamelCase';
+requires 'HTML::TreeBuilder::LibXML';
 
 on configure => sub {
     requires 'Module::Build', '0.38';
