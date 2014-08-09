@@ -5,13 +5,33 @@ use File::Basename;
 use File::Spec;
 use lib File::Spec->catdir(dirname(__FILE__), '../lib');
 
+use Cache::FileCache;
 use Getopt::Long;
 use MetaKGS::Upstream;
 use Plack::Builder;
 use Plack::Loader;
+use HTTP::Status qw/HTTP_GATEWAY_TIMEOUT HTTP_BAD_GATEWAY/;
+
+my $cache = Cache::FileCache->new({
+    namespace          => 'www.gokgs.com',
+    default_expires_in => '1 hour',
+    auto_purge_on_get  => 1,
+});
+
+warn $cache->get_cache_root;
 
 my $app = builder {
-    MetaKGS::Upstream->to_app;
+    enable 'Cached',
+           cache => $cache,
+           set => sub {
+               my $res = shift;
+
+               return if $res->[0] == HTTP_GATEWAY_TIMEOUT;
+               return if $res->[0] == HTTP_BAD_GATEWAY;
+
+               $res;
+           };
+    MetaKGS::Upstream->new->to_app;
 };
 
 return $app if caller;
@@ -31,11 +51,11 @@ $parser->getoptions(
 );
 
 if ( $version ) {
-    print "MetaKGS::Upstream: $MetaKGS::Upstream::VERSION";
+    print "MetaKGS::Proxy: $MetaKGS::Upstream::VERSION";
     exit 0;
 }
 
-print "MetaKGS::Upstream: http://$host\:$port\n";
+print "MetaKGS::Proxy: http://$host\:$port\n";
 
 my $loader = Plack::Loader->load(
     'Starlet' => (

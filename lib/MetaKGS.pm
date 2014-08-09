@@ -18,17 +18,15 @@ sub teng {
 
 sub _build_teng {
     my $self = shift;
-    my $config = $self->config->{'DBI'};
-
-    die "Missing configuration for 'DBI'" unless $config;
+    my $config = $self->config->{+__PACKAGE__} || {};
 
     MetaKGS::Teng->new(
         schema => MetaKGS::Teng::Schema->instance,
-        connect_info => [ @$config ],
         # I suggest to enable following lines if you are using mysql.
         # on_connect_do => [
         #     'SET SESSION sql_mode=STRICT_TRANS_TABLES;',
         # ],
+        %{ $config->{teng} || {} },
     );
 }
 

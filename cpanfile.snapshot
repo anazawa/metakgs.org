@@ -80,6 +80,61 @@ DISTRIBUTIONS
       URI::QueryParam 0
       parent 0.223
       perl 5.008001
+  AnyEvent-7.07
+    pathname: M/ML/MLEHMANN/AnyEvent-7.07.tar.gz
+    provides:
+      AE undef
+      AE::Log::COLLECT undef
+      AE::Log::FILTER undef
+      AE::Log::LOG undef
+      AnyEvent 7.07
+      AnyEvent::Base 7.07
+      AnyEvent::CondVar 7.07
+      AnyEvent::CondVar::Base 7.07
+      AnyEvent::DNS undef
+      AnyEvent::Debug undef
+      AnyEvent::Debug::Backtrace undef
+      AnyEvent::Debug::Wrap undef
+      AnyEvent::Debug::Wrapped undef
+      AnyEvent::Debug::shell undef
+      AnyEvent::Handle undef
+      AnyEvent::IO undef
+      AnyEvent::IO::IOAIO undef
+      AnyEvent::IO::Perl undef
+      AnyEvent::Impl::Cocoa undef
+      AnyEvent::Impl::EV undef
+      AnyEvent::Impl::Event undef
+      AnyEvent::Impl::EventLib undef
+      AnyEvent::Impl::FLTK undef
+      AnyEvent::Impl::Glib undef
+      AnyEvent::Impl::IOAsync undef
+      AnyEvent::Impl::Irssi undef
+      AnyEvent::Impl::POE undef
+      AnyEvent::Impl::Perl undef
+      AnyEvent::Impl::Qt undef
+      AnyEvent::Impl::Qt::Io undef
+      AnyEvent::Impl::Qt::Timer undef
+      AnyEvent::Impl::Tk undef
+      AnyEvent::Log undef
+      AnyEvent::Log::COLLECT undef
+      AnyEvent::Log::Ctx undef
+      AnyEvent::Log::FILTER undef
+      AnyEvent::Log::LOG undef
+      AnyEvent::Loop undef
+      AnyEvent::Socket undef
+      AnyEvent::Strict undef
+      AnyEvent::TLS undef
+      AnyEvent::Util undef
+    requirements:
+      ExtUtils::MakeMaker 0
+  AnyEvent-HTTP-2.21
+    pathname: M/ML/MLEHMANN/AnyEvent-HTTP-2.21.tar.gz
+    provides:
+      AnyEvent::HTTP 2.21
+    requirements:
+      AnyEvent 5.33
+      ExtUtils::MakeMaker 0
+      common::sense 3.3
   Apache-LogFormat-Compiler-0.32
     pathname: K/KA/KAZEBURO/Apache-LogFormat-Compiler-0.32.tar.gz
     provides:
@@ -148,6 +203,57 @@ DISTRIBUTIONS
       Scalar::Util 0
       strict 0
       warnings 0
+  CSS-1.09
+    pathname: I/IA/IAMCAL/CSS-1.09.tar.gz
+    provides:
+      CSS 1.09
+      CSS::Adaptor 1.01
+      CSS::Adaptor::Debug 1.01
+      CSS::Adaptor::Pretty 1.01
+      CSS::Parse 1.01
+      CSS::Parse::Compiled 1.01
+      CSS::Parse::CompiledGrammar undef
+      CSS::Parse::Heavy 1.01
+      CSS::Parse::Lite 1.02
+      CSS::Parse::PRDGrammar 1.01
+      CSS::Property 1.02
+      CSS::Selector 1.01
+      CSS::Style 1.02
+      CSS::Value 1.03
+      Parse::RecDescent::CSS::Parse::CompiledGrammar undef
+    requirements:
+      ExtUtils::MakeMaker 0
+      Parse::RecDescent 1
+      Test::Simple 0
+  Cache-Cache-1.06
+    pathname: J/JS/JSWARTZ/Cache-Cache-1.06.tar.gz
+    provides:
+      Cache::BaseCache undef
+      Cache::BaseCacheTester undef
+      Cache::Cache 1.06
+      Cache::CacheMetaData undef
+      Cache::CacheSizer undef
+      Cache::CacheTester undef
+      Cache::CacheUtils undef
+      Cache::FileBackend undef
+      Cache::FileCache undef
+      Cache::MemoryBackend undef
+      Cache::MemoryCache undef
+      Cache::NullCache undef
+      Cache::Object undef
+      Cache::SharedMemoryBackend undef
+      Cache::SharedMemoryCache undef
+      Cache::SizeAwareCache undef
+      Cache::SizeAwareCacheTester undef
+      Cache::SizeAwareFileCache undef
+      Cache::SizeAwareMemoryCache undef
+      Cache::SizeAwareSharedMemoryCache undef
+    requirements:
+      Digest::SHA1 2.02
+      Error 0.15
+      ExtUtils::MakeMaker 0
+      File::Spec 0.82
+      Storable 1.014
   Capture-Tiny-0.24
     pathname: D/DA/DAGOLDEN/Capture-Tiny-0.24.tar.gz
     provides:
@@ -494,6 +600,13 @@ DISTRIBUTIONS
       ExtUtils::MakeMaker 6.42
       Test::More 0.96
       perl 5.008001
+  Data-UUID-1.219
+    pathname: R/RJ/RJBS/Data-UUID-1.219.tar.gz
+    provides:
+      Data::UUID 1.219
+    requirements:
+      Digest::MD5 0
+      ExtUtils::MakeMaker 0
   Date-Calc-6.3
     pathname: S/ST/STBEY/Date-Calc-6.3.tar.gz
     provides:
@@ -1533,6 +1646,16 @@ DISTRIBUTIONS
       ExtUtils::MakeMaker 0
       Test 0
       perl 5.008
+  Error-0.17022
+    pathname: S/SH/SHLOMIF/Error-0.17022.tar.gz
+    provides:
+      Error 0.17022
+    requirements:
+      Module::Build 0.39
+      Scalar::Util 0
+      perl v5.6.0
+      strict 0
+      warnings 0
   Exception-Class-1.38
     pathname: D/DR/DROLSKY/Exception-Class-1.38.tar.gz
     provides:
@@ -1838,6 +1961,38 @@ DISTRIBUTIONS
       HTML::TreeBuilder 0
       List::Util 0
       XML::XPathEngine 0.12
+  HTML-WikiConverter-0.68
+    pathname: D/DI/DIBERRI/HTML-WikiConverter-0.68.tar.gz
+    provides:
+      HTML::WikiConverter 0.68
+      HTML::WikiConverter::Normalizer undef
+      HTML::WikiConverter::WebApp undef
+    requirements:
+      CSS 1.07
+      Carp 0
+      Class::Data::Inheritable 0.02
+      Exporter 0
+      ExtUtils::MakeMaker 0
+      HTML::Element 0
+      HTML::Entities 1.27
+      HTML::Tagset 3.04
+      HTML::Tree 3.18
+      Params::Validate 0.77
+      Pod::Usage 1.16
+      Test::More 0
+      URI 1.35
+      URI::Escape 0
+  HTML-WikiConverter-Markdown-0.06
+    pathname: J/JF/JFEARN/HTML-WikiConverter-Markdown-0.06.tar.gz
+    provides:
+      HTML::WikiConverter::Markdown 0.06
+    requirements:
+      ExtUtils::MakeMaker 0
+      HTML::Tagset 0
+      HTML::WikiConverter 0.67
+      Params::Validate 0
+      Test::More 0
+      URI 0
   HTTP-Body-1.19
     pathname: G/GE/GETTY/HTTP-Body-1.19.tar.gz
     provides:
@@ -2043,6 +2198,18 @@ DISTRIBUTIONS
       ExtUtils::MakeMaker 6.52
       Test::More 0.82
       perl 5.00503
+  Log-Minimal-0.19
+    pathname: K/KA/KAZEBURO/Log-Minimal-0.19.tar.gz
+    provides:
+      Log::Minimal 0.19
+    requirements:
+      CPAN::Meta 0
+      CPAN::Meta::Prereqs 0
+      Data::Dumper 0
+      ExtUtils::CBuilder 0
+      Module::Build 0.38
+      Scalar::Util 0
+      Term::ANSIColor 0
   MIME-Types-2.04
     pathname: M/MA/MARKOV/MIME-Types-2.04.tar.gz
     provides:
@@ -2420,6 +2587,13 @@ DISTRIBUTIONS
       File::Spec 0.80
       JSON::PP 2.27200
       strict 0
+  Parse-RecDescent-1.967009
+    pathname: J/JT/JTBRAUN/Parse-RecDescent-1.967009.tar.gz
+    provides:
+      Parse::RecDescent 1.967009
+    requirements:
+      Test::More 0
+      Text::Balanced 1.95
   Perl6-Junction-1.60000
     pathname: C/CF/CFRANKS/Perl6-Junction-1.60000.tar.gz
     provides:
@@ -2528,6 +2702,37 @@ DISTRIBUTIONS
       Try::Tiny 0
       URI 1.59
       parent 0
+  Plack-App-Proxy-0.29
+    pathname: L/LE/LEEDO/Plack-App-Proxy-0.29.tar.gz
+    provides:
+      Plack::App::Proxy 0.29
+      Plack::App::Proxy::Backend undef
+      Plack::App::Proxy::Backend::AnyEvent::HTTP undef
+      Plack::App::Proxy::Backend::LWP undef
+      Plack::App::Proxy::Test undef
+      Plack::Middleware::Proxy::AddVia 0.01
+      Plack::Middleware::Proxy::Connect 0.01
+      Plack::Middleware::Proxy::LoadBalancer 0.01
+      Plack::Middleware::Proxy::RewriteLocation undef
+    requirements:
+      AnyEvent::HTTP 1.44
+      ExtUtils::MakeMaker 6.59
+      HTTP::Headers 0
+      IO::Socket::INET 0
+      LWP::UserAgent 0
+      Plack 1.0013
+      Test::More 0.88
+      Test::Requires 0
+      Test::TCP 0
+      parent 0
+      perl 5.008001
+  Plack-Middleware-Cached-0.15
+    pathname: V/VO/VOJ/Plack-Middleware-Cached-0.15.tar.gz
+    provides:
+      Plack::Middleware::Cached 0.15
+    requirements:
+      ExtUtils::MakeMaker 6.30
+      Plack 1.0
   Plack-Middleware-ReverseProxy-0.15
     pathname: M/MI/MIYAGAWA/Plack-Middleware-ReverseProxy-0.15.tar.gz
     provides:
@@ -3053,6 +3258,13 @@ DISTRIBUTIONS
       Algorithm::Diff 1.19
       Exporter 0
       ExtUtils::MakeMaker 0
+  Text-Unidecode-1.01
+    pathname: S/SB/SBURKE/Text-Unidecode-1.01.tar.gz
+    provides:
+      Text::Unidecode 1.01
+    requirements:
+      ExtUtils::MakeMaker 0
+      perl 5.008
   Text-Xslate-3.2.5
     pathname: G/GF/GFUJI/Text-Xslate-3.2.5.tar.gz
     provides:
@@ -3091,6 +3303,15 @@ DISTRIBUTIONS
       XSLoader 0.02
       parent 0.221
       perl 5.008001
+  TheSchwartz-Simple-0.05
+    pathname: M/MI/MIYAGAWA/TheSchwartz-Simple-0.05.tar.gz
+    provides:
+      TheSchwartz::Simple 0.05
+      TheSchwartz::Simple::Job undef
+    requirements:
+      DBI 0
+      ExtUtils::MakeMaker 6.98
+      Test::More 0
   Thread-SigMask-0.004
     pathname: L/LE/LEONT/Thread-SigMask-0.004.tar.gz
     provides:
@@ -3457,6 +3678,12 @@ DISTRIBUTIONS
       yaml_sequence undef
     requirements:
       ExtUtils::MakeMaker 6.30
+  common-sense-3.73
+    pathname: M/ML/MLEHMANN/common-sense-3.73.tar.gz
+    provides:
+      common::sense 3.73
+    requirements:
+      ExtUtils::MakeMaker 0
   libwww-perl-6.07
     pathname: M/MS/MSCHILLI/libwww-perl-6.07.tar.gz
     provides:

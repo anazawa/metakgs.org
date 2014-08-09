@@ -5,9 +5,9 @@ use parent qw/MetaKGS::Web::View::JSON/;
 
 sub show {
     my ( $class, $args ) = @_;
-    my %query = $args->{uri}->query_form;
+    my %query = $args->{request_uri}->query_form;
 
-    my %tournament = (
+    my %content = (
         id       => $query{id} + 0,
         name     => $args->{content}->{name},
         rounds   => [],
@@ -15,22 +15,16 @@ sub show {
         entrants_url => $class->uri_for( "api/tournament/$query{id}/entrants" ),
     );
 
-    my %content = (
-        tournament => \%tournament,
-        source_url => $args->{uri}->as_string,
-        updated_at => $args->{response_date}->strftime( '%Y-%m-%dT%H:%M:%SZ' ),
-    );
-
     for my $entrant ( @{ $args->{content}->{entrants} || [] } ) {
-        push @{$tournament{entrants}}, {
-            position  => $entrant->{position},
-            name      => $entrant->{name},
-            rank      => $entrant->{rank},
-            score     => $entrant->{score},
-            sos       => $entrant->{sos},
-            sodos     => $entrant->{sodos},
-            notes     => $entrant->{standing} || $entrant->{notes},
-            games_url => $class->uri_for( "api/games/$entrant->{name}" ),
+        push @{$content{entrants}}, {
+            position => $entrant->{position},
+            name     => $entrant->{name},
+            rank     => $entrant->{rank},
+            score    => $entrant->{score},
+            sos      => $entrant->{sos},
+            sodos    => $entrant->{sodos},
+            notes    => $entrant->{standing} || $entrant->{notes},
+            archives_url => $class->uri_for( "api/archives/$entrant->{name}" ),
         },
     }
 
@@ -38,7 +32,7 @@ sub show {
         my $url = "api/tournament/$query{id}/round/$round->{round}";
            $url = $class->uri_for( $url );
 
-        push @{$tournament{rounds}}, {
+        push @{$content{rounds}}, {
             round    => $round->{round} + 0,
             url      => $url,
             start_at => $round->{start_time} . 'Z',
@@ -46,7 +40,15 @@ sub show {
         };
     }
 
-    \%content;
+    my %body = (
+        content      => \%content,
+        request_url  => $args->{request_uri}->as_string,
+        responded_at => $args->{response_date}->datetime . 'Z',
+        requested_at => $args->{request_date}->datetime . 'Z',
+        message      => 'OK',
+    );
+
+    \%body;
 }
 
 1;

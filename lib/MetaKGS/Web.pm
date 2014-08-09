@@ -2,9 +2,12 @@ package MetaKGS::Web;
 use strict;
 use warnings;
 use parent qw/MetaKGS Amon2::Web/;
-use Class::Method::Modifiers qw/around/;
+use LWP::UserAgent;
+use MetaKGS::Web::Response;
 use MetaKGS::Web::RouterBoom;
 #use MetaKGS::Web::View::Xslate;
+use TheSchwartz::Simple;
+use TheSchwartz::Simple::Job;
 use Try::Tiny;
 
 __PACKAGE__->load_plugins(
@@ -32,10 +35,42 @@ sub create_view {
     MetaKGS::Web::View::Xslate->instance;
 }
 
-sub upstream {
+sub the_schwartz {
     my $self = shift;
-    my $config = $self->config->{'MetaKGS::Web'};
-    URI->new( $config->{upstream} );
+    $self->{the_schwartz} ||= $self->_build_the_schwartz;
+}
+
+sub _build_the_schwartz {
+    my $self = shift;
+    my $config = $self->config->{'TheSchwartz'} || [];
+    my $dbh = DBI->connect( @$config );
+    TheSchwartz::Simple->new([ $dbh ]);
+}
+
+sub user_agent {
+    my $self = shift;
+
+    unless ( exists $self->{user_agent} ) {
+        my $config = $self->config->{+__PACKAGE__} || {};
+
+        $self->{user_agent} = LWP::UserAgent->new(
+            agent => 'MetaKGS/0.01',
+            %{ $config->{user_agent} || {} },
+        );
+    }
+
+    $self->{user_agent};
+}
+
+sub upstream_uri {
+    my $self = shift;
+
+    unless ( exists $self->{upstream_uri} ) {
+        my $config = $self->config->{'MetaKGS::Web'} || {};
+        $self->{upstream_uri} = $config->{upstream_uri};
+    }
+
+    $self->{upstream_uri};
 }
 
 sub dispatch {
@@ -50,30 +85,15 @@ sub dispatch {
     return $self->res_405 if $method_not_allowed;
     return $self->res_404 unless $destination;
 
-    my $class = $destination->{controller};
-    my $method = $destination->{action};
-    my %args = ( %$captured, %{$destination->{args}} );
-
     try {
-        $class->$method( $self, \%args );
+        my $class = $destination->{controller};
+        my $method = $destination->{action};
+        $class->$method( $self, $captured );
     }
     catch {
         warn $request->method, ' ', $request->path_info, " failed: $_";
         $self->res_500;
     };
 }
-
-sub render {
-    my ( $self, $content, %args ) = @_;
-    $self->SUPER::render( $args{template} => $content );
-}
-
-around render_json => sub {
-    my ( $orig, $self, $content, %args ) = @_;
-    my $class = $args{template};
-    my $method = $class =~ s/\#(\w+)$// && $1;
-    $class = Plack::Util::load_class( $class, 'MetaKGS::Web::View::JSON' );
-    $self->$orig( $class->$method({ %$content }) );
-};
 
 1;

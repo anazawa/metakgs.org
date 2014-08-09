@@ -4,27 +4,21 @@ use warnings;
 use parent qw/MetaKGS::Web::View::JSON/;
 
 sub show {
-    my ( $class, $args ) = @_;
-    my %query = $args->{uri}->query_form;
+    my ( $class, $resource ) = @_;
+    my %query = $resource->{request_uri}->query_form;
 
-    my %tournament = (
+    my %content = (
         id     => $query{id} + 0,
-        name   => $args->{content}->{name},
-        round  => $args->{content}->{round},
+        name   => $resource->{content}->{name},
+        round  => $resource->{content}->{round},
         games  => [],
         byes   => [],
         rounds => [],
         entrants_url => $class->uri_for( "api/tournament/$query{id}/entrants" ),
     );
 
-    my %content = (
-        tournament => \%tournament,
-        source_url => $args->{uri}->as_string,
-        updated_at => $args->{response_date}->strftime( '%Y-%m-%dT%H:%M:%SZ' ),
-    );
-
-    for my $game ( @{ $args->{content}->{games} || [] } ) {
-        push @{$tournament{games}}, {
+    for my $game ( @{ $resource->{content}->{games} || [] } ) {
+        push @{$content{games}}, {
             sgf_url    => $game->{sgf_uri},
             white      => $class->_user( $game->{white} ),
             black      => $class->_user( $game->{black} ),
@@ -33,15 +27,15 @@ sub show {
         };
     }
 
-    for my $bye ( @{ $args->{content}->{byes} || [] } ) {
-        push @{$tournament{byes}}, $class->_user( $bye );
+    for my $bye ( @{ $resource->{content}->{byes} || [] } ) {
+        push @{$content{byes}}, $class->_user( $bye );
     }
 
-    for my $round ( @{ $args->{content}->{links}->{rounds} || [] } ) {
+    for my $round ( @{ $resource->{content}->{links}->{rounds} || [] } ) {
         my $url = "api/tournament/$query{id}/round/$round->{round}";
            $url = $class->uri_for( $url );
 
-        push @{$tournament{rounds}}, {
+        push @{$content{rounds}}, {
             round    => $round->{round} + 0,
             url      => $url,
             start_at => $round->{start_time} . 'Z',
@@ -49,7 +43,15 @@ sub show {
         };
     }
 
-    \%content;
+    my %body = (
+        content      => \%content,
+        request_url  => $resource->{request_uri}->as_string,
+        responded_at => $resource->{response_date}->datetime . 'Z',
+        requested_at => $resource->{request_date}->datetime . 'Z',
+        message      => 'OK',
+    );
+
+    \%body;
 }
 
 sub _user {
@@ -58,7 +60,7 @@ sub _user {
     my %user = (
         name => $args->{name},
         rank => $args->{rank},
-        games_url => $class->uri_for( "api/games/$args->{name}" ),
+        archives_url => $class->uri_for( "api/archives/$args->{name}" ),
     );
 
     $user{type} = $args->{type} if exists $args->{type};

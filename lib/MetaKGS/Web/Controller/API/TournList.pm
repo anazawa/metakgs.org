@@ -2,12 +2,15 @@ package MetaKGS::Web::Controller::API::TournList;
 use strict;
 use warnings;
 use parent qw/MetaKGS::Web::Controller::API/;
-use MetaKGS::Model::Resources;
-use Time::Piece;
-use Time::Seconds qw/ONE_DAY/;
-use WWW::GoKGS::Scraper::TournList;
+use HTTP::Status qw/HTTP_NOT_FOUND HTTP_INTERNAL_SERVER_ERROR/;
+use MetaKGS::Web::View::JSON::TournList;
+use MetaKGS::WWW::GoKGS::Scraper::TournList;
+use Time::Piece qw/gmtime/;
+use Time::Seconds qw/ONE_HOUR ONE_DAY/;
 
-sub _scraper_class { 'WWW::GoKGS::Scraper::TournList' }
+sub scraper_class { 'MetaKGS::WWW::GoKGS::Scraper::TournList' }
+
+sub template_class { 'MetaKGS::Web::View::JSON::TournList' }
 
 sub show {
     my ( $class, $c, $args ) = @_;
@@ -21,67 +24,46 @@ sub show {
             year => $now->year,
         },
         constraint_methods => {
-            year => sub { $_[1] =~ /^\d\d\d\d$/ && $_[1] >= 2001 },
+            year => sub { $_[1] =~ /^[1-9]\d*$/ },
         },
     });
 
-    my $uri = $class->_scraper_class->build_uri(
-        year => $query->{year},
-    );
-
-    my $resource
-        = Resources
-        ->uri_eq( $uri )
-        ->order_by_request_date( 'DESC' )
-        ->select
-        ->next;
-
-    if ( !$resource or $now > $class->_expires($resource) ) {
-        $class->_create( $c, $uri );
-    }
-    else {
-        $class->_show( $c, $resource );
-    }
+    $class->SUPER::show( $c, $query );
 }
 
-sub _show {
+sub do_show {
     my ( $class, $c, $resource ) = @_;
 
-    $c->render_json(
-        $resource,
-        template => 'TournList#show',
-    );
+    return $class->not_found( $c, $resource )
+        if $resource->{status_code} == HTTP_NOT_FOUND;
+
+    return $class->bad_gateway( $c )
+        if $resource->{status_code} == HTTP_INTERNAL_SERVER_ERROR;
+
+    $class->SUPER::do_show( $c, $resource );
 }
 
-sub _scrape {
-    my ( $class, @args ) = @_;
-    my $result = $class->SUPER::_scrape( @args );
-
-    for my $tournament ( @{ $result->{tournaments} || [] } ) {
-        $tournament->{uri} .= q{};
-    }
-
-    for my $year ( @{ $result->{year_index} || [] } ) {
-        $year->{year} += 0;
-        $year->{uri}  .= q{} if exists $year->{uri};
-    }
-
-    $result;
-}
-
-sub _expires {
+sub expires {
     my ( $class, $resource ) = @_;
-    my %query = $resource->{uri}->query_form;
-    my $date = $resource->{response_date};
+    my $code = $resource->{status_code};
+    my %query = $resource->{request_uri}->query_form;
+    my $date = $resource->{response_date} || $resource->{request_date};
+    my $now = gmtime;
+    my $never = $now->add_years( 1 );
 
     my $start = Time::Piece->strptime(
         sprintf( '%04d', $query{year} ),
         '%Y'
     );
 
+    return $date + ONE_HOUR if $code == HTTP_INTERNAL_SERVER_ERROR;
+
+    return $never     if $code == HTTP_NOT_FOUND and $start->year < 2001;
+    return $start - 1 if $code == HTTP_NOT_FOUND and $start->year > $now->year;
+
     return $date + ONE_DAY if $date < $start->add_years(1);
 
-    gmtime->add_years( 1 );
+    $never;
 }
 
 1;

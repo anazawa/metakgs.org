@@ -1,85 +1,60 @@
 package MetaKGS::Upstream;
 use strict;
 use warnings;
-use parent qw/MetaKGS/;
-use HTTP::Status qw/HTTP_BAD_GATEWAY HTTP_GATEWAY_TIMEOUT/;
+use parent qw/Amon2/;
+use HTTP::Status qw/HTTP_BAD_GATEWAY HTTP_GATEWAY_TIMEOUT status_message/;
+use Log::Minimal qw/warnf/;
 use LWP::UserAgent;
 use Plack::Request;
 use Plack::Response;
-
-BEGIN {
-    my $last = 0;
-
-    sub _sleep {
-        my $interval = int shift;
-        my $delay = $last + $interval - time;
-        my $ret; $ret = sleep $delay if $delay >= 0;
-        $last = time;
-        $ret;
-    }
-}
-
-sub to_app {
-    my $class = shift;
-    sub { $class->handle_request(@_) };
-}
-
-sub create_request {
-    my ( $class, @args ) = @_;
-    Plack::Request->new( @args );
-}
-
-sub handle_request {
-    my ( $class, $env ) = @_;
-    my $request = $class->create_request( $env );
-    my $self = $class->new( request => $request );
-    my $guard = $self->context_guard;
-    $self->dispatch->finalize;
-}
-
-sub request {
-    $_[0]->{request};
-}
+use Time::HiRes qw/time sleep/;
+use Try::Tiny;
 
 sub user_agent {
     my $self = shift;
-    $self->{user_agent} ||= $self->_build_user_agent;
-}
 
-sub _build_user_agent {
-    my $self = shift;
-    my $config = $self->config->{'MetaKGS::Upstream'} || {};
-    
-    LWP::UserAgent->new(
-        timeout => $config->{timeout},
-    );
+    unless ( exists $self->{user_agent} ) {
+        $self->{user_agent} = LWP::UserAgent->new(do {
+            my $config = $self->config->{+__PACKAGE__} || {};
+            %{ $config->{user_agent} || {} };
+        });
+    }
+
+    $self->{user_agent};
 }
 
 sub delay {
     my $self = shift;
-    $self->{delay} ||= $self->_build_delay;
+
+    unless ( exists $self->{delay} ) {
+        my $config = $self->config->{+__PACKAGE__} || {};
+        $self->{delay} = exists $config->{delay} ? $config->{delay} : 60;
+    }
+
+    $self->{delay};
 }
 
-sub _build_delay {
+sub last_visit {
     my $self = shift;
-    my $config = $self->config->{'MetaKGS::Upstream'} || {};
-    exists $config->{delay} ? $config->{delay} : 60;
+    $self->{last_visit} = shift if @_;
+    $self->{last_visit} = 0 unless exists $self->{last_visit};
+    $self->{last_visit};
 }
 
-sub create_response {
-    my ( $self, @args ) = @_;
-    Plack::Response->new( @args );
-}
-
-sub dispatch {
+sub to_app {
     my $self = shift;
-    my $request = $self->request;
+    sub { $self->call(@_) };
+}
 
-    _sleep $self->delay;
+sub call {
+    my ( $self, $env ) = @_;
+    my $request = Plack::Request->new( $env );
+    my $delay = $self->last_visit + $self->delay - time;
 
     my $req = do {
-        my $uri = $request->uri;
-           $uri->authority( 'www.gokgs.com' );
+        my $uri = URI->new( 'http://www.gokgs.com/' );
+           $uri->path( $request->path );
+           $uri->query_form( $request->uri->query_form );
 
         my $headers = $request->headers->clone;
            $headers->header( 'X-Forwarded-For' => $request->address );
@@ -92,60 +67,81 @@ sub dispatch {
         );
     };
 
+    sleep $delay if $delay > 0;
+
     my $res = $self->user_agent->simple_request( $req );
 
-    my $is_internal = $res->header('Client-Warning') || q{};
-       $is_internal = $is_internal eq 'Internal response';
+    $self->last_visit( time );
 
-    if ( $is_internal and $res->status_line =~ /read timeout/ ) {
-        $self->create_response(
-            HTTP_GATEWAY_TIMEOUT,
-            [
-                'Content-Length' => length $res->status_line,
-                'Content-Type'   => 'text/plain',
-            ],
-            $res->status_line
-        );
-    }
-    elsif ( $is_internal ) {
-        $self->create_response(
-            HTTP_BAD_GATEWAY,
-            [
-                'Content-Length' => length $res->status_line,
-                'Content-Type'   => 'text/plain',
-            ],
-            $res->status_line
-        );
-    }
-    else {
-        my $headers = $res->headers->clone;
+    my $error = do {
+        my $client_warning = $res->header('Client-Warning') || q{};
+        my $client_aborted = $res->header('Client-Aborted') || q{};
 
-        for my $field (
-            # PSGI forbidden headers
-            'Status',
-            # Hop-by-hop headers (RFC2616 13.5.1)
-            'Connection',
-            'Keep-Alive',
-            'Proxy-Authenticate',
-            'Proxy-Authorization',
-            'TE',
-            'Trailer',
-            'Transfer-Encoding',
-            'Upgrade',
-            # Other hop-by-hop headers (code taken from Plack::App::Proxy)
-            ( map { split /\s*,\s*/ } $headers->header('Connection') ),
-            # LWP::UserAgent-specific headers (maybe)
-            ( grep { /^Client-/ } $headers->header_field_names ), 
-        ) {
-            $headers->remove_header( $field );
+        if ( $client_warning eq 'Internal response' ) {
+            $res->content || q{};
         }
+        elsif ( $client_aborted eq 'die' ) {
+            $res->header('X-Died') || q{};
+        }
+        else {
+            undef;
+        }
+    };
 
-        $self->create_response(
-            $res->code,
-            $headers,
-            $res->content
-        );
+    if ( defined $error ) {
+        warnf '%s %s failed: %s', $req->method, $req->uri, $error;
+        return $self->gateway_timeout if $error =~ /read timeout/;
+        return $self->bad_gateway;
     }
+
+    my $h = $res->headers->clone;
+
+    $h->remove_header(
+        # PSGI forbidden headers
+        'Status',
+        # Hop-by-hop headers (RFC2616 13.5.1)
+        'Connection',
+        'Keep-Alive',
+        'Proxy-Authenticate',
+        'Proxy-Authorization',
+        'TE',
+        'Trailer',
+        'Transfer-Encoding',
+        'Upgrade',
+        ( map { split /\s*,\s*/ } $h->header('Connection') ),
+        # LWP::UserAgent-specific headers
+        ( grep { /^Client-/ } $h->header_field_names ), 
+    );
+
+    my @headers;
+    $h->scan(sub {
+        my ( $field, $value ) = @_;
+        push @headers, $field, $value;
+    });
+
+    [
+        $res->code,
+        \@headers,
+        [ $res->content ]
+    ];
+}
+
+sub bad_gateway     { shift->_server_error( HTTP_BAD_GATEWAY,     @_ ) }
+sub gateway_timeout { shift->_server_error( HTTP_GATEWAY_TIMEOUT, @_ ) }
+
+sub _server_error {
+    my $self = shift;
+    my $code = shift;
+    my $body = shift || status_message( $code );
+
+    [
+        $code,
+        [
+            'Content-Length' => length $body,
+            'Content-Type'   => 'text/plain',
+        ],
+        [ $body ]
+    ];
 }
 
 1;

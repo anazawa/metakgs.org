@@ -2,8 +2,9 @@ package MetaKGS::Teng::Inflators;
 use strict;
 use warnings;
 use Exporter qw/import/;
-use Time::Piece;
 use JSON;
+use MetaKGS::Teng::Constants qw/UNKNOWN NOT_APPLICABLE/;
+use Time::Piece;
 
 our @EXPORT_OK = qw(
     to_string
@@ -15,8 +16,8 @@ our @EXPORT_OK = qw(
 sub to_string {
     my $value = shift;
 
-    return q{} if $value eq '{unknown}';
-    return if $value eq '{n/a}';
+    return if $value eq UNKNOWN;
+    return if $value eq NOT_APPLICABLE;
 
     $value;
 }
@@ -28,8 +29,8 @@ sub to_uri {
 sub to_timepiece {
     my $value = shift;
 
-    return if $value eq '{unknown}';
-    return if $value eq '{n/a}';
+    return if $value eq UNKNOWN;
+    return if $value eq NOT_APPLICABLE;
 
     Time::Piece->strptime( $value, '%Y-%m-%d %H:%M:%S' );
 }
@@ -37,7 +38,8 @@ sub to_timepiece {
 sub to_hash {
     my $value = shift;
 
-    return if $value eq '{n/a}';
+    return if $value eq UNKNOWN;
+    return if $value eq NOT_APPLICABLE;
 
     JSON->new->decode( $value );
 }

@@ -21,6 +21,17 @@ requires 'Class::Method::Modifiers';
 requires 'WWW::GoKGS';
 requires 'String::CamelCase';
 requires 'HTML::TreeBuilder::LibXML';
+requires 'Data::UUID';
+requires 'HTTP::Status';
+requires 'URI';
+requires 'Encode';
+requires 'TheSchwartz::Simple';
+requires 'Cache::FileCache';
+requires 'Plack::App::Proxy';
+requires 'Plack::Middleware::Cached';
+requires 'Log::Minimal';
+requires 'HTML::WikiConverter::Markdown';
+requires 'Text::Unidecode';
 
 on configure => sub {
     requires 'Module::Build', '0.38';

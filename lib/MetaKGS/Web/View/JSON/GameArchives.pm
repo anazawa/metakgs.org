@@ -4,22 +4,21 @@ use warnings;
 use parent qw/MetaKGS::Web::View::JSON/;
 
 sub show {
-    my ( $class, $args ) = @_;
+    my ( $class, $resource ) = @_;
 
     my %content = (
-        games      => [],
-        tgz_uri    => $args->{content}->{tgz_uri},
-        zip_uri    => $args->{content}->{zip_uri},
-        source_uri => $args->{uri}->as_string,
+        games   => [],
+        tgz_url => $resource->{content}->{tgz_uri},
+        zip_url => $resource->{content}->{zip_uri},
     );
 
-    for my $game ( @{ $args->{content}->{games} || [] } ) {
+    for my $game ( @{ $resource->{content}->{games} || [] } ) {
         my $owner = $game->{owner} && $class->_user( $game->{owner} );
         my @white = map { $class->_user($_) } @{ $game->{white} || [] };
         my @black = map { $class->_user($_) } @{ $game->{black} || [] };
 
         push @{$content{games}}, {
-            sgf_uri    => $game->{sgf_uri},
+            sgf_url    => $game->{sgf_uri},
             owner      => $owner,
             white      => \@white,
             black      => \@black,
@@ -31,7 +30,15 @@ sub show {
         };
     }
 
-    \%content;
+    my %body = (
+        content      => \%content,
+        request_url  => $resource->{request_uri}->as_string,
+        requested_at => $resource->{request_date}->datetime . 'Z',
+        responded_at => $resource->{response_date}->datetime . 'Z',
+        message      => 'OK',
+    );
+
+    \%body;
 }
 
 sub _user {
@@ -40,7 +47,7 @@ sub _user {
     my %user = (
         name => $args->{name},
         rank => $args->{rank},
-        games_uri => $class->uri_for( "api/games/$args->{name}" ),
+        archives_url => $class->uri_for( "api/archives/$args->{name}" ),
     );
 
     \%user;

@@ -19,7 +19,8 @@ my $app = builder {
     enable 'Plack::Middleware::Static',
         path => qr{^(?:/robots\.txt|/favicon\.ico)$},
         root => File::Spec->catdir(dirname(__FILE__), '..', 'static');
-    enable 'Plack::Middleware::ReverseProxy';
+    enable 'Plack::Middleware::ReverseProxy'; # XXX
+    enable 'Plack::Middleware::ConditionalGET';
 
     MetaKGS::Web->to_app();
 };

@@ -5,8 +5,8 @@ use MetaKGS::Web::RouterBoom::Declare;
 
 get '/' => 'Root#index';
 
-get '/api/games/:user' => 'API::GameArchives#show';
-get '/api/games/:user/:year/:month' => 'API::GameArchives#show';
+get '/api/archives/:user' => 'API::GameArchives#show';
+get '/api/archives/:user/:year/:month' => 'API::GameArchives#show';
 
 get '/api/tournaments' => 'API::TournList#show';
 get '/api/tournaments/:year' => 'API::TournList#show';

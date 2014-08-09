@@ -8,9 +8,10 @@ sub show {
     my ( $class, $args ) = @_;
 
     my %content = (
-        tournaments => [],
-        source_uri  => $args->{uri}->as_string,
-        updated_at  => $args->{response_date}->strftime( '%Y-%m-%dT%H:%M%SZ' ),
+        tournaments  => [],
+        source_url   => $args->{request_uri}->as_string,
+        responded_at => $args->{response_date}->datetime . 'Z',
+        requested_at => $args->{request_date}->datetime . 'Z',
     );
 
     for my $tournament ( @{ $args->{content}->{tournaments} || [] } ) {
