@@ -5,7 +5,7 @@ use parent qw/MetaKGS Amon2::Web/;
 use LWP::UserAgent;
 use MetaKGS::Web::Response;
 use MetaKGS::Web::RouterBoom;
-#use MetaKGS::Web::View::Xslate;
+use MetaKGS::Web::View::Xslate;
 use TheSchwartz::Simple;
 use TheSchwartz::Simple::Job;
 use Try::Tiny;

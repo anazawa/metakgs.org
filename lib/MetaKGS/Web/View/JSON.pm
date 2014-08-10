@@ -29,7 +29,7 @@ sub uri_for {
 
 sub accepted {
     my ( $class, $job ) = @_;
-    my $is_grabbed = %$args && $job->{grabbed_until} >= time;
+    my $is_grabbed = %$job && $job->{grabbed_until} >= time;
     my $retry_after = $is_grabbed && gmtime $job->{grabbed_until};
 
     my %body = (

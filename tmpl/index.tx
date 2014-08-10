@@ -1,95 +1,383 @@
-: cascade "include/layout.tx"
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="<: uri_for('/static/css/index.css') :>" />
+    <title>MetaKGS - Unofficial JSON API for KGS Go Server</title>
+  </head>
+  <body>
 
-: override content -> {
+    <header>
+      <img src="<: uri_for('/static/img/zoo.jpg') :>" width="700">
+      <h1>MetaKGS <small>Unofficial JSON API for KGS Go Server</small></h1>
+    </header>
 
-<h1 style="padding: 70px; text-align: center; font-size: 80px; line-height: 1; letter-spacing: -2px;">Hello, Amon2 world!</h1>
+    <nav>
+       <ul>
+         <li><a href="#version">Version</a></li>
+         <li><a href="#changes">Changes</a></li>
+         <li>
+           <a href="#description">Description</a>
+           <ul>
+             <li>
+               <a href="#methods">Methods</a>
+               <ul>
+                 <li><a href="#get-api-archives-user">GET /api/archives/:user</a></li>
+                 <li><a href="#get-api-archives-user-year-month">GET /api/archives/:user/:year/:month</a></li>
+                 <li><a href="#get-api-tournaments">GET /api/tournaments</a></li>
+                 <li><a href="#get-api-tournaments-year">GET /api/tournaments/:year</a></li>
+                 <li><a href="#get-api-tournament-id">GET /api/tournament/:id</a></li>
+                 <li><a href="#get-api-tournament-id-entrants">GET /api/tournament/:id/entrants</a></li>
+                 <li><a href="#get-api-tournament-id-round-round">GET /api/tournament/:id/round/:round</a></li>
+               </ul>
+             </li>
+           </ul>
+         </li>
+         <li><a href="#see-also">See Also</a></li>
+         <li><a href="#acknowledgement">Acknowledgement</a></li>
+         <li><a href="#author">Author</a></li>
+       </ul>
+    </nav>
 
-<hr />
+    <h2 id="version">Version</h2>
 
-<style>
-    .marketing .row {
-        margin-top: 20px;
-    }
-</style>
-<div class="marketing">
-    <h1 style="text-align: center; font-size: 280%;">Battery Included?</h1>
+    <p>This documentation refers to API version 0.01.</p>
 
-    <div class="row">
-        <div class="col-lg-4">
-            <h2><i class="glyphicon glyphicon-ok"></i> CSS Library</h2>
-            <div>
-                Current version of Amon2 using twitter's bootstrap.css as a default CSS library.<br />
-                If you want to learn it, please access to <a href="http://getbootstrap.com/">getbootstrap.com/</a>
-            </div>
-        </div>
+    <h2 id="changes">Changes</h2>
 
-        <div class="col-lg-4">
-            <h2><i class="glyphicon glyphicon-ok"></i> JS Library</h2>
-            <div>
-                <a href="http://jquery.com/">jQuery</a> included.
-                <ul>
-                    <li>es5-shim.min.js</li>
-                    <li>micro-location.js</li>
-                    <li>micro_template.js</li>
-                    <li>sprintf-0.7-beta1.js</li>
-                    <li>strftime.js</li>
-                </ul>
-            </div>
-        </div>
-
-        <div class="col-lg-4">
-            <h2><i class="glyphicon glyphicon-ok"></i> Template Engine</h2>
-            <div>
-                Amon2 uses <B>Text::Xslate</B>(Kolon) as a primary template engine.<br />
-                But you can use any template engine easily.
-            </div>
-        </div>
-    </div>
-
-    <div class="row">
-        <div class="col-lg-4">
-            <h2><i class="glyphicon glyphicon-ok"></i> O/R Mapper?</h2>
-            <div>
-                There is no O/R Mapper support. But I recommend use Teng.<br />
-                You can integrate Teng very easily.<br />
-                Refer to <a href="http://amon.64p.org/database.html#teng">this page</a> for more details.
-            </div>
-        </div>
-    </div>
-</div>
-
-<hr />
-
-<div class="row">
-    <h1 style="text-align: center;">Amon2 is right for you if ...</h1>
-    <div class="col-lg-24">
+    <dl>
+      <dt>0.01 Aug 11th, 2014</dt>
+      <dd>
         <ul>
-        <li>You need exceptional performance.</li>
-        <li>You want a framework with a small footprint.</li>
-        <li>You want a framework that requires nearly zero configuration.</li>
+          <li>initial version</li>
         </ul>
-    </div>
-</div>
+      </dd>
+    </dl>
 
-<hr />
+    <h2 id="description">Description</h2>
 
-<section class="row">
-    <div class="col-lg-12">
-        <h1>Documents?</h1>
-        <p>Complete docs are available on <a href="http://amon.64p.org/">amon.64p.org</a></p>
-        <p>And there are module specific docs on <a href="https://metacpan.org/release/Amon2">CPAN</a></p>
-    </div>
-</section>
+    <p>TBD</p>
 
-<hr>
+    <h3 id="methods">Methods</h3>
 
-<h2>Session counter demo</h2>
+    <h4 id="get-api-archives-user">GET /api/archives/:user</h4>
+    <h4 id="get-api-archives-user-year-month">GET /api/archives/:user/:year/:month</h4>
 
-<p>You seen this page <: $counter :> times.</p>
+    <p>Returns a list of games played by the specified <code>:user</code>.</p>
 
-<form method="post" action="/reset_counter">
-    <input type="submit" name="Reset counter." class="btn btn-default">
-</form>
-     
+    <h5>200 OK</h5>
 
-: }
+    <pre>
+Access-Control-Allow-Origin: *
+Content-Type: application/json; charset=utf-8
+Expires: Tue, 12 Aug 2014 12:34:56 GMT
+Last-Modified: Mon, 11 Aug 2014 12:34:56 GMT
+
+{
+    "message": "OK",
+    "request_url": "http://www.gokgs.com/gameArchives.jsp?user=foo&amp;year=2014&amp;month=8&amp;oldAccounts=y",
+    "requested_at": "2014-08-11T12:34:56Z",
+    "responded_at": "2014-08-11T12:34:56Z",
+    "content": {
+        "games": [
+            {
+                "sgf_url": "http://files.gokgs.com/games/2014/8/10/foo-bar.sgf",
+                "white": [
+                    {
+                        "name": "foo",
+                        "rank": "1d",
+                        "archives_url": "http://metakgs.org/api/archives/foo"
+                    }
+                ],
+                "black": [
+                    {
+                        "name": "bar",
+                        "rank": "3d",
+                        "archives_url": "http://metakgs.org/api/archives/bar"
+                    }
+                ],
+                "board_size": 19,
+                "handicap": 2,
+                "started_at": "2014-08-10T12:34Z",
+                "type": "Ranked",
+                "result": "B+Resign"
+            },
+            ...
+        ],
+        "zip_url": "http://www.gokgs.com/servlet/archives/en_US/foo-2014-8.zip",
+        "tgz_url": "http://www.gokgs.com/servlet/archives/en_US/foo-2014-8.tar.gz"
+    }
+}
+    </pre>
+
+    <h5>202 Accepted</h5>
+
+    <p>If the size of the requested resource on KGS is greater than 100KB,
+    then <code>202</code> is returned since the MetaKGS server can not parse
+    such a large HTML document immediately.</p>
+
+<pre>
+Retry-After: Tue, 12 Aug 2014 12:34:56 GMT
+
+{
+    "message": "Accepted",
+    "queued": false,
+    "working": true,
+    "retry_after": "2014-08-12T12:34:56Z"
+}
+</pre>
+
+    <h4 id="get-api-tournaments">GET /api/tournaments</h4>
+    <h4 id="get-api-tournaments-year">GET /api/tournaments/:year</h4>
+
+    <p>Returns a list of tournaments held in the specified <code>:year</code>.</p>
+
+    <h5>200 OK</h5>
+
+    <pre>
+Access-Control-Allow-Origin: *
+Content-Type: application/json; charset=utf-8
+Expires: Tue, 12 Aug 2014 12:34:56 GMT
+Last-Modified: Mon, 11 Aug 2014 12:34:56 GMT
+
+{
+    "message": "OK",
+    "request_url": "http://www.gokgs.com/tournList.jsp?year=2012",
+    "requested_at": "2014-08-11T12:34:56Z",
+    "responded_at": "2014-08-11T12:34:56Z",
+    "content": {
+        "tournaments": [
+            {
+                "id": 762,
+                "name": "KGS Meijin Qualifier October 2012", 
+                "url": "http://metakgs.org/api/tournament/762"
+            },
+            ...
+        ]
+    }
+}
+    </pre>
+
+    <h5>404 Not Found</h5>
+
+<pre>
+{
+    "message": "Not Found",
+    "request_url": "http://www.gokgs.com/tournList.jsp?year=1999",
+    "requested_at": "2014-08-11T12:34:56Z",
+    "responded_at": "2014-08-11T12:34:56Z",
+    "content": null
+}
+</pre>
+
+    <h5>502 Bad Gateway</h5>
+
+    <h4 id="get-api-tournament-id">GET /api/tournament/:id</h4>
+
+    <p>Returns information for the tournament identified by <code>:id</code>.</p>
+
+    <h5>200 OK</h5>
+
+    <pre>
+Access-Control-Allow-Origin: *
+Content-Type: application/json; charset=utf-8
+Expires: Tue, 12 Aug 2014 12:34:56 GMT
+Last-Modified: Mon, 11 Aug 2014 12:34:56 GMT
+
+{
+    "message": "OK",
+    "request_url": "http://www.gokgs.com/tournInfo.jsp?id=762",
+    "requested_at": "2014-08-11T12:34:56Z",
+    "responded_at": "2014-08-11T12:34:56Z",
+    "content": {
+        "id": 762,
+        "name": "KGS Meijin Qualifier October 2012", 
+        "description": "Welcome to the KGS Meijin October Qualifier! ...",
+        "entrants_url": "http://metakgs.org/api/tournament/762/entrants",
+        "rounds": [
+            {
+                "round": 1,
+                "start_at": "2012-10-27T16:05Z",
+                "end_at": "2012-10-27T18:35Z",
+                "url": "http://metakgs.org/api/tournament/762/round/1"
+            },
+            ...
+        ]
+    }
+}
+    </pre>
+
+    <p><code>"description"</code> is
+    <a href="http://daringfireball.net/projects/markdown/">Markdown</a>-formatted.</p>
+
+    <h5>404 Not Found</h5>
+
+<pre>
+{
+    "message": "Not Found",
+    "request_url": "http://www.gokgs.com/tournInfo.jsp?id=12345",
+    "requested_at": "2014-08-11T12:34:56Z",
+    "responded_at": "2014-08-11T12:34:56Z",
+    "content": null
+}
+</pre>
+
+    <h4 id="get-api-tournament-id-entrants">GET /api/tournament/:id/entrants</h4>
+
+    <p>Returns a list of the tournament entrants associated with the given
+    tournament <code>:id</code>.</p>
+
+    <h5>200 OK</h5>
+
+    <pre>
+Access-Control-Allow-Origin: *
+Content-Type: application/json; charset=utf-8
+Expires: Tue, 12 Aug 2014 12:34:56 GMT
+Last-Modified: Mon, 11 Aug 2014 12:34:56 GMT
+
+{
+    "message": "OK",
+    "request_url": "http://www.gokgs.com/tournEntrants.jsp?id=762&amp;sort=s",
+    "requested_at": "2014-08-11T12:34:56Z",
+    "responded_at": "2014-08-11T12:34:56Z",
+    "content": {
+        "id": 762,
+        "name": "KGS Meijin Qualifier October 2012", 
+        "entrants": [
+            {
+                "position": null,
+                "name": "foo",
+                "rank": "5d",
+                "score": null,
+                "sos": null,
+                "sodos": null,
+                "notes": "Winner",
+                "archives_url": "http://metakgs.org/api/archives/foo"
+            },
+            ...
+        ],
+        "entrants_url": "http://metakgs.org/api/tournament/762/entrants",
+        "rounds": [
+            {
+                "round": 1,
+                "start_at": "2012-10-27T16:05Z",
+                "end_at": "2012-10-27T18:35Z",
+                "url": "http://metakgs.org/api/tournament/762/round/1"
+            },
+            ...
+        ]
+    }
+}
+    </pre>
+
+    <h5>404 Not Found</h5>
+
+<pre>
+{
+    "message": "Not Found",
+    "request_url": "http://www.gokgs.com/tournEntrants.jsp?id=12345&amp;sort=s",
+    "requested_at": "2014-08-11T12:34:56Z",
+    "responded_at": "2014-08-11T12:34:56Z",
+    "content": null
+}
+</pre>
+
+    <h4 id="get-api-tournament-id-round-round">GET /api/tournament/:id/round/:round</h4>
+
+    <p>Returns a list of tournament games played in the specified <code>:round</code>.</p>
+
+    <h5>200 OK</h5>
+
+    <pre>
+Access-Control-Allow-Origin: *
+Content-Type: application/json; charset=utf-8
+Expires: Tue, 12 Aug 2014 12:34:56 GMT
+Last-Modified: Mon, 11 Aug 2014 12:34:56 GMT
+
+{
+    "message": "OK",
+    "request_url": "http://www.gokgs.com/tournGames.jsp?id=762&amp;round=1",
+    "requested_at": "2014-08-11T12:34:56Z",
+    "responded_at": "2014-08-11T12:34:56Z",
+    "content": {
+        "id": 762,
+        "round": 1,
+        "name": "KGS Meijin Qualifier October 2012", 
+        "games": [
+            {
+                "sgf_url": "http://files.gokgs.com/games/2012/10/27/foo-bar.sgf",
+                "white": {
+                    "name": "foo",
+                    "rank": "3d",
+                    "archives_url": "http://metakgs.org/api/archives/foo"
+                },
+                "black": {
+                    "name": "bar",
+                    "rank": "1d",
+                    "archives_url": "http://metakgs.org/api/archives/bar"
+                },
+                "board_size": 19,
+                "start_at": "2012-10-17T16:05Z",
+                "result": "W+Resign"
+            },
+            ...
+        ],
+        "byes": [
+            {
+                "name": "baz",
+                "rank": "2d",
+                "type": "System",
+                "archives_url": "http://metakgs.org/api/archives/baz"
+            },
+            ...
+        ],
+        "entrants_url": "http://metakgs.org/api/tournament/762/entrants",
+        "rounds": [
+            {
+                "round": 1,
+                "start_at": "2012-10-27T16:05Z",
+                "end_at": "2012-10-27T18:35Z",
+                "url": "http://metakgs.org/api/tournament/762/round/1"
+            },
+            ...
+        ]
+    }
+}
+    </pre>
+
+    <h5>404 Not Found</h5>
+
+<pre>
+{
+    "message": "Not Found",
+    "request_url": "http://www.gokgs.com/tournGames.jsp?id=12345&amp;round=1",
+    "requested_at": "2014-08-11T12:34:56Z",
+    "responded_at": "2014-08-11T12:34:56Z",
+    "content": null
+}
+</pre>
+
+    <h2 id="see-also">See Also</h2>
+
+    <ul>
+      <li><a href="http://www.gokgs.com/">KGS Go Server</a></li>
+      <li><a href="<: uri_for('/explorer') :>">MetaKGS Explorer</a></li>
+      <li><a href="https://metacpan.org/pod/WWW::GoKGS">WWW::GoKGS</a> on CPAN</li>
+      <li><a href="https://github.com/anazawa/metakgs.org">metakgs.org</a> on GitHub</li>
+    </ul>
+
+    <h2 id="acknowledgement">Acknowledgement</h2>
+
+    <p>Thanks to wms, the author of KGS Go Sever, we can enjoy playing go
+    online for free.</p>
+
+    <h2 id="author">Author</h2>
+
+    <div class="profile">
+    <img
+ src="https://secure.gravatar.com/avatar/fab5371a46cc0befc9357bcc8237ebab?s=60"
+      width="" height="">
+    <h4>Ryo Anazawa</h4> <p>anazawa@metakgs.org</p></div>
+
+  </body>
+</html>
