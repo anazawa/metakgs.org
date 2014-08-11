@@ -35,7 +35,7 @@ dl dd {
   margin-left: 0;
 }
 
-code {
+p code {
   color: #C7254E;
 }
 
@@ -65,4 +65,16 @@ div.profile img {
 
 div.profile p {
   margin-top: 5px;
+}
+
+.hljs-string {
+  color: #008000;
+}
+
+.hljs-number {
+  color: #00F;
+}
+
+.hljs-literal {
+  color: #F00;
 }
