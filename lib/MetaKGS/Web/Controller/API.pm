@@ -65,11 +65,11 @@ sub do_show {
     my $response = $c->render_json( $body );
 
     # for cache validation
-    $response->headers->last_modified( $resource->{response_date}->epoch );
-    $response->header( 'ETag' => 'W/"'.md5_hex($resource->{request_id}).'"' );
+    #$response->headers->last_modified( $resource->{response_date}->epoch );
+    #$response->header( 'ETag' => 'W/"'.md5_hex($resource->{request_id}).'"' );
 
     # set cache expiration time
-    $response->headers->expires( $class->expires($resource)->epoch );
+    #$response->headers->expires( $class->expires($resource)->epoch );
 
     $response;
 }

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+    <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Open+Sans">
+    <link rel="stylesheet" href="<: uri_for('/static/css/metakgs.css') :>">
+    <title>MetaKGS Explorer</title>
+    <script src="<: uri_for('/static/js/micro-location.js') :>"></script>
+    <script src="<: uri_for('/static/js/jquery-2.1.0.min.js') :>"></script>
+    <script src="<: uri_for('/static/js/highlight.pack.js') :>"></script>
+    <script src="<: uri_for('/static/js/explorer.js') :>"></script>
+  </head>
+  <body>
+    <header>
+      <img src="<: uri_for('/static/img/zoo2.jpg') :>" width="300">
+      <h1>MetaKGS Explorer</h1>
+    </header>
+
+    <p>TBD</p>
+
+    <h2>Usage</h2>
+
+    <p>TBD</p>
+
+    <h2 id="request">Request</h2>
+
+    <form id="js-request-form">
+      <input name="url" type="text">
+      <input class="btn" value="GET" type="submit">
+      <input class="btn" value="Cancel" type="reset" disabled>
+    </form>
+
+    <h2>Response</h2>
+
+    <h3><span id="js-response-status"></span></h3>
+
+    <pre class="pre-scrollable"><code id="js-response-headers"></code><code id="js-response-body"></code></pre>
+
+    <p class="text-muted" id="js-response-time"></p>
+
+    <h2>See Also</h2>
+
+    <ul>
+      <li><a href="<: uri_for('/#get-api-archives-user') :>">GET /api/archives/:user</a></li>
+      <li><a href="<: uri_for('/#get-api-archives-user-year-month') :>">GET /api/archives/:user/:year/:month</a></li>
+      <li><a href="<: uri_for('/#get-api-top100') :>">GET /api/top100</a></li>
+      <li><a href="<: uri_for('/#get-api-tournaments') :>">GET /api/tornaments</a></li>
+      <li><a href="<: uri_for('/#get-api-tournaments-year') :>">GET /api/tornaments/:year</a></li>
+      <li><a href="<: uri_for('/#get-api-tournament-id') :>">GET /api/tornament/:id</a></li>
+      <li><a href="<: uri_for('/#get-api-tournament-id-entrants') :>">GET /api/tornament/:id/entrants</a></li>
+      <li><a href="<: uri_for('/#get-api-tournament-id-round-round') :>">GET /api/tornament/:id/round/:round</a></li>
+    </ul>
+
+
+  </body>
+</html>

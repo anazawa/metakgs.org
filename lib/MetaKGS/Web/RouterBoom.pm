@@ -5,6 +5,8 @@ use MetaKGS::Web::RouterBoom::Declare;
 
 get '/' => 'Root#index';
 
+get '/explorer' => 'Explorer#show';
+
 get '/api/archives/:user' => 'API::GameArchives#show';
 get '/api/archives/:user/:year/:month' => 'API::GameArchives#show';
 
