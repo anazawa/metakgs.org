@@ -5,10 +5,16 @@
     var MetaKGS = {};
 
     //
+    //  Utility objects
+    //
+    
+    MetaKGS.Util = {};
+
+    //
     //  Stopwatch object to calculate response times
     //
 
-    MetaKGS.Stopwatch = {
+    MetaKGS.Util.Stopwatch = {
       startedAt: null,
       elapsedTime: 0,
       start: function() {
@@ -33,44 +39,6 @@
         }
       }
     };
-
-    //
-    //  Simple progress indicator
-    //
-
-    MetaKGS.ProgressIndicator = {
-      index: 0,
-      intervalID: null,
-      messages: [
-        "Requesting",
-        "Requesting.",
-        "Requesting..",
-        "Requesting..."
-      ],
-      nextMessage: function() {
-        var index = this.index;
-        this.index = index === this.messages.length - 1 ? 0 : index + 1;
-        return this.messages[ index ];
-      },
-      start: function(args) {
-        var that = this;
-        var writer = args.writer || { write: function(message) {} };
-
-        writer.write( this.nextMessage() );
-
-        this.intervalID = setInterval(
-          function() { writer.write(that.nextMessage()) },
-          args.delay
-        );
-      },
-      stop: function() {
-        if ( this.intervalID !== null ) {
-          clearInterval( this.intervalID );
-          this.intervalID = null;
-        }
-      }
-    };
-
     //
     //  jQuery.ajax() wrapper
     //
@@ -84,7 +52,7 @@
     };
 
     MetaKGS.UserAgent.get = function(url) {
-      var stopwatch = Object.create( MetaKGS.Stopwatch );
+      var stopwatch = Object.create( MetaKGS.Util.Stopwatch );
 
       this.start();
 
@@ -135,19 +103,30 @@
     };
 
     //
-    //  MeataKGS Explorer base object
+    //  MeataKGS Explorer
     //
 
-    MetaKGS.Explorer = Object.create( MetaKGS.UserAgent );
+    MetaKGS.Explorer = {};
 
-    MetaKGS.Explorer.$requestURL    = $();
-    MetaKGS.Explorer.$requestButton = $();
-    MetaKGS.Explorer.$abortButton   = $();
+    //
+    //  MeataKGS Explorer main object
+    //
 
-    MetaKGS.Explorer.$responseBody    = $();
-    MetaKGS.Explorer.$responseStatus  = $();
-    MetaKGS.Explorer.$responseHeaders = $();
-    MetaKGS.Explorer.$responseTime    = $();
+    MetaKGS.Explorer.UserAgent = Object.create( MetaKGS.UserAgent );
+
+    MetaKGS.Explorer.UserAgent.$requestURL    = $();
+    MetaKGS.Explorer.UserAgent.$requestButton = $();
+    MetaKGS.Explorer.UserAgent.$abortButton   = $();
+
+    MetaKGS.Explorer.UserAgent.$responseBody    = $();
+    MetaKGS.Explorer.UserAgent.$responseStatus  = $();
+    MetaKGS.Explorer.UserAgent.$responseHeaders = $();
+    MetaKGS.Explorer.UserAgent.$responseTime    = $();
+
+    MetaKGS.Explorer.UserAgent.progressIndicator = {
+      start: function(args) {},
+      stop: function() {}
+    };
 
     //
     //  The following requests are allowed:
@@ -162,7 +141,7 @@
     //  * GET /api/tournament/:id/round/:round
     //
 
-    MetaKGS.Explorer.validPaths = new RegExp(
+    MetaKGS.Explorer.UserAgent.validPaths = new RegExp(
       "^\/api(?:"
         + [ "\/archives\/[a-zA-Z][a-zA-Z0-9]{0,9}(?:\/[1-9]\\d*\/(?:[1-9]|1[0-2]))?",
             "\/top100",
@@ -173,12 +152,7 @@
         + ")$"
     );
 
-    MetaKGS.Explorer.progressIndicator = {
-      start: function(args) {},
-      stop: function() {}
-    };
-
-    MetaKGS.Explorer.start = function() {
+    MetaKGS.Explorer.UserAgent.start = function() {
       this.$requestButton.prop( "disabled", true );
       this.$responseStatus.text( "" );
       this.$responseHeaders.text( "" );
@@ -186,7 +160,7 @@
       this.$responseTime.text( "" );
     };
 
-    MetaKGS.Explorer.send = function(request) { 
+    MetaKGS.Explorer.UserAgent.send = function(request) { 
       var that = this;
 
       this.$abortButton.
@@ -201,7 +175,7 @@
       });
     };
 
-    MetaKGS.Explorer.success = function(response) {
+    MetaKGS.Explorer.UserAgent.success = function(response) {
       var that = this;
       var status = response.code + " " + response.message;
       var headers = response.headers.stringify() + "\n";
@@ -246,12 +220,12 @@
       });
     };
 
-    MetaKGS.Explorer.error = function(message) {
+    MetaKGS.Explorer.UserAgent.error = function(message) {
       this.progressIndicator.stop();
       this.$responseBody.text( message );
     };
 
-    MetaKGS.Explorer.stop = function() {
+    MetaKGS.Explorer.UserAgent.stop = function() {
       this.$abortButton.
         off( "click.metakgsExplorer" ).
         prop( "disabled", true );
@@ -261,7 +235,7 @@
       window.location.hash = "request";
     };
 
-    MetaKGS.Explorer.run = function() {
+    MetaKGS.Explorer.UserAgent.run = function() {
       var path = this.$requestURL.val();
 
       try {
@@ -282,9 +256,46 @@
       this.get( path );
     };
 
+    //
+    //  Simple progress indicator
+    //
+
+    MetaKGS.Explorer.ProgressIndicator = {
+      index: 0,
+      intervalID: null,
+      messages: [
+        "Requesting",
+        "Requesting.",
+        "Requesting..",
+        "Requesting..."
+      ],
+      nextMessage: function() {
+        var index = this.index;
+        this.index = index === this.messages.length - 1 ? 0 : index + 1;
+        return this.messages[ index ];
+      },
+      start: function(args) {
+        var that = this;
+        var writer = args.writer || { write: function(message) {} };
+
+        writer.write( this.nextMessage() );
+
+        this.intervalID = setInterval(
+          function() { writer.write(that.nextMessage()) },
+          args.delay
+        );
+      },
+      stop: function() {
+        if ( this.intervalID !== null ) {
+          clearInterval( this.intervalID );
+          this.intervalID = null;
+        }
+      }
+    };
+
     $("#js-request-form").on("submit.metakgsExplorer", function(event) {
       var $this = $( this );
-      var explorer = Object.create( MetaKGS.Explorer );
+      var explorer = Object.create( MetaKGS.Explorer.UserAgent );
 
       explorer.$requestURL    = $this.find( "input[name='url']" );
       explorer.$requestButton = $this.find( "input[type='submit']" );
@@ -295,7 +306,8 @@
       explorer.$responseBody    = $( "#js-response-body" );
       explorer.$responseTime    = $( "#js-response-time" );
 
-      explorer.progressIndicator = Object.create( MetaKGS.ProgressIndicator );
+      explorer.progressIndicator
+        = Object.create( MetaKGS.Explorer.ProgressIndicator );
 
       explorer.run();
 
