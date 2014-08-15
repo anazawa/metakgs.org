@@ -39,6 +39,7 @@
         }
       }
     };
+
     //
     //  jQuery.ajax() wrapper
     //
@@ -107,6 +108,23 @@
     //
 
     MetaKGS.Explorer = {};
+
+    MetaKGS.Explorer.create = function(args) {
+      var explorer = Object.create( this.UserAgent );
+
+      explorer.$requestURL    = args.$requestURL    || $();
+      explorer.$requestButton = args.$requestButton || $();
+      explorer.$abortButton   = args.$abortButton   || $();
+
+      explorer.$responseBody    = args.$responseBody    || $();
+      explorer.$responseStatus  = args.$responseStatus  || $();
+      explorer.$responseHeaders = args.$responseHeaders || $();
+      explorer.$responseTime    = args.$responseTime    || $();
+
+      explorer.progressIndicator = Object.create( this.ProgressIndicator );
+
+      return explorer;
+    };
 
     //
     //  MeataKGS Explorer main object
@@ -295,19 +313,16 @@
 
     $("#js-request-form").on("submit.metakgsExplorer", function(event) {
       var $this = $( this );
-      var explorer = Object.create( MetaKGS.Explorer.UserAgent );
 
-      explorer.$requestURL    = $this.find( "input[name='url']" );
-      explorer.$requestButton = $this.find( "input[type='submit']" );
-      explorer.$abortButton   = $this.find( "input[type='reset']" );
-
-      explorer.$responseStatus  = $( "#js-response-status" );
-      explorer.$responseHeaders = $( "#js-response-headers" );
-      explorer.$responseBody    = $( "#js-response-body" );
-      explorer.$responseTime    = $( "#js-response-time" );
-
-      explorer.progressIndicator
-        = Object.create( MetaKGS.Explorer.ProgressIndicator );
+      var explorer = MetaKGS.Explorer.create({
+        $requestURL:      $this.find( "input[name='url']" ),
+        $requestButton:   $this.find( "input[type='submit']" ),
+        $abortButton:     $this.find( "input[type='reset']" ),
+        $responseStatus:  $( "#js-response-status" ),
+        $responseHeaders: $( "#js-response-headers" ),
+        $responseBody:    $( "#js-response-body" ),
+        $responseTime:    $( "#js-response-time" )
+      });
 
       explorer.run();
 
