@@ -5,7 +5,7 @@
     var MetaKGS = {};
 
     //
-    //  Simple stopwatch object to calculate response times
+    //  Stopwatch object to calculate response times
     //
 
     MetaKGS.Stopwatch = {
@@ -37,12 +37,23 @@
     //
     //  MeataKGS Explorer base object
     //
-    //  * define valid URLs
-    //  * wrap jQuery.ajax()
-    //  * calculate response times using Stopwatch
+    //  * allow users to browse MetaKGS APIs
     //
 
     MetaKGS.Explorer = {};
+
+    //
+    //  The following requests are allowed:
+    //
+    //  * GET /api/archives/:user
+    //  * GET /api/archives/:user/:year/:month
+    //  * GET /api/top100
+    //  * GET /api/tournaments
+    //  * GET /api/tournaments/:year
+    //  * GET /api/tournament/:id
+    //  * GET /api/tournament/:id/entrants
+    //  * GET /api/tournament/:id/round/:round
+    //
 
     MetaKGS.Explorer.validPaths = new RegExp(
       "^\/api(?:"
@@ -55,8 +66,13 @@
         + ")$"
     );
 
+    //
+    //  * wrap jQuery.ajax()
+    //  * calculate response times using MetaKGS.Stopwatch
+    //
+
     MetaKGS.Explorer.get = function(path, args) {
-      var stopwatch = Object.create( MetaKGS.Stopwatch );
+      var that = this;
 
       var handlers = {
           start: args.start   || function() {},
@@ -66,61 +82,70 @@
            stop: args.stop    || function() {}
       };
 
-      handlers.start.apply( this );
+      var context = {
+        start: function() { handlers.start.apply(that) },
+        send: function(req) { handlers.send.apply(that, [req]) },
+        success: function(res) { handlers.success.apply(that, [res]) },
+        error: function(msg) { handlers.error.apply(that, [msg]) },
+        stop: function() { handlers.stop.apply(that) },
+        stopwatch: Object.create( MetaKGS.Stopwatch )
+      };
+
+      context.start();
 
       if ( !path ) {
-        handlers.error.apply( this, ["Request URL is required"] );
-        handlers.stop.apply( this );
+        context.error( "Request URL is required" );
+        context.stop();
         return;
       }
       else if ( !this.validPaths.test(path) ) {
-        handlers.error.apply( this, ["Invalid request URL"] );
-        handlers.stop.apply( this );
+        context.error( "Invalid request URL" );
+        context.stop();
         return;
       }
 
       $.ajax(path, {
-        context: this,
+        context: context,
         dataType: "json", // XXX
         beforeSend: function(jqXHR, settings) {
-          handlers.send.apply(this, [{
+          this.send({
             abort: function() { jqXHR.abort() }
-          }]);
+          });
 
-          stopwatch.start();
+          this.stopwatch.start();
         }
       }).
       fail(function(jqXHR, textStatus, errorThrown) {
         if ( jqXHR.status === 0 ) { // XXX
-          handlers.error.apply( this, ["GET "+url+" failed: "+textStatus] );
+          this.error( "GET " + url + " failed: " + textStatus );
           return;
         }
 
-        handlers.success.apply(this, [{
+        this.success({
           code: jqXHR.status,
           message: jqXHR.statusText,
           body: jqXHR.responseJSON,
-          time: stopwatch.getElapsedTime(),
+          time: this.stopwatch.getElapsedTime(),
           headers: {
             get: function(field) { return jqXHR.getResponseHeader(field) },
             stringify: function() { return jqXHR.getAllResponseHeaders() }
           }
-        }]);
+        });
       }).
       done(function(data, textStatus, jqXHR) {
-        handlers.success.apply(this, [{
+        this.success({
           code: jqXHR.status,
           message: jqXHR.statusText,
           body: data, // XXX
-          time: stopwatch.getElapsedTime(),
+          time: this.stopwatch.getElapsedTime(),
           headers: {
             get: function(field) { return jqXHR.getResponseHeader(field) },
             stringify: function() { return jqXHR.getAllResponseHeaders() }
           }
-        }]);
+        });
       }).
       always(function() {
-        handlers.stop.apply( this );
+        this.stop();
       });
     };
 
@@ -146,9 +171,9 @@
       //  Simple progress indicator
       //
 
-      explorer.showProgress = {
+      explorer.progressIndicator = {
         index: 0,
-        intervalId: null,
+        intervalID: null,
         messages: [
           "Requesting",
           "Requesting.",
@@ -156,29 +181,26 @@
           "Requesting..."
         ],
         nextMessage: function() {
-          var message = this.messages[ this.index ];
-
-          if ( this.index === this.messages.length - 1 ) {
-            this.index = 0;
-          }
-          else {
-            this.index++;
-          }
-
+          var i = this.index;
+          var message = this.messages[ i ];
+          this.index = i === this.messages.length - 1 ? 0 : i + 1;
           return message;
         },
         start: function(args) {
           var that = this;
-          var writer = args.writer;
+          var writer = args.writer || { write: function(message) {} };
+
           writer.write( this.nextMessage() );
-          this.intervalId = setInterval(function() {
-            writer.write( that.nextMessage() );
-          }, args.delay);
+
+          this.intervalID = setInterval(
+            function() { writer.write(that.nextMessage()) },
+            args.delay
+          );
         },
         stop: function() {
-          if ( this.intervalId !== null ) {
-            clearInterval( this.intervalId );
-            this.intervalId = null;
+          if ( this.intervalID !== null ) {
+            clearInterval( this.intervalID );
+            this.intervalID = null;
           }
         }
       };
@@ -200,10 +222,8 @@
               e.preventDefault(); }).
             prop( "disabled", false );
 
-          this.showProgress.start({
-            writer: {
-              write: function(value) { that.$responseBody.text(value) },
-            },
+          this.progressIndicator.start({
+            writer: { write: function(msg) { that.$responseBody.text(msg) } },
             delay: 500
           });
         },
@@ -214,7 +234,7 @@
           var body = response.body && JSON.stringify( response.body, null, 4 );
           var time = response.time/1000 + " seconds";
 
-          this.showProgress.stop();
+          this.progressIndicator.stop();
 
           this.$responseStatus.text( status );
           this.$responseHeaders.text( headers );
@@ -235,12 +255,12 @@
             var url = isURL && Location.parse( isURL[1] );
             var host = isURL && Location.parse( window.location ).host;
 
-            if ( isURL ) {
-              $a.attr( "href", url.href ).html( url.href );
-            }
-            else {
+            if ( !isURL ) {
               return;
             }
+
+            $a.attr( "href", url.href ).html( url.href );
+            $this.html( "\"" ).append( $a ).append( "\"" );
 
             if ( url.host === host && that.validPaths.test(url.pathname) ) {
               $a.on("click.metakgsExplorer", function(e) {
@@ -249,12 +269,10 @@
                 e.preventDefault();
               });
             }
-
-            $this.html( "\"" ).append( $a ).append( "\"" );
           });
         },
         error: function(message) {
-          this.showProgress.stop();
+          this.progressIndicator.stop();
           this.$responseBody.text( message );
         },
         stop: function() {
