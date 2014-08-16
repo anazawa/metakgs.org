@@ -5,42 +5,6 @@
     var MetaKGS = {};
 
     //
-    //  Utility objects
-    //
-    
-    MetaKGS.Util = {};
-
-    //
-    //  Stopwatch object to calculate response times
-    //
-
-    MetaKGS.Util.Stopwatch = {
-      startedAt: null,
-      elapsedTime: 0,
-      start: function() {
-        if ( !this.startedAt ) {
-          this.startedAt = new Date();
-        }
-      },
-      stop: function() {
-        var now = new Date();
-        if ( this.startedAt ) {
-          this.elapsedTime += now.getTime() - this.startedAt.getTime();
-          this.startedAt = null;
-        }
-      },
-      getElapsedTime: function() {
-        var now = new Date();
-        if ( this.startedAt ) {
-          return this.elapsedTime + now.getTime() - this.startedAt.getTime();
-        }
-        else {
-          return this.elapsedTime;
-        }
-      }
-    };
-
-    //
     //  MeataKGS Explorer
     //
 
@@ -191,7 +155,7 @@
 
     MetaKGS.Explorer.UserAgent.run = function() {
       var path = this.$requestURL.val();
-      var stopwatch = Object.create( MetaKGS.Util.Stopwatch );
+      var stopwatch = Object.create( MetaKGS.Explorer.Util.Stopwatch );
 
       this.start();
 
@@ -285,6 +249,42 @@
         if ( this.intervalID !== null ) {
           clearInterval( this.intervalID );
           this.intervalID = null;
+        }
+      }
+    };
+
+    //
+    //  Utility objects
+    //
+    
+    MetaKGS.Explorer.Util = {};
+
+    //
+    //  Stopwatch object to calculate response times
+    //
+
+    MetaKGS.Explorer.Util.Stopwatch = {
+      startedAt: null,
+      elapsedTime: 0,
+      start: function() {
+        if ( !this.startedAt ) {
+          this.startedAt = new Date();
+        }
+      },
+      stop: function() {
+        var now = new Date();
+        if ( this.startedAt ) {
+          this.elapsedTime += now.getTime() - this.startedAt.getTime();
+          this.startedAt = null;
+        }
+      },
+      getElapsedTime: function() {
+        var now = new Date();
+        if ( this.startedAt ) {
+          return this.elapsedTime + now.getTime() - this.startedAt.getTime();
+        }
+        else {
+          return this.elapsedTime;
         }
       }
     };
