@@ -41,69 +41,6 @@
     };
 
     //
-    //  jQuery.ajax() wrapper
-    //
-
-    MetaKGS.UserAgent = {
-        start: function() {},
-         send: function(request) {},
-      success: function(response) {},
-        error: function(message) {},
-         stop: function() {}
-    };
-
-    MetaKGS.UserAgent.get = function(url) {
-      var stopwatch = Object.create( MetaKGS.Util.Stopwatch );
-
-      this.start();
-
-      $.ajax(url, {
-        context: this,
-        dataType: "json", // XXX
-        beforeSend: function(jqXHR, settings) {
-          this.send({
-            url: settings.url,
-            abort: function() { jqXHR.abort() }
-          });
-
-          stopwatch.start();
-        }
-      }).
-      fail(function(jqXHR, textStatus, errorThrown) {
-        if ( jqXHR.status === 0 ) { // XXX
-          this.error( "GET " + url + " failed: " + textStatus );
-          return;
-        }
-
-        this.success({
-          code: jqXHR.status,
-          message: jqXHR.statusText,
-          body: jqXHR.responseJSON,
-          time: stopwatch.getElapsedTime(),
-          headers: {
-            get: function(field) { return jqXHR.getResponseHeader(field) },
-            stringify: function() { return jqXHR.getAllResponseHeaders() }
-          }
-        });
-      }).
-      done(function(data, textStatus, jqXHR) {
-        this.success({
-          code: jqXHR.status,
-          message: jqXHR.statusText,
-          body: data, // XXX
-          time: stopwatch.getElapsedTime(),
-          headers: {
-            get: function(field) { return jqXHR.getResponseHeader(field) },
-            stringify: function() { return jqXHR.getAllResponseHeaders() }
-          }
-        });
-      }).
-      always(function() {
-        this.stop();
-      });
-    };
-
-    //
     //  MeataKGS Explorer
     //
 
@@ -130,16 +67,15 @@
     //  MeataKGS Explorer main object
     //
 
-    MetaKGS.Explorer.UserAgent = Object.create( MetaKGS.UserAgent );
-
-    MetaKGS.Explorer.UserAgent.$requestURL    = $();
-    MetaKGS.Explorer.UserAgent.$requestButton = $();
-    MetaKGS.Explorer.UserAgent.$abortButton   = $();
-
-    MetaKGS.Explorer.UserAgent.$responseBody    = $();
-    MetaKGS.Explorer.UserAgent.$responseStatus  = $();
-    MetaKGS.Explorer.UserAgent.$responseHeaders = $();
-    MetaKGS.Explorer.UserAgent.$responseTime    = $();
+    MetaKGS.Explorer.UserAgent = {
+      $requestURL:      $(),
+      $requestButton:   $(),
+      $abortButton:     $(),
+      $responseBody:    $(),
+      $responseStatus:  $(),
+      $responseHeaders: $(),
+      $responseTime:    $()
+    };
 
     MetaKGS.Explorer.UserAgent.progressIndicator = {
       start: function(args) {},
@@ -255,23 +191,65 @@
 
     MetaKGS.Explorer.UserAgent.run = function() {
       var path = this.$requestURL.val();
+      var stopwatch = Object.create( MetaKGS.Util.Stopwatch );
 
-      try {
-        if ( !path ) {
-          throw "Request URL is required";
-        }
-        else if ( !this.validPaths.test(path) ) {
-          throw "Invalid request URL";
-        }
+      this.start();
+
+      if ( !path ) {
+        this.error( "Request URL is required" );
+        this.stop();
+        return;
       }
-      catch ( message ) {
-        this.start();
-        this.error( message );
+      else if ( !this.validPaths.test(path) ) {
+        this.error( "Invalid request URL" );
         this.stop();
         return;
       }
 
-      this.get( path );
+      $.ajax(path, {
+        context: this,
+        dataType: "json", // XXX
+        beforeSend: function(jqXHR, settings) {
+          this.send({
+            url: settings.url,
+            abort: function() { jqXHR.abort() }
+          });
+
+          stopwatch.start();
+        }
+      }).
+      fail(function(jqXHR, textStatus, errorThrown) {
+        if ( jqXHR.status === 0 ) { // XXX
+          this.error( "GET " + path + " failed: " + textStatus );
+          return;
+        }
+
+        this.success({
+          code: jqXHR.status,
+          message: jqXHR.statusText,
+          body: jqXHR.responseJSON,
+          time: stopwatch.getElapsedTime(),
+          headers: {
+            get: function(field) { return jqXHR.getResponseHeader(field) },
+            stringify: function() { return jqXHR.getAllResponseHeaders() }
+          }
+        });
+      }).
+      done(function(data, textStatus, jqXHR) {
+        this.success({
+          code: jqXHR.status,
+          message: jqXHR.statusText,
+          body: data, // XXX
+          time: stopwatch.getElapsedTime(),
+          headers: {
+            get: function(field) { return jqXHR.getResponseHeader(field) },
+            stringify: function() { return jqXHR.getAllResponseHeaders() }
+          }
+        });
+      }).
+      always(function() {
+        this.stop();
+      });
     };
 
     //
