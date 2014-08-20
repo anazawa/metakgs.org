@@ -86,7 +86,7 @@ form input {
 }
 
 form input[type="text"] {
-  width: 25em;
+  width: 30em;
   margin-right: .3em;
   border: 1px solid #ccc;
   border-radius: 4px;

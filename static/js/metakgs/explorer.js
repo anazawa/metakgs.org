@@ -1,7 +1,6 @@
-/*global window MetaKGS hljs Location */
+/*global window MetaKGS hljs */
 if ( typeof MetaKGS === "undefined" ) { throw "metakgs.js is required"; }
 if ( typeof jQuery === "undefined" ) { throw "jQuery is required"; }
-if ( typeof Location.parse === "undefined" ) { throw "micro-location.js is required"; }
 if ( typeof hljs === "undefined" ) { throw "highlight.js is required"; }
 
 (function(document, $) {
@@ -70,6 +69,24 @@ if ( typeof hljs === "undefined" ) { throw "highlight.js is required"; }
   //  * GET /api/tournament/:id/round/:round
   //
 
+  MetaKGS.Explorer.Prototype.baseURL = (function() {
+    var loc = window.location;
+    var path = loc.pathname.replace( /\/explorer$/, "" );
+    return loc.protocol + '//' + loc.host + path;
+  }());
+
+  MetaKGS.Explorer.Prototype.buildURL = function(url) {
+    if ( url.match(/^https?:\/\//) ) {
+      return url;
+    }
+    else if ( url.match(/^\//) ) {
+      return this.baseURL + url;
+    }
+    else {
+      return this.baseURL + '/' + url;
+    }
+  };
+
   MetaKGS.Explorer.Prototype.validPaths = new RegExp(
     "^\/api(?:"
       + [ "\/archives\/[a-zA-Z][a-zA-Z0-9]{0,9}(?:\/[1-9]\\d*\/(?:[1-9]|1[0-2]))?",
@@ -80,6 +97,12 @@ if ( typeof hljs === "undefined" ) { throw "highlight.js is required"; }
           "\/tournaments(?:\/[1-9]\\d*)?" ].join("|")
       + ")$"
   );
+
+  MetaKGS.Explorer.Prototype.isAllowed = function(url) {
+    var baseURL = MetaKGS.Explorer.Util.escapeRegExp( this.baseURL );
+    var path = this.buildURL( url ).replace( new RegExp("^"+baseURL), "" );
+    return this.validPaths.test( path );
+  };
 
   MetaKGS.Explorer.Prototype.eventNameFor = function(event) {
     return this.eventNamespace ? event + "." + this.eventNamespace : event;
@@ -100,12 +123,6 @@ if ( typeof hljs === "undefined" ) { throw "highlight.js is required"; }
     var that = this;
     var click = this.eventNameFor( CLICK );
 
-    this.history.push({
-      url: request.url,
-      method: request.method,
-      date: request.date
-    });
-
     this.$abortButton.
       one(click, function(event) {
         request.abort();
@@ -122,6 +139,7 @@ if ( typeof hljs === "undefined" ) { throw "highlight.js is required"; }
   MetaKGS.Explorer.Prototype.done = function(response) {
     var that = this;
     var click = this.eventNameFor( CLICK );
+
     var status = response.code + " " + response.message;
     var headers = response.headers.stringify();
     var body = response.body && JSON.stringify( response.body, null, 4 );
@@ -140,7 +158,7 @@ if ( typeof hljs === "undefined" ) { throw "highlight.js is required"; }
     if ( !body ) { return; }
 
     // highlight JSON
-    this.$responseBody.empty().append( $("<div></div>").text(body) ).show();
+    this.$responseBody.append( $("<div></div>").text(body) ).show();
     hljs.highlightBlock( this.$responseBody.find("div")[0] );
 
     //
@@ -150,18 +168,17 @@ if ( typeof hljs === "undefined" ) { throw "highlight.js is required"; }
     this.$responseBody.find(".hljs-string").each(function() {
       var $this = $( this ), $a;
       var isURL = /^\"(http:\/\/.*)\"$/.exec( $this.html() || "" );
-      var url = isURL && Location.parse( isURL[1] ); // HTML-escaped
+      var url = isURL && isURL[1]; // HTML-escaped
 
       if ( !isURL ) { return; }
 
-      $a = $( "<a></a>" ).attr( HREF, url.href ).html( url.href );
+      $a = $( "<a></a>" ).attr( HREF, url ).html( url );
       $this.empty().append( "\"", $a, "\"" );
 
-      if ( url.host !== window.location.host ) { return; }
-      if ( !that.validPaths.test(url.pathname) ) { return; }
+      if ( !that.isAllowed(url) ) { return; }
 
       $a.on(click, function(event) {
-        that.$requestURL.val( url.pathname );
+        that.$requestURL.val( url );
         that.$requestButton.click();
         event.preventDefault();
       });
@@ -175,12 +192,13 @@ if ( typeof hljs === "undefined" ) { throw "highlight.js is required"; }
 
   MetaKGS.Explorer.Prototype.always = function() {
     var click = this.eventNameFor( CLICK );
-    this.$abortButton.prop( DISABLED, true ).off( click );
+    this.$abortButton.off( click ).prop( DISABLED, true );
     this.$requestButton.prop( DISABLED, false );
     this.updateLocationHash();
   };
   
   MetaKGS.Explorer.Prototype.updateLocationHash = function() {
+    // abstract method
   };
 
   MetaKGS.Explorer.Prototype.updateHistory = function(args) {
@@ -220,7 +238,7 @@ if ( typeof hljs === "undefined" ) { throw "highlight.js is required"; }
       };
 
       for ( i = 0; i < urls.length && max > 0; i++, max-- ) {
-        $a = $( "<a></a>" ).attr( HREF, urls[i] ).text( "GET " + urls[i] );
+        $a = $( "<a></a>" ).attr( HREF, urls[i] ).text( urls[i] );
         $a.on( click, handler );
         that.$history.append( $a );
         $a.wrap( "<li></li>" );
@@ -243,39 +261,35 @@ if ( typeof hljs === "undefined" ) { throw "highlight.js is required"; }
     }
   };
 
-  MetaKGS.Explorer.Prototype.get = function(path) {
+  MetaKGS.Explorer.Prototype.get = function(arg) {
+    var url = this.buildURL( arg );
     var stopwatch = Object.create( MetaKGS.Explorer.Util.Stopwatch );
 
     this.start();
 
-    if ( !path ) {
+    if ( !arg ) {
       this.fail( "Request URL is required" );
       this.always();
       return;
     }
-    else if ( !this.validPaths.test(path) ) {
+    else if ( !this.isAllowed(url) ) {
       this.fail( "Invalid request URL" );
       this.always();
       return;
     }
 
-    $.ajax(path, {
+    $.ajax(url, {
       context: this,
       dataType: "json", // XXX
       beforeSend: function(jqXHR, settings) {
-        this.send({
-          method: "GET",
-          url: settings.url,
-          date: new Date(),
-          abort: function() { jqXHR.abort(); }
-        });
-
+        this.history.push({ url: settings.url });
+        this.send({ abort: function() { jqXHR.abort(); } });
         stopwatch.start();
       }
     }).
     fail(function(jqXHR, textStatus, errorThrown) {
       if ( jqXHR.status === 0 ) { // XXX
-        this.fail( "GET " + path + " failed: " + textStatus );
+        this.fail( "GET " + url + " failed: " + textStatus );
         return;
       }
 
@@ -314,13 +328,13 @@ if ( typeof hljs === "undefined" ) { throw "highlight.js is required"; }
     this.$requestButton.prop( DISABLED, false );
     this.$abortButton.prop( DISABLED, true );
 
-    this.$message.hide();
-
     this.$showHeaders.hide();
     this.$hideHeaders.hide();
     this.$responseStatus.hide();
     this.$responseHeaders.hide();
     this.$responseBody.hide();
+
+    this.$message.hide();
 
     this.$history.hide();
     this.$showAllHistory.hide();
@@ -432,6 +446,15 @@ if ( typeof hljs === "undefined" ) { throw "highlight.js is required"; }
   };
 
   //
+  //  Copied and rearranged from:
+  //  https://developer.mozilla.org/docs/Web/JavaScript/Guide/Regular_Expressions
+  //
+
+  MetaKGS.Explorer.Util.escapeRegExp = function(string) {
+    return string.replace( /([.*+?\^=!:${}()|\[\]\/\\])/g, "\\$1" );
+  };
+
+  //
   //  Activate MetaKGS Explorer
   //
 
@@ -439,8 +462,6 @@ if ( typeof hljs === "undefined" ) { throw "highlight.js is required"; }
     var explorer = MetaKGS.Explorer.create();
     var $history = $( "#js-history" );
     var $requestForm = $( "#js-request-form" );
-
-    explorer.eventNamespace = "metakgsExplorer";
 
     //
     //  Request
@@ -474,8 +495,10 @@ if ( typeof hljs === "undefined" ) { throw "highlight.js is required"; }
 
     explorer.maxHistoryLength = $history.data("max-length") || 10;
     explorer.$history         = $history;
-    explorer.$showAllHistory  = $(" #js-show-all-history" );
-    explorer.$showSomeHistory = $(" #js-show-some-history" );
+    explorer.$showAllHistory  = $( "#js-show-all-history" );
+    explorer.$showSomeHistory = $( "#js-show-some-history" );
+
+    explorer.eventNamespace = "metakgsExplorer";
 
     explorer.updateLocationHash = function() {
       window.location.hash = "response";

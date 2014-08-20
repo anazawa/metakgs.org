@@ -1,1 +1,4 @@
 var MetaKGS = {};
+
+(function() {
+}());
