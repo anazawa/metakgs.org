@@ -6,21 +6,22 @@ use HTML::WikiConverter;
 use Text::Unidecode qw/unidecode/;
 
 sub show {
-    my ( $class, $args ) = @_;
-    my %query = $args->{request_uri}->query_form;
+    my ( $class, $resource ) = @_;
+    my %query = $resource->{request_uri}->query_form;
 
-    my $description = $args->{content}->{description};
+    my $description = $resource->{content}->{description};
        $description = $class->_html2markdown( $description );
 
     my %content = (
         id           => $query{id} + 0,
-        name         => $args->{content}->{name},
+        name         => $resource->{content}->{name},
+        notes        => $resource->{content}->{notes},
         description  => $description,
         rounds       => [],
         entrants_url => $class->uri_for( "api/tournament/$query{id}/entrants" ),
     );
 
-    for my $round ( @{ $args->{content}->{links}->{rounds} || [] } ) {
+    for my $round ( @{ $resource->{content}->{links}->{rounds} || [] } ) {
         my $url = "api/tournament/$query{id}/round/$round->{round}";
            $url = $class->uri_for( $url );
 
@@ -34,10 +35,10 @@ sub show {
 
     my %body = (
         message      => 'OK',
+        request_url  => $resource->{request_uri}->as_string,
+        responded_at => $resource->{response_date}->datetime . 'Z',
+        requested_at => $resource->{request_date}->datetime . 'Z',
         content      => \%content,
-        request_url  => $args->{request_uri}->as_string,
-        responded_at => $args->{response_date}->datetime . 'Z',
-        requested_at => $args->{request_date}->datetime . 'Z',
     );
 
     \%body;

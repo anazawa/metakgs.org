@@ -10,6 +10,8 @@ get '/explorer' => 'Explorer#show';
 get '/api/archives/:user' => 'API::GameArchives#show';
 get '/api/archives/:user/:year/:month' => 'API::GameArchives#show';
 
+get '/api/top100' => 'API::Top100#show';
+
 get '/api/tournaments' => 'API::TournList#show';
 get '/api/tournaments/:year' => 'API::TournList#show';
 

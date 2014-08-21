@@ -18,7 +18,7 @@ requires 'Data::FormValidator';
 requires 'Exception::Class';
 requires 'Try::Tiny';
 requires 'Class::Method::Modifiers';
-requires 'WWW::GoKGS';
+requires 'WWW::GoKGS', '0.21';
 requires 'String::CamelCase';
 requires 'HTML::TreeBuilder::LibXML';
 requires 'Data::UUID';

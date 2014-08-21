@@ -5,11 +5,14 @@
     <meta http-equiv="X-UA-Compatible" content="IE=Edge">
     <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Open+Sans">
     <link rel="stylesheet" href="<: uri_for('/static/font-awesome/css/font-awesome.min.css') :>">
+    <link rel="stylesheet" href="<: uri_for('/static/jsonview/jquery.jsonview.css') :>">
     <link rel="stylesheet" href="<: uri_for('/static/css/metakgs.css') :>">
     <title>MetaKGS APIs Explorer</title>
     <script src="<: uri_for('/static/js/micro-location.js') :>"></script>
     <script src="<: uri_for('/static/js/jquery-2.1.0.min.js') :>"></script>
-    <script src="<: uri_for('/static/js/highlight.pack.js') :>"></script>
+    <!--<script src="<: uri_for('/static/js/highlight.pack.js')
+:>"></script>-->
+    <script src="<: uri_for('/static/jsonview/jquery.jsonview.js') :>"></script>
     <script src="<: uri_for('/static/js/metakgs.js') :>"></script>
     <script src="<: uri_for('/static/js/metakgs/explorer.js') :>"></script>
   </head>
@@ -53,19 +56,10 @@
       <a id="js-hide-headers" href="#"><i class="fa fa-caret-down"></i> Hide headers</a>
 
       <pre id="js-response-headers"></pre>
-      <pre id="js-response-body"></pre>
+      <div id="js-response-body"></div>
     </div>
 
     <p class="text-muted" id="js-response-time"></p>
-
-    <h2>History</h2>
-
-    <p>
-      <a id="js-show-all-history" href="#"><i class="fa fa-caret-right"></i> Show all requests</a>
-      <a id="js-show-some-history" href="#"><i class="fa fa-caret-down"></i> Show last 10 requests</a>
-    </p>
-
-    <ul id="js-history" data-max-length="10"></ul>
 
     <h2>See Also</h2>
 

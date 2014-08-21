@@ -3457,11 +3457,11 @@ DISTRIBUTIONS
       parent 0
       perl 5.008001
       utf8 0
-  WWW-GoKGS-0.20
-    pathname: A/AN/ANAZAWA/WWW-GoKGS-0.20.tar.gz
+  WWW-GoKGS-0.21
+    pathname: A/AN/ANAZAWA/WWW-GoKGS-0.21.tar.gz
     provides:
-      WWW::GoKGS 0.20
-      WWW::GoKGS::LibXML 0.20
+      WWW::GoKGS 0.21
+      WWW::GoKGS::LibXML 0.21
       WWW::GoKGS::Scraper undef
       WWW::GoKGS::Scraper::Declare undef
       WWW::GoKGS::Scraper::Filters undef

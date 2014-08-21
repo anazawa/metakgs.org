@@ -1,7 +1,6 @@
-/*global window MetaKGS hljs */
+/*global window MetaKGS */
 if ( typeof MetaKGS === "undefined" ) { throw "metakgs.js is required"; }
 if ( typeof jQuery === "undefined" ) { throw "jQuery is required"; }
-if ( typeof hljs === "undefined" ) { throw "highlight.js is required"; }
 
 (function(document, $) {
   "use strict";
@@ -21,10 +20,7 @@ if ( typeof hljs === "undefined" ) { throw "highlight.js is required"; }
   MetaKGS.Explorer = {};
 
   MetaKGS.Explorer.create = function() {
-    var that = Object.create( this.Prototype );
-    that.progressIndicator = Object.create( this.ProgressIndicator );
-    that.history = [];
-    return that;
+    return Object.create( this.Prototype );
   };
 
   //
@@ -32,7 +28,7 @@ if ( typeof hljs === "undefined" ) { throw "highlight.js is required"; }
   //
 
   MetaKGS.Explorer.Prototype = {
-    eventNamespace:   "",
+    eventNamespace:   "metakgsExplorer",
     $requestURL:      $(),
     $requestButton:   $(),
     $abortButton:     $(),
@@ -43,17 +39,7 @@ if ( typeof hljs === "undefined" ) { throw "highlight.js is required"; }
     $responseStatus:  $(),
     $responseHeaders: $(),
     $responseTime:    $(),
-    $message:         $(),
-    maxHistoryLength: 0,
-    history:          [],
-    $history:         $(),
-    $showAllHistory:  $(),
-    $showSomeHistory: $()
-  };
-
-  MetaKGS.Explorer.Prototype.progressIndicator = {
-    start: function(args) {},
-    stop: function() {}
+    $message:         $()
   };
 
   //
@@ -72,19 +58,12 @@ if ( typeof hljs === "undefined" ) { throw "highlight.js is required"; }
   MetaKGS.Explorer.Prototype.baseURL = (function() {
     var loc = window.location;
     var path = loc.pathname.replace( /\/explorer$/, "" );
-    return loc.protocol + '//' + loc.host + path;
+    return loc.protocol + "//" + loc.host + path;
   }());
 
   MetaKGS.Explorer.Prototype.buildURL = function(url) {
-    if ( url.match(/^https?:\/\//) ) {
-      return url;
-    }
-    else if ( url.match(/^\//) ) {
-      return this.baseURL + url;
-    }
-    else {
-      return this.baseURL + '/' + url;
-    }
+    if ( url.match(/^https?:\/\//) ) { return url; }
+    return this.baseURL + "/" + url.replace( /^\//, "" );
   };
 
   MetaKGS.Explorer.Prototype.validPaths = new RegExp(
@@ -129,56 +108,33 @@ if ( typeof hljs === "undefined" ) { throw "highlight.js is required"; }
         event.preventDefault(); }).
       prop( DISABLED, false );
 
-    this.$message.show();
-    this.progressIndicator.start({
-      writer: { write: function(msg) { that.$message.text(msg); } },
-      delay: 500
-    });
+    this.$message.text( "Loading..." ).show();
   };
 
   MetaKGS.Explorer.Prototype.done = function(response) {
     var that = this;
     var click = this.eventNameFor( CLICK );
 
-    var status = response.code + " " + response.message;
-    var headers = response.headers.stringify();
-    var body = response.body && JSON.stringify( response.body, null, 4 );
-    var time = response.time/1000 + " seconds";
-
-    this.progressIndicator.stop();
     this.$message.hide();
 
-    this.$responseStatus.text( status ).show();
+    this.$responseStatus.text( response.code + " " + response.message ).show();
+    this.$responseHeaders.text( response.headers.stringify() );
+    this.$responseTime.text( response.time/1000 + " seconds" ).show();
+
     this.$showHeaders.show();
-    this.$responseHeaders.text( headers );
-    this.$responseTime.text( time ).show();
 
-    this.updateHistory();
+    if ( !response.body ) { return; }
 
-    if ( !body ) { return; }
+    this.$responseBody.JSONView( response.body ).show();
 
-    // highlight JSON
-    this.$responseBody.append( $("<div></div>").text(body) ).show();
-    hljs.highlightBlock( this.$responseBody.find("div")[0] );
-
-    //
-    //  Find URLs in $responseBody and hyperlink them
-    //
-
-    this.$responseBody.find(".hljs-string").each(function() {
-      var $this = $( this ), $a;
-      var isURL = /^\"(http:\/\/.*)\"$/.exec( $this.html() || "" );
-      var url = isURL && isURL[1]; // HTML-escaped
-
-      if ( !isURL ) { return; }
-
-      $a = $( "<a></a>" ).attr( HREF, url ).html( url );
-      $this.empty().append( "\"", $a, "\"" );
+    this.$responseBody.find("a").each(function() {
+      var $this = $( this );
+      var url = $this.attr( HREF );
 
       if ( !that.isAllowed(url) ) { return; }
 
-      $a.on(click, function(event) {
-        that.$requestURL.val( url );
+      $this.on(click, function(event) {
+        that.$requestURL.val( $(this).attr(HREF) );
         that.$requestButton.click();
         event.preventDefault();
       });
@@ -186,7 +142,6 @@ if ( typeof hljs === "undefined" ) { throw "highlight.js is required"; }
   };
 
   MetaKGS.Explorer.Prototype.fail = function(message) {
-    this.progressIndicator.stop();
     this.$message.text( message ).show();
   };
 
@@ -198,67 +153,6 @@ if ( typeof hljs === "undefined" ) { throw "highlight.js is required"; }
   };
   
   MetaKGS.Explorer.Prototype.updateLocationHash = function() {
-    // abstract method
-  };
-
-  MetaKGS.Explorer.Prototype.updateHistory = function(args) {
-    var that = this;
-    var click = this.eventNameFor( CLICK );
-    var showAll = args && args.showAll;
-
-    var urls = [];
-    (function() {
-      var i, url, seen = {};
-      var history = that.history;
-
-      for ( i = history.length - 1; i >= 0; i-- ) {
-        url = history[i].url;
-        if ( !seen[url] ) {
-          urls.push( url );
-          seen[url] = true;
-        }
-      }
-    }());
-
-    if ( urls.length ) {
-      this.$history.empty().show();
-    }
-    else {
-      this.$history.hide();
-    }
-
-    (function() {
-      var i, url, $a;
-      var max = showAll ? urls.length : that.maxHistoryLength;
-
-      var handler = function(event) {
-        that.$requestURL.val( $(this).attr(HREF) );
-        that.$requestButton.click();
-        event.preventDefault();
-      };
-
-      for ( i = 0; i < urls.length && max > 0; i++, max-- ) {
-        $a = $( "<a></a>" ).attr( HREF, urls[i] ).text( urls[i] );
-        $a.on( click, handler );
-        that.$history.append( $a );
-        $a.wrap( "<li></li>" );
-      }
-    }());
-
-    if ( urls.length > this.maxHistoryLength ) {
-      if ( showAll ) {
-        this.$showAllHistory.hide();
-        this.$showSomeHistory.show();
-      }
-      else {
-        this.$showAllHistory.show();
-        this.$showSomeHistory.hide();
-      }
-    }
-    else {
-      this.$showAllHistory.hide();
-      this.$showSomeHistory.hide();
-    }
   };
 
   MetaKGS.Explorer.Prototype.get = function(arg) {
@@ -282,7 +176,6 @@ if ( typeof hljs === "undefined" ) { throw "highlight.js is required"; }
       context: this,
       dataType: "json", // XXX
       beforeSend: function(jqXHR, settings) {
-        this.history.push({ url: settings.url });
         this.send({ abort: function() { jqXHR.abort(); } });
         stopwatch.start();
       }
@@ -336,10 +229,6 @@ if ( typeof hljs === "undefined" ) { throw "highlight.js is required"; }
 
     this.$message.hide();
 
-    this.$history.hide();
-    this.$showAllHistory.hide();
-    this.$showSomeHistory.hide();
-
     this.$requestButton.on(click, function(event) {
       that.get( that.$requestURL.val() );
       event.preventDefault();
@@ -364,49 +253,6 @@ if ( typeof hljs === "undefined" ) { throw "highlight.js is required"; }
       that.$requestButton.click();
       event.preventDefault();
     });
-
-    this.$showSomeHistory.on(click, function(event) {
-      that.updateHistory();
-      event.preventDefault();
-    });
-
-    this.$showAllHistory.on(click, function(event) {
-      that.updateHistory({ showAll: true });
-      event.preventDefault();
-    });
-  };
-
-  //
-  //  Simple progress indicator
-  //
-
-  MetaKGS.Explorer.ProgressIndicator = {
-    index: 0,
-    intervalID: null,
-    messages: [],
-    nextMessage: function() {
-      var index = this.index;
-      this.index = index === this.messages.length - 1 ? 0 : index + 1;
-      return this.messages[ index ];
-    },
-    start: function(args) {
-      var that = this;
-      var writer = args.writer || { write: function(message) {} };
-
-      this.index = 0;
-      writer.write( this.nextMessage() );
-
-      this.intervalID = window.setInterval(
-        function() { writer.write(that.nextMessage()); },
-        args.delay
-      );
-    },
-    stop: function() {
-      if ( this.intervalID !== null ) {
-        window.clearInterval( this.intervalID );
-        this.intervalID = null;
-      }
-    }
   };
 
   //
@@ -460,7 +306,6 @@ if ( typeof hljs === "undefined" ) { throw "highlight.js is required"; }
 
   $(document).ready(function() {
     var explorer = MetaKGS.Explorer.create();
-    var $history = $( "#js-history" );
     var $requestForm = $( "#js-request-form" );
 
     //
@@ -489,27 +334,9 @@ if ( typeof hljs === "undefined" ) { throw "highlight.js is required"; }
 
     explorer.$message = $( "#js-message" );
 
-    //
-    //  History
-    // 
-
-    explorer.maxHistoryLength = $history.data("max-length") || 10;
-    explorer.$history         = $history;
-    explorer.$showAllHistory  = $( "#js-show-all-history" );
-    explorer.$showSomeHistory = $( "#js-show-some-history" );
-
-    explorer.eventNamespace = "metakgsExplorer";
-
     explorer.updateLocationHash = function() {
       window.location.hash = "response";
     };
-
-    explorer.progressIndicator.messages = [
-      "Requesting",
-      "Requesting.",
-      "Requesting..",
-      "Requesting..."
-    ];
 
     explorer.registerEvents();
   });
