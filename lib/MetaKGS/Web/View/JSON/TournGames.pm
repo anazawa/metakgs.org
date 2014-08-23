@@ -37,18 +37,19 @@ sub show {
 
         push @{$content{rounds}}, {
             round    => $round->{round} + 0,
-            url      => $url,
+            url      => $round->{uri} && $url,
             start_at => $round->{start_time} . 'Z',
             end_at   => $round->{end_time} && $round->{end_time} . 'Z',
         };
     }
 
     my %body = (
-        content      => \%content,
+        message      => 'OK',
         request_url  => $resource->{request_uri}->as_string,
         responded_at => $resource->{response_date}->datetime . 'Z',
         requested_at => $resource->{request_date}->datetime . 'Z',
-        message      => 'OK',
+        link         => $class->_link( $resource ),
+        content      => \%content,
     );
 
     \%body;
@@ -66,6 +67,30 @@ sub _user {
     $user{type} = $args->{type} if exists $args->{type};
 
     \%user;
+}
+
+sub _link {
+    my ( $class, $resource ) = @_;
+    my $rounds = $resource->{content}->{links}->{rounds};
+    my $round = $resource->{content}->{round} - 1;
+    my %query = $resource->{request_uri}->query_form;
+
+    my %link = (
+        first => $rounds->[0],
+        prev  => $round > 0 && $rounds->[$round-1],
+        next  => $rounds->[$round+1],
+        last  => $rounds->[-1],
+    );
+
+    while ( my ($rel, $r) = each %link ) {
+        $link{$rel}
+            = $r && $r->{uri}
+            ? $class->uri_for( "/api/tournament/$query{id}/round/$r->{round}" )
+            : undef;
+    }
+
+
+    \%link;
 }
 
 1;

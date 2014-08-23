@@ -8,10 +8,7 @@
     <link rel="stylesheet" href="<: uri_for('/static/jsonview/jquery.jsonview.css') :>">
     <link rel="stylesheet" href="<: uri_for('/static/css/metakgs.css') :>">
     <title>MetaKGS APIs Explorer</title>
-    <script src="<: uri_for('/static/js/micro-location.js') :>"></script>
     <script src="<: uri_for('/static/js/jquery-2.1.0.min.js') :>"></script>
-    <!--<script src="<: uri_for('/static/js/highlight.pack.js')
-:>"></script>-->
     <script src="<: uri_for('/static/jsonview/jquery.jsonview.js') :>"></script>
     <script src="<: uri_for('/static/js/metakgs.js') :>"></script>
     <script src="<: uri_for('/static/js/metakgs/explorer.js') :>"></script>
@@ -35,14 +32,14 @@
     <h3>Examples</h3>
 
     <ul>
-      <li><a class="js-request-link" href="/api/archives/anazawa">/api/archives/anazawa</a></li>
-      <li><a class="js-request-link" href="/api/archives/anazawa/2014/8">/api/archives/anazawa/2014/8</a></li>
-      <li><a class="js-request-link" href="/api/top100">/api/top100</a></li>
-      <li><a class="js-request-link" href="/api/tournaments">/api/tournaments</a></li>
-      <li><a class="js-request-link" href="/api/tournaments/2012">/api/tournaments/2012</a></li>
-      <li><a class="js-request-link" href="/api/tournament/762">/api/tournament/762</a></li>
-      <li><a class="js-request-link" href="/api/tournament/762/entrants">/api/tournament/762/entrants</a></li>
-      <li><a class="js-request-link" href="/api/tournament/762/round/2">/api/tournament/762/round/2</a></li>
+      <li><a class="js-request-link" href="/api/archives/anazawa">GET /api/archives/anazawa</a></li>
+      <li><a class="js-request-link" href="/api/archives/anazawa/2014/8">GET /api/archives/anazawa/2014/8</a></li>
+      <li><a class="js-request-link" href="/api/top100">GET /api/top100</a></li>
+      <li><a class="js-request-link" href="/api/tournaments">GET /api/tournaments</a></li>
+      <li><a class="js-request-link" href="/api/tournaments/2012">GET /api/tournaments/2012</a></li>
+      <li><a class="js-request-link" href="/api/tournament/762">GET /api/tournament/762</a></li>
+      <li><a class="js-request-link" href="/api/tournament/762/entrants">GET /api/tournament/762/entrants</a></li>
+      <li><a class="js-request-link" href="/api/tournament/762/round/2">GET /api/tournament/762/round/2</a></li>
     </ul>
 
     <h2 id="response">Response</h2>

@@ -2,10 +2,9 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <link rel="stylesheet" href="<: uri_for('/static/css/index.css') :>" />
+    <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Open+Sans">
+    <link rel="stylesheet" href="<: uri_for('/static/css/metakgs.css') :>" />
     <title>MetaKGS - Unofficial JSON API for KGS Go Server</title>
-    <script src="<: uri_for('/static/js/highlight.pack.js') :>"></script>
-    <script>hljs.initHighlightingOnLoad();</script>
   </head>
   <body>
 
@@ -70,48 +69,97 @@
 
     <h5>200 OK</h5>
 
-    <pre>
-Access-Control-Allow-Origin: *
+<pre>Access-Control-Allow-Origin: *
 Content-Type: application/json; charset=utf-8
 Expires: Tue, 12 Aug 2014 12:34:56 GMT
 Last-Modified: Mon, 11 Aug 2014 12:34:56 GMT
 
-<code class="json">{
-    "message": "OK",
-    "request_url": "http://www.gokgs.com/gameArchives.jsp?user=foo&amp;year=2014&amp;month=8&amp;oldAccounts=y",
-    "requested_at": "2014-08-11T12:34:56Z",
-    "responded_at": "2014-08-11T12:34:56Z",
+{
+    "message": <span class="json-string">"OK"</span>,
+    "request_url": <span class="json-string">"http://www.gokgs.com/gameArchives.jsp?user=foo&amp;year=2014&amp;month=8&amp;oldAccounts=y"</span>,
+    "requested_at": <span class="json-string">"2014-08-11T12:34:56Z"</span>,
+    "responded_at": <span class="json-string">"2014-08-11T12:34:56Z"</span>,
+    "link": {
+        "first": <span class="json-string">"http://metakgs.org/api/archives/foo/2013/6"</span>,
+        "prev": <span class="json-string">"http://metakgs.org/api/archives/foo/2014/7"</span>,
+        "next": <span class="json-string">"http://metakgs.org/api/archives/foo/2014/9"</span>,
+        "last": <span class="json-string">"http://metakgs.org/api/archives/foo"</span>
+    },
     "content": {
         "games": [
             {
-                "sgf_url": "http://files.gokgs.com/games/2014/8/10/foo-bar.sgf",
+                "sgf_url": <span class="json-string">"http://files.gokgs.com/games/2014/8/10/foo-bar.sgf"</span>,
+                "owner": <span class="json-literal">null</span>,
                 "white": [
                     {
-                        "name": "foo",
-                        "rank": "3d",
-                        "archives_url": "http://metakgs.org/api/archives/foo"
+                        "name": <span class="json-string">"foo"</span>,
+                        "rank": <span class="json-string">"3d"</span>,
+                        "archives_url": <span class="json-string">"http://metakgs.org/api/archives/foo"</span>
                     }
                 ],
                 "black": [
                     {
-                        "name": "bar",
-                        "rank": "1d",
-                        "archives_url": "http://metakgs.org/api/archives/bar"
+                        "name": <span class="json-string">"bar"</span>,
+                        "rank": <span class="json-string">"1d"</span>,
+                        "archives_url": <span class="json-string">"http://metakgs.org/api/archives/bar"</span>
                     }
                 ],
-                "board_size": 19,
-                "handicap": 2,
-                "started_at": "2014-08-10T12:34Z",
-                "type": "Ranked",
-                "result": "B+Resign"
+                "board_size": <span class="json-number">19</span>,
+                "handicap": <span class="json-number">2</span>,
+                "started_at": <span class="json-string">"2014-08-10T12:34Z"</span>,
+                "type": <span class="json-string">"Ranked"</span>,
+                "result": <span class="json-string">"B+Resign"</span>
             },
             ...
         ],
-        "zip_url": "http://www.gokgs.com/servlet/archives/en_US/foo-2014-8.zip",
-        "tgz_url": "http://www.gokgs.com/servlet/archives/en_US/foo-2014-8.tar.gz"
+        "zip_url": <span class="json-string">"http://www.gokgs.com/servlet/archives/en_US/foo-2014-8.zip"</span>,
+        "tgz_url": <span class="json-string">"http://www.gokgs.com/servlet/archives/en_US/foo-2014-8.tar.gz"</span>
     }
-}</code>
-    </pre>
+}</pre>
+
+    <p>Notes:</p>
+
+    <ul>
+      <li>
+        If the game is private,
+        <code>sgf_url</code> is set to <code>null</code>.
+      </li>
+      <li>
+        Game <code>type</code> is set to one of
+        <code>"Demonstration"</code>,
+        <code>"Free"</code>,
+        <code>"Ranked"</code>,
+        <code>"Rengo"</code>,
+        <code>"Rengo Review"</code>,
+        <code>"Review"</code>,
+        <code>"Simul"</code>,
+        <code>"Teaching"</code> or
+        <code>"Tournament"</code>.
+        See <a href="http://www.gokgs.com/help/gametypes.html">KGS Help Files
+          / Game Types</a> for details.
+      </li>
+      <li>
+        Game <code>result</code> is set to <code>"Unfinished"</code>
+        or in the <a href="http://www.red-bean.com/sgf/">SGF</a>-compatible
+        format such as <code>"B+Resign"</code>.
+      </li>
+      <li>
+        Player's <code>rank</code> is set to one of
+        <code>"1p"-"9p"</code>,
+        <code>"1d"-"9d"</code>,
+        <code>"1d?"-"9d?"</code>,
+        <code>"1k"-"30k"</code>,
+        <code>"1k?"-"30k?"</code>,
+        <code>"-"</code> or
+        <code>null</code>,
+        where <code>null</code> represents guest account's rank.
+        See <a href="http://www.gokgs.com/help/rank.html">KGS Help Files /
+        Rating System</a> for details.
+      </li>
+      <li>
+        <code>started_at</code> represents when the game started.
+      </li>
+    </ul>
 
     <h5>202 Accepted</h5>
 
@@ -119,16 +167,14 @@ Last-Modified: Mon, 11 Aug 2014 12:34:56 GMT
     then <code>202</code> is returned since the MetaKGS server can not parse
     such a large HTML document immediately.</p>
 
-<pre>
-Retry-After: Tue, 12 Aug 2014 12:34:56 GMT
+<pre>Retry-After: Tue, 12 Aug 2014 12:34:56 GMT
 
-<code class="json">{
-    "message": "Accepted",
-    "queued": false,
-    "working": true,
-    "retry_after": "2014-08-12T12:34:56Z"
-}</code>
-</pre>
+{
+    "message": <span class="json-string">"Accepted"</span>,
+    "queued": <span class="json-literal">false</span>,
+    "working": <span class="json-literal">true</span>,
+    "retry_after": <span class="json-string">"2014-08-12T12:34:56Z"</span>
+}</pre>
 
     <h4 id="get-api-top100">GET /api/top100</h4>
 
@@ -136,42 +182,40 @@ Retry-After: Tue, 12 Aug 2014 12:34:56 GMT
 
     <h5>200 OK</h5>
 
-    <pre>
-Access-Control-Allow-Origin: *
+<pre>Access-Control-Allow-Origin: *
 Content-Type: application/json; charset=utf-8
 Expires: Tue, 12 Aug 2014 12:34:56 GMT
 Last-Modified: Mon, 11 Aug 2014 12:34:56 GMT
 
-<code class="json">{
-    "message": "OK",
-    "request_url": "http://www.gokgs.com/top100.jsp",
-    "requested_at": "2014-08-11T12:34:56Z",
-    "responded_at": "2014-08-11T12:34:56Z",
+{
+    "message": <span class="json-string">"OK"</span>,
+    "request_url": <span class="json-string">"http://www.gokgs.com/top100.jsp"</span>,
+    "requested_at": <span class="json-string">"2014-08-11T12:34:56Z"</span>,
+    "responded_at": <span class="json-string">"2014-08-11T12:34:56Z"</span>,
     "content": {
         "players": [
             {
-                "position": 1,
-                "name": "foo",
-                "rank": "9d",
-                "archives_url": "http://metakgs.org/api/archives/foo"
+                "position": <span class="json-number">1</span>,
+                "name": <span class="json-string">"foo"</span>,
+                "rank": <span class="json-string">"9d"</span>,
+                "archives_url": <span class="json-string">"http://metakgs.org/api/archives/foo"</span>
             },
             {
-                "position": 2,
-                "name": "bar",
-                "rank": "9d",
-                "archives_url": "http://metakgs.org/api/archives/bar"
+                "position": <span class="json-number">2</span>,
+                "name": <span class="json-string">"bar"</span>,
+                "rank": <span class="json-string">"9d"</span>,
+                "archives_url": <span class="json-string">"http://metakgs.org/api/archives/bar"</span>
             },
             ...
             {
-                "position": 100,
-                "name": "baz",
-                "rank": "6d",
-                "archives_url": "http://metakgs.org/api/archives/baz"
+                "position": <span class="json-number">100</span>,
+                "name": <span class="json-string">"baz"</span>,
+                "rank": <span class="json-string">"6d"</span>,
+                "archives_url": <span class="json-string">"http://metakgs.org/api/archives/baz"</span>
             }
         ]
     }
-}</code>
-    </pre>
+}</pre>
 
     <h4 id="get-api-tournaments">GET /api/tournaments</h4>
     <h4 id="get-api-tournaments-year">GET /api/tournaments/:year</h4>
@@ -186,35 +230,38 @@ Content-Type: application/json; charset=utf-8
 Expires: Tue, 12 Aug 2014 12:34:56 GMT
 Last-Modified: Mon, 11 Aug 2014 12:34:56 GMT
 
-<code class="json">{
-    "message": "OK",
-    "request_url": "http://www.gokgs.com/tournList.jsp?year=2012",
-    "requested_at": "2014-08-11T12:34:56Z",
-    "responded_at": "2014-08-11T12:34:56Z",
+{
+    "message": <span class="json-string">"OK"</span>,
+    "request_url": <span class="json-string">"http://www.gokgs.com/tournList.jsp?year=2012"</span>,
+    "requested_at": <span class="json-string">"2014-08-11T12:34:56Z"</span>,
+    "responded_at": <span class="json-string">"2014-08-11T12:34:56Z"</span>,
+    "link": {
+        "first": <span class="json-string">"http://metakgs.org/api/tournaments/2001"</span>,
+        "prev": <span class="json-string">"http://metakgs.org/api/tournaments/2011"</span>,
+        "next": <span class="json-string">"http://metakgs.org/api/tournaments/2013"</span>,
+        "last": <span class="json-string">"http://metakgs.org/api/tournaments"</span>
+    },
     "content": {
         "tournaments": [
             {
-                "id": 762,
-                "name": "KGS Meijin Qualifier October 2012", 
-                "url": "http://metakgs.org/api/tournament/762"
+                "id": <span class="json-number">762</span>,
+                "name": <span class="json-string">"KGS Meijin Qualifier October 2012"</span>, 
+                "notes": <span class="json-string">"Winner: foo"</span>,
+                "url": <span class="json-string">"http://metakgs.org/api/tournament/762"</span>
             },
             ...
         ]
     }
-}</code>
-    </pre>
+}</pre>
 
     <h5>404 Not Found</h5>
 
-<pre>
-<code class="json">{
-    "message": "Not Found",
-    "request_url": "http://www.gokgs.com/tournList.jsp?year=1999",
-    "requested_at": "2014-08-11T12:34:56Z",
-    "responded_at": "2014-08-11T12:34:56Z",
-    "content": null
-}</code>
-</pre>
+<pre>{
+    "message": <span class="json-string">"Not Found"</span>,
+    "request_url": <span class="json-string">"http://www.gokgs.com/tournList.jsp?year=1999"</span>,
+    "requested_at": <span class="json-string">"2014-08-11T12:34:56Z"</span>,
+    "responded_at": <span class="json-string">"2014-08-11T12:34:56Z"</span>
+}</pre>
 
     <h5>502 Bad Gateway</h5>
 
@@ -224,49 +271,58 @@ Last-Modified: Mon, 11 Aug 2014 12:34:56 GMT
 
     <h5>200 OK</h5>
 
-    <pre>
-Access-Control-Allow-Origin: *
+<pre>Access-Control-Allow-Origin: *
 Content-Type: application/json; charset=utf-8
 Expires: Tue, 12 Aug 2014 12:34:56 GMT
 Last-Modified: Mon, 11 Aug 2014 12:34:56 GMT
 
-<code class="json">{
-    "message": "OK",
-    "request_url": "http://www.gokgs.com/tournInfo.jsp?id=762",
-    "requested_at": "2014-08-11T12:34:56Z",
-    "responded_at": "2014-08-11T12:34:56Z",
+{
+    "message": <span class="json-string">"OK"</span>,
+    "request_url": <span class="json-string">"http://www.gokgs.com/tournInfo.jsp?id=762"</span>,
+    "requested_at": <span class="json-string">"2014-08-11T12:34:56Z"</span>,
+    "responded_at": <span class="json-string">"2014-08-11T12:34:56Z"</span>,
     "content": {
-        "id": 762,
-        "name": "KGS Meijin Qualifier October 2012", 
-        "description": "Welcome to the KGS Meijin October Qualifier! ...",
-        "entrants_url": "http://metakgs.org/api/tournament/762/entrants",
+        "id": <span class="json-number">762</span>,
+        "name": <span class="json-string">"KGS Meijin Qualifier October 2012"</span>, 
+        "description": <span class="json-string">"Welcome to the KGS Meijin October Qualifier! ..."</span>,
+        "entrants_url": <span class="json-string">"http://metakgs.org/api/tournament/762/entrants"</span>,
         "rounds": [
             {
-                "round": 1,
-                "start_at": "2012-10-27T16:05Z",
-                "end_at": "2012-10-27T18:35Z",
-                "url": "http://metakgs.org/api/tournament/762/round/1"
+                "round": <span class="json-number">1</span>,
+                "start_at": <span class="json-string">"2012-10-27T16:05Z"</span>,
+                "end_at": <span class="json-string">"2012-10-27T18:35Z"</span>,
+                "url": <span class="json-string">"http://metakgs.org/api/tournament/762/round/1"</span>
             },
             ...
         ]
     }
-}</code>
-    </pre>
+}</pre>
 
-    <p><code>"description"</code> is
-    <a href="http://daringfireball.net/projects/markdown/">Markdown</a>-formatted.</p>
+    <p>Notes:</p>
+
+    <ul>
+      <li>
+        Tournament <code>description</code> is
+        <a href="http://daringfireball.net/projects/markdown/">Markdown</a>-formatted.
+      </li>
+      <li>
+        <code>start_at</code> or <code>end_at</code> represents when the game
+        <strong>will</strong> start or end.
+      </li>
+      <li>
+        If the round has not started yet, <code>end_at</code> and <code>url</code>
+        are set to <code>null</code>.
+      </li>
+    </ul>
 
     <h5>404 Not Found</h5>
 
-<pre>
-<code class="json">{
-    "message": "Not Found",
-    "request_url": "http://www.gokgs.com/tournInfo.jsp?id=12345",
-    "requested_at": "2014-08-11T12:34:56Z",
-    "responded_at": "2014-08-11T12:34:56Z",
-    "content": null
-}</code>
-</pre>
+<pre>{
+    "message": <span class="json-string">"Not Found"</span>,
+    "request_url": <span class="json-string">"http://www.gokgs.com/tournInfo.jsp?id=12345"</span>,
+    "requested_at": <span class="json-string">"2014-08-11T12:34:56Z"</span>,
+    "responded_at": <span class="json-string">"2014-08-11T12:34:56Z"</span>
+}</pre>
 
     <h4 id="get-api-tournament-id-entrants">GET /api/tournament/:id/entrants</h4>
 
@@ -275,58 +331,81 @@ Last-Modified: Mon, 11 Aug 2014 12:34:56 GMT
 
     <h5>200 OK</h5>
 
-    <pre>
-Access-Control-Allow-Origin: *
+<pre>Access-Control-Allow-Origin: *
 Content-Type: application/json; charset=utf-8
 Expires: Tue, 12 Aug 2014 12:34:56 GMT
 Last-Modified: Mon, 11 Aug 2014 12:34:56 GMT
 
-<code class="json">{
-    "message": "OK",
-    "request_url": "http://www.gokgs.com/tournEntrants.jsp?id=762&amp;sort=s",
-    "requested_at": "2014-08-11T12:34:56Z",
-    "responded_at": "2014-08-11T12:34:56Z",
+{
+    "message": <span class="json-string">"OK"</span>,
+    "request_url": <span class="json-string">"http://www.gokgs.com/tournEntrants.jsp?id=762&amp;sort=s"</span>,
+    "requested_at": <span class="json-string">"2014-08-11T12:34:56Z"</span>,
+    "responded_at": <span class="json-string">"2014-08-11T12:34:56Z"</span>,
     "content": {
-        "id": 762,
-        "name": "KGS Meijin Qualifier October 2012", 
+        "id": <span class="json-number">762</span>,
+        "name": <span class="json-string">"KGS Meijin Qualifier October 2012"</span>, 
         "entrants": [
             {
-                "position": null,
-                "name": "foo",
-                "rank": "5d",
-                "score": null,
-                "sos": null,
-                "sodos": null,
-                "notes": "Winner",
-                "archives_url": "http://metakgs.org/api/archives/foo"
+                "position": <span class="json-literal">null</span>,
+                "name": <span class="json-string">"foo"</span>,
+                "rank": <span class="json-string">"5d"</span>,
+                "score": <span class="json-literal">null</span>,
+                "sos": <span class="json-literal">null</span>,
+                "sodos": <span class="json-literal">null</span>,
+                "notes": <span class="json-string">"Winner"</span>,
+                "archives_url": <span class="json-string">"http://metakgs.org/api/archives/foo"</span>
             },
             ...
         ],
-        "entrants_url": "http://metakgs.org/api/tournament/762/entrants",
+        "entrants_url": <span class="json-string">"http://metakgs.org/api/tournament/762/entrants"</span>,
         "rounds": [
             {
-                "round": 1,
-                "start_at": "2012-10-27T16:05Z",
-                "end_at": "2012-10-27T18:35Z",
-                "url": "http://metakgs.org/api/tournament/762/round/1"
+                "round": <span class="json-number">1</span>,
+                "start_at": <span class="json-string">"2012-10-27T16:05Z"</span>,
+                "end_at": <span class="json-string">"2012-10-27T18:35Z"</span>,
+                "url": <span class="json-string">"http://metakgs.org/api/tournament/762/round/1"</span>
             },
             ...
         ]
     }
-}</code>
-    </pre>
+}</pre>
+
+    <p>Notes:</p>
+
+    <ul>
+      <li>
+        <code>sos</code> stands for Sum of Opponents' Scores.
+        See <a href="http://senseis.xmp.net/?SOS">Sensei's Library / SOS</a> for details.
+      </li>
+      <li>
+        <code>sodos</code> stands for Sum of Defeated Opponents' Scores.
+        See <a href="http://senseis.xmp.net/?SODOS">Sensei's Library / SODOS</a> for details.
+      </li>
+      <li>
+        In single-elimination or double-elimination tournaments,
+        <code>position</code>, <code>score</code>, <code>sos</code>
+        and <code>sodos</code> are set to <code>null</code>.
+        In round-robin tournaments,
+        <code>sos</code> and <code>sodos</code> are set to <code>null</code>.
+      </li>
+      <li>
+        <code>start_at</code> or <code>end_at</code> represents when the game
+        <strong>will</strong> start or end.
+      </li>
+      <li>
+        If the round has not started yet, <code>end_at</code> and <code>url</code>
+        are set to <code>null</code>.
+      </li>
+    </ul>
 
     <h5>404 Not Found</h5>
 
-<pre>
-<code class="json">{
-    "message": "Not Found",
-    "request_url": "http://www.gokgs.com/tournEntrants.jsp?id=12345&amp;sort=s",
-    "requested_at": "2014-08-11T12:34:56Z",
-    "responded_at": "2014-08-11T12:34:56Z",
-    "content": null
-}</code>
-</pre>
+<pre>{
+    "message": <span class="json-string">"Not Found"</span>,
+    "request_url": <span class="json-string">"http://www.gokgs.com/tournEntrants.jsp?id=12345&amp;sort=s"</span>,
+    "requested_at": <span class="json-string">"2014-08-11T12:34:56Z"</span>,
+    "responded_at": <span class="json-string">"2014-08-11T12:34:56Z"</span>
+}</pre>
 
     <h4 id="get-api-tournament-id-round-round">GET /api/tournament/:id/round/:round</h4>
 
@@ -334,74 +413,83 @@ Last-Modified: Mon, 11 Aug 2014 12:34:56 GMT
 
     <h5>200 OK</h5>
 
-    <pre>
-Access-Control-Allow-Origin: *
+<pre>Access-Control-Allow-Origin: *
 Content-Type: application/json; charset=utf-8
 Expires: Tue, 12 Aug 2014 12:34:56 GMT
 Last-Modified: Mon, 11 Aug 2014 12:34:56 GMT
 
-<code class="json">{
-    "message": "OK",
-    "request_url": "http://www.gokgs.com/tournGames.jsp?id=762&amp;round=1",
-    "requested_at": "2014-08-11T12:34:56Z",
-    "responded_at": "2014-08-11T12:34:56Z",
+{
+    "message": <span class="json-string">"OK"</span>,
+    "request_url": <span class="json-string">"http://www.gokgs.com/tournGames.jsp?id=762&amp;round=1"</span>,
+    "requested_at": <span class="json-string">"2014-08-11T12:34:56Z"</span>,
+    "responded_at": <span class="json-string">"2014-08-11T12:34:56Z"</span>,
     "content": {
-        "id": 762,
-        "round": 1,
-        "name": "KGS Meijin Qualifier October 2012", 
+        "id": <span class="json-number">762</span>,
+        "round": <span class="json-number">1</span>,
+        "name": <span class="json-string">"KGS Meijin Qualifier October 2012"</span>, 
         "games": [
             {
-                "sgf_url": "http://files.gokgs.com/games/2012/10/27/foo-bar.sgf",
+                "sgf_url": <span class="json-string">"http://files.gokgs.com/games/2012/10/27/foo-bar.sgf"</span>,
                 "white": {
-                    "name": "foo",
-                    "rank": "3d",
-                    "archives_url": "http://metakgs.org/api/archives/foo"
+                    "name": <span class="json-string">"foo"</span>,
+                    "rank": <span class="json-string">"3d"</span>,
+                    "archives_url": <span class="json-string">"http://metakgs.org/api/archives/foo"</span>
                 },
                 "black": {
-                    "name": "bar",
-                    "rank": "1d",
-                    "archives_url": "http://metakgs.org/api/archives/bar"
+                    "name": <span class="json-string">"bar"</span>,
+                    "rank": <span class="json-string">"1d"</span>,
+                    "archives_url": <span class="json-string">"http://metakgs.org/api/archives/bar"</span>
                 },
-                "board_size": 19,
-                "start_at": "2012-10-17T16:05Z",
-                "result": "W+Resign"
+                "board_size": <span class="json-number">19</span>,
+                "start_at": <span class="json-string">"2012-10-17T16:05Z"</span>,
+                "result": <span class="json-string">"W+Resign"</span>
             },
             ...
         ],
         "byes": [
             {
-                "name": "baz",
-                "rank": "2d",
-                "type": "System",
-                "archives_url": "http://metakgs.org/api/archives/baz"
+                "name": <span class="json-string">"baz"</span>,
+                "rank": <span class="json-string">"2d"</span>,
+                "type": <span class="json-string">"System"</span>,
+                "archives_url": <span class="json-string">"http://metakgs.org/api/archives/baz"</span>
             },
             ...
         ],
-        "entrants_url": "http://metakgs.org/api/tournament/762/entrants",
+        "entrants_url": <span class="json-string">"http://metakgs.org/api/tournament/762/entrants"</span>,
         "rounds": [
             {
-                "round": 1,
-                "start_at": "2012-10-27T16:05Z",
-                "end_at": "2012-10-27T18:35Z",
-                "url": "http://metakgs.org/api/tournament/762/round/1"
+                "round": <span class="json-number">1</span>,
+                "start_at": <span class="json-string">"2012-10-27T16:05Z"</span>,
+                "end_at": <span class="json-string">"2012-10-27T18:35Z"</span>,
+                "url": <span class="json-string">"http://metakgs.org/api/tournament/762/round/1"</span>
             },
             ...
         ]
     }
-}</code>
-    </pre>
+}</pre>
+
+    <p>Notes:</p>
+
+    <ul>
+      <li>
+        Bye <code>type</code> is set to one of <code>"System"</code>,
+        <code>"No show"</code> or <code>"Requested"</code>.
+        See <a href="http://www.gokgs.com/help/faq/tournament.html">KGS Help Files / Tournament FAQ</a> for details.
+      </li>
+      <li>
+        <code>start_at</code> or <code>end_at</code> represents when the game
+        <strong>will</strong> start or end.
+      </li>
+    </ul>
 
     <h5>404 Not Found</h5>
 
-<pre>
-<code class="json">{
-    "message": "Not Found",
-    "request_url": "http://www.gokgs.com/tournGames.jsp?id=12345&amp;round=1",
-    "requested_at": "2014-08-11T12:34:56Z",
-    "responded_at": "2014-08-11T12:34:56Z",
-    "content": null
-}</code>
-</pre>
+<pre>{
+    "message": <span class="json-string">"Not Found"</span>,
+    "request_url": <span class="json-string">"http://www.gokgs.com/tournGames.jsp?id=12345&amp;round=1"</span>,
+    "requested_at": <span class="json-string">"2014-08-11T12:34:56Z"</span>,
+    "responded_at": <span class="json-string">"2014-08-11T12:34:56Z"</span>
+}</pre>
 
     <h2 id="see-also">See Also</h2>
 

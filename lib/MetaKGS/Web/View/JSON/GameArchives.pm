@@ -2,6 +2,7 @@ package MetaKGS::Web::View::JSON::GameArchives;
 use strict;
 use warnings;
 use parent qw/MetaKGS::Web::View::JSON/;
+use Time::Piece qw/gmtime/;
 
 sub show {
     my ( $class, $resource ) = @_;
@@ -31,11 +32,12 @@ sub show {
     }
 
     my %body = (
-        content      => \%content,
+        message      => 'OK',
         request_url  => $resource->{request_uri}->as_string,
         requested_at => $resource->{request_date}->datetime . 'Z',
         responded_at => $resource->{response_date}->datetime . 'Z',
-        message      => 'OK',
+        content      => \%content,
+        link         => $class->_link( $resource ),
     );
 
     \%body;
@@ -51,6 +53,46 @@ sub _user {
     );
 
     \%user;
+}
+
+sub _link {
+    my ( $class, $resource ) = @_;
+    my $calendar = $resource->{content}->{calendar};
+    my %query = $resource->{request_uri}->query_form;
+    my $now = gmtime;
+ 
+    my %months = (
+        first => $calendar->[0],
+    );
+
+    my $found = 0;
+    for my $month ( @$calendar ) {
+        next if !$found and $month->{year} != $query{year};
+        next if !$found and $month->{month} != $query{month};
+        next if !$found++;
+        $months{next} = $month;
+        last;
+    }
+    continue {
+        $months{prev} = $month unless $found;
+    }
+
+    my %link = (
+        first => undef,
+        prev  => undef,
+        next  => undef,
+        last  => $class->uri_for( "/api/archives/$query{user}" ),
+    );
+
+    while ( my ($rel, $q) = each %months ) {
+        $link{$rel} = $class->uri_for(
+            $q->{year} == $now->year && $q->{month} == $now->mon
+                ? "/api/archives/$query{user}"
+                : "/api/archives/$query{user}/$q->{year}/$q->{month}"
+        );
+    }
+
+    \%link;
 }
 
 1;

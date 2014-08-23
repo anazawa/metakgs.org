@@ -9,7 +9,7 @@ use HTTP::Status qw/:constants/;
 use Log::Minimal qw/warnf/;
 use MetaKGS::HTTP::Request;
 use MetaKGS::Model::Resources;
-use MetaKGS::Teng::Constants qw/DESC NOT_APPLICABLE/;
+use MetaKGS::Teng::Constants qw/DESC NOT_APPLICABLE UNKNOWN/;
 use Time::Piece qw/gmtime/;
 
 sub scraper_class {
@@ -70,6 +70,9 @@ sub do_show {
 
     # set cache expiration time
     #$response->headers->expires( $class->expires($resource)->epoch );
+
+    $response->header( 'Access-Control-Allow-Origin' => '*' );
+    $response->header( 'Access-Control-Allow-Methods' => 'GET' );
 
     $response;
 }
@@ -181,6 +184,8 @@ sub accepted {
 
     $response->status( HTTP_ACCEPTED );
     $response->headers->retry_after( $job->{grabbed_until} ) if $is_grabbed;
+    $response->header( 'Access-Control-Allow-Origin' => '*' );
+    $response->header( 'Access-Control-Allow-Methods' => 'GET' );
 
     $response;
 }
@@ -191,6 +196,8 @@ sub internal_server_error {
     my $response = $c->render_json( $body );
 
     $response->status( HTTP_INTERNAL_SERVER_ERROR );
+    $response->header( 'Access-Control-Allow-Origin' => '*' );
+    $response->header( 'Access-Control-Allow-Methods' => 'GET' );
 
     $response;
 }
@@ -201,6 +208,8 @@ sub gateway_timeout {
     my $response = $c->render_json( $body );
 
     $response->status( HTTP_GATEWAY_TIMEOUT );
+    $response->header( 'Access-Control-Allow-Origin' => '*' );
+    $response->header( 'Access-Control-Allow-Methods' => 'GET' );
 
     $response;
 }
@@ -211,6 +220,8 @@ sub bad_gateway {
     my $response = $c->render_json( $body );
 
     $response->status( HTTP_BAD_GATEWAY );
+    $response->header( 'Access-Control-Allow-Origin' => '*' );
+    $response->header( 'Access-Control-Allow-Methods' => 'GET' );
 
     $response;
 }
@@ -221,6 +232,8 @@ sub not_found {
     my $response = $c->render_json( $body );
 
     $response->status( HTTP_NOT_FOUND );
+    $response->header( 'Access-Control-Allow-Origin' => '*' );
+    $response->header( 'Access-Control-Allow-Methods' => 'GET' );
 
     $response;
 }

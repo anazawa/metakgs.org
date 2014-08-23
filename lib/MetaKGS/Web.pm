@@ -9,6 +9,7 @@ use MetaKGS::Web::View::Xslate;
 use TheSchwartz::Simple;
 use TheSchwartz::Simple::Job;
 use Try::Tiny;
+use URI::Escape qw//;
 
 __PACKAGE__->load_plugins(
     'Web::JSON',
@@ -34,6 +35,33 @@ __PACKAGE__->add_trigger(
 sub create_view {
     MetaKGS::Web::View::Xslate->instance;
 }
+
+sub create_response {
+    my ( $self, @args ) = @_;
+    MetaKGS::Web::Response->new( @args );
+}
+
+sub absolute_uri_for {
+    my ( $self, $path, $query ) = @_;
+    my $encoding = $self->encoding;
+    my $request = $self->request;
+
+    $path =~ s{^/}{};
+
+    my @query;
+    for my $key ( keys %$query ) {
+        my $value = $encoding->encode( $query->{$key} );
+           $value = URI::Escape::uri_escape( $value );
+
+        push @query, "$key=$value";
+    }
+
+    my $base_uri = $request->base->as_string;
+       $base_uri =~ s{([^/])$}{$1/};
+
+    $base_uri . $path . ( @query ? '?' . join '&', @query : q{} );
+}
+
 
 sub the_schwartz {
     my $self = shift;

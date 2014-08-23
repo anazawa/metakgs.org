@@ -42,9 +42,9 @@ sub show {
 
 sub do_show {
     my ( $class, $c, $resource ) = @_;
+    my $response = $class->SUPER::do_show( $c, $resource );
 
-
-    $class->SUPER::do_show( $c, $resource );
+    $response;
 }
 
 sub expires {

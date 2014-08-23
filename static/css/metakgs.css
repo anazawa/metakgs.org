@@ -37,8 +37,10 @@ dl dd {
   margin-left: 0;
 }
 
-p code {
+code {
   color: #c7254e;
+  font-family: Menlo, Monaco, Consolas, "Courier New", monospace;
+  font-size: 0.8em;
 }
 
 .text-success { color: #3c763d }
@@ -60,7 +62,10 @@ pre {
   margin-left: 4em;
   line-height: 1.4;
   font-family: Menlo, Monaco, Consolas, "Courier New", monospace;
-  font-size: 0.9em;
+  font-size: 0.8em;
+}
+
+pre code {
 }
 
 .response {
@@ -136,6 +141,10 @@ form input[type="text"] {
   font-size: 0.8em;
   line-height: 1.4;
 }
+
+.json-string { color: #008000 }
+.json-number { color: #00f }
+.json-literal { color: #f00 }
 
 /* highlight.js */
 

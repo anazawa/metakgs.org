@@ -33,10 +33,10 @@ sub accepted {
     my $retry_after = $is_grabbed && gmtime $job->{grabbed_until};
 
     my %body = (
-        message     => 'Accepted',
-        retry_after => $is_grabbed ? $retry_after->datetime . 'Z' : undef,
-        working     => $is_grabbed ? JSON::true : JSON::false,
-        queued      => $is_grabbed ? JSON::false : JSON::true,
+        message      => 'Accepted',
+        retry_after  => $is_grabbed ? $retry_after->datetime . 'Z' : undef,
+        working      => $is_grabbed ? JSON::true : JSON::false,
+        queued       => $is_grabbed ? JSON::false : JSON::true,
     );
 
     \%body;

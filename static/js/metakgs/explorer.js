@@ -77,7 +77,7 @@ if ( typeof jQuery === "undefined" ) { throw "jQuery is required"; }
       + ")$"
   );
 
-  MetaKGS.Explorer.Prototype.isAllowed = function(url) {
+  MetaKGS.Explorer.Prototype.canGet = function(url) {
     var baseURL = MetaKGS.Explorer.Util.escapeRegExp( this.baseURL );
     var path = this.buildURL( url ).replace( new RegExp("^"+baseURL), "" );
     return this.validPaths.test( path );
@@ -85,6 +85,77 @@ if ( typeof jQuery === "undefined" ) { throw "jQuery is required"; }
 
   MetaKGS.Explorer.Prototype.eventNameFor = function(event) {
     return this.eventNamespace ? event + "." + this.eventNamespace : event;
+  };
+
+  MetaKGS.Explorer.Prototype.get = function(arg) {
+    var url = this.buildURL( arg );
+    var stopwatch = Object.create( MetaKGS.Explorer.Util.Stopwatch );
+
+    this.start();
+
+    if ( !arg ) {
+      this.fail( "Request URL is required" );
+      this.always();
+      return;
+    }
+    else if ( !this.canGet(url) ) {
+      this.fail( "Invalid request URL" );
+      this.always();
+      return;
+    }
+
+    $.ajax(url, {
+      context: this,
+      dataType: "json",
+      beforeSend: function(jqXHR, settings) {
+        this.send({
+          url: settings.url,
+          abort: function() { jqXHR.abort(); }
+        });
+
+        stopwatch.start();
+      }
+    }).
+    fail(function(jqXHR, textStatus, errorThrown) {
+      if ( jqXHR.status === 0 ) {
+        if ( textStatus && textStatus === "timeout" ) {
+          this.fail( "Request timed out" );
+        }
+        else if ( textStatus && textStatus === "abort" ) {
+          this.fail( "Request aborted" );
+        }
+        else {
+          this.fail( "Failed to GET " + url );
+        }
+      }
+      else {
+        this.done({
+          code: jqXHR.status,
+          message: jqXHR.statusText,
+          body: jqXHR.responseJSON,
+          headers: {
+            get: function(field) { return jqXHR.getResponseHeader(field); },
+            stringify: function() { return jqXHR.getAllResponseHeaders(); }
+          },
+          time: stopwatch.getElapsedTime()
+        });
+      }
+    }).
+    done(function(data, textStatus, jqXHR) {
+      this.done({
+        code: jqXHR.status,
+        message: jqXHR.statusText,
+        body: data,
+        headers: {
+          get: function(field) { return jqXHR.getResponseHeader(field); },
+          stringify: function() { return jqXHR.getAllResponseHeaders(); }
+        },
+        time: stopwatch.getElapsedTime()
+      });
+    }).
+    always(function() {
+      this.always();
+    });
   };
 
   MetaKGS.Explorer.Prototype.start = function() {
@@ -99,15 +170,15 @@ if ( typeof jQuery === "undefined" ) { throw "jQuery is required"; }
   };
 
   MetaKGS.Explorer.Prototype.send = function(request) { 
-    var that = this;
     var click = this.eventNameFor( CLICK );
 
-    this.$abortButton.
-      one(click, function(event) {
-        request.abort();
-        event.preventDefault(); }).
-      prop( DISABLED, false );
+    this.$abortButton.one(click, function(event) {
+      request.abort();
+      event.preventDefault();
+    });
 
+    this.$requestURL.val( request.url );
+    this.$abortButton.prop( DISABLED, false );
     this.$message.text( "Loading..." ).show();
   };
 
@@ -119,25 +190,24 @@ if ( typeof jQuery === "undefined" ) { throw "jQuery is required"; }
 
     this.$responseStatus.text( response.code + " " + response.message ).show();
     this.$responseHeaders.text( response.headers.stringify() );
-    this.$responseTime.text( response.time/1000 + " seconds" ).show();
-
-    this.$showHeaders.show();
-
-    if ( !response.body ) { return; }
-
     this.$responseBody.JSONView( response.body ).show();
+    this.$responseTime.text( response.time/1000 + " seconds" ).show();
+    this.$showHeaders.show();
 
     this.$responseBody.find("a").each(function() {
       var $this = $( this );
       var url = $this.attr( HREF );
 
-      if ( !that.isAllowed(url) ) { return; }
-
-      $this.on(click, function(event) {
-        that.$requestURL.val( $(this).attr(HREF) );
-        that.$requestButton.click();
-        event.preventDefault();
-      });
+      if ( that.canGet(url) ) {
+        $this.on(click, function(event) {
+          that.$requestURL.val( $(this).attr(HREF) );
+          that.$requestButton.click();
+          event.preventDefault();
+        });
+      }
+      else {
+        $this.attr( "target", "_blank" );
+      }
     });
   };
 
@@ -153,65 +223,6 @@ if ( typeof jQuery === "undefined" ) { throw "jQuery is required"; }
   };
   
   MetaKGS.Explorer.Prototype.updateLocationHash = function() {
-  };
-
-  MetaKGS.Explorer.Prototype.get = function(arg) {
-    var url = this.buildURL( arg );
-    var stopwatch = Object.create( MetaKGS.Explorer.Util.Stopwatch );
-
-    this.start();
-
-    if ( !arg ) {
-      this.fail( "Request URL is required" );
-      this.always();
-      return;
-    }
-    else if ( !this.isAllowed(url) ) {
-      this.fail( "Invalid request URL" );
-      this.always();
-      return;
-    }
-
-    $.ajax(url, {
-      context: this,
-      dataType: "json", // XXX
-      beforeSend: function(jqXHR, settings) {
-        this.send({ abort: function() { jqXHR.abort(); } });
-        stopwatch.start();
-      }
-    }).
-    fail(function(jqXHR, textStatus, errorThrown) {
-      if ( jqXHR.status === 0 ) { // XXX
-        this.fail( "GET " + url + " failed: " + textStatus );
-        return;
-      }
-
-      this.done({
-        code: jqXHR.status,
-        message: jqXHR.statusText,
-        body: jqXHR.responseJSON,
-        time: stopwatch.getElapsedTime(),
-        headers: {
-          get: function(field) { return jqXHR.getResponseHeader(field); },
-          stringify: function() { return jqXHR.getAllResponseHeaders(); }
-        }
-      });
-    }).
-    done(function(data, textStatus, jqXHR) {
-      this.done({
-        code: jqXHR.status,
-        message: jqXHR.statusText,
-        body: data, // XXX
-        time: stopwatch.getElapsedTime(),
-        headers: {
-          get: function(field) { return jqXHR.getResponseHeader(field); },
-          stringify: function() { return jqXHR.getAllResponseHeaders(); }
-        }
-      });
-    }).
-    always(function() {
-      this.always();
-    });
   };
 
   MetaKGS.Explorer.Prototype.registerEvents = function() {
@@ -299,6 +310,21 @@ if ( typeof jQuery === "undefined" ) { throw "jQuery is required"; }
   MetaKGS.Explorer.Util.escapeRegExp = function(string) {
     return string.replace( /([.*+?\^=!:${}()|\[\]\/\\])/g, "\\$1" );
   };
+
+  MetaKGS.Explorer.Util.escapeHTML = (function() {
+    var character = {
+      '<': '&lt;',
+      '>': '&gt;',
+      '&': '&amp;',
+      '"': '&quot;'
+    };
+
+    return function(html) {
+      return html.replace(/[<>&"]/g, function(c) {
+        return character[c];
+      });
+    };
+  }());
 
   //
   //  Activate MetaKGS Explorer

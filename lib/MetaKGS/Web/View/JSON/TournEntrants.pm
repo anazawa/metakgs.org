@@ -34,7 +34,7 @@ sub show {
 
         push @{$content{rounds}}, {
             round    => $round->{round} + 0,
-            url      => $url,
+            url      => $round->{uri} && $url,
             start_at => $round->{start_time} . 'Z',
             end_at   => $round->{end_time} && $round->{end_time} . 'Z',
         };
