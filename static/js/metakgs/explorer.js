@@ -45,14 +45,14 @@ if ( typeof jQuery === "undefined" ) { throw "jQuery is required"; }
   //
   //  The following requests are allowed:
   //
-  //  * GET /api/archives/:user
-  //  * GET /api/archives/:user/:year/:month
-  //  * GET /api/top100
-  //  * GET /api/tournaments
-  //  * GET /api/tournaments/:year
-  //  * GET /api/tournament/:id
-  //  * GET /api/tournament/:id/entrants
-  //  * GET /api/tournament/:id/round/:round
+  //    * GET /api/archives/:user
+  //    * GET /api/archives/:user/:year/:month
+  //    * GET /api/top100
+  //    * GET /api/tournaments
+  //    * GET /api/tournaments/:year
+  //    * GET /api/tournament/:id
+  //    * GET /api/tournament/:id/entrants
+  //    * GET /api/tournament/:id/round/:round
   //
 
   MetaKGS.Explorer.Prototype.baseURL = (function() {
@@ -77,7 +77,7 @@ if ( typeof jQuery === "undefined" ) { throw "jQuery is required"; }
       + ")$"
   );
 
-  MetaKGS.Explorer.Prototype.canGet = function(url) {
+  MetaKGS.Explorer.Prototype.isValidURL = function(url) {
     var baseURL = MetaKGS.Explorer.Util.escapeRegExp( this.baseURL );
     var path = this.buildURL( url ).replace( new RegExp("^"+baseURL), "" );
     return this.validPaths.test( path );
@@ -98,7 +98,7 @@ if ( typeof jQuery === "undefined" ) { throw "jQuery is required"; }
       this.always();
       return;
     }
-    else if ( !this.canGet(url) ) {
+    else if ( !this.isValidURL(url) ) {
       this.fail( "Invalid request URL" );
       this.always();
       return;
@@ -198,7 +198,7 @@ if ( typeof jQuery === "undefined" ) { throw "jQuery is required"; }
       var $this = $( this );
       var url = $this.attr( HREF );
 
-      if ( that.canGet(url) ) {
+      if ( that.isValidURL(url) ) {
         $this.on(click, function(event) {
           that.$requestURL.val( $(this).attr(HREF) );
           that.$requestButton.click();
@@ -219,12 +219,8 @@ if ( typeof jQuery === "undefined" ) { throw "jQuery is required"; }
     var click = this.eventNameFor( CLICK );
     this.$abortButton.off( click ).prop( DISABLED, true );
     this.$requestButton.prop( DISABLED, false );
-    this.updateLocationHash();
   };
   
-  MetaKGS.Explorer.Prototype.updateLocationHash = function() {
-  };
-
   MetaKGS.Explorer.Prototype.registerEvents = function() {
     var that = this;
     var click = this.eventNameFor( CLICK );
@@ -311,21 +307,6 @@ if ( typeof jQuery === "undefined" ) { throw "jQuery is required"; }
     return string.replace( /([.*+?\^=!:${}()|\[\]\/\\])/g, "\\$1" );
   };
 
-  MetaKGS.Explorer.Util.escapeHTML = (function() {
-    var character = {
-      '<': '&lt;',
-      '>': '&gt;',
-      '&': '&amp;',
-      '"': '&quot;'
-    };
-
-    return function(html) {
-      return html.replace(/[<>&"]/g, function(c) {
-        return character[c];
-      });
-    };
-  }());
-
   //
   //  Activate MetaKGS Explorer
   //
@@ -359,10 +340,6 @@ if ( typeof jQuery === "undefined" ) { throw "jQuery is required"; }
     //
 
     explorer.$message = $( "#js-message" );
-
-    explorer.updateLocationHash = function() {
-      window.location.hash = "response";
-    };
 
     explorer.registerEvents();
   });

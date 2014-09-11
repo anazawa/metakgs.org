@@ -5,7 +5,6 @@ use Carp qw/croak/;
 use MetaKGS;
 use MetaKGS::Teng::Cursor;
 use SQL::NamedPlaceholder qw/bind_named/;
-use String::CamelCase qw/decamelize/;
 
 sub import {
     my ( $class, $alias ) = @_;
@@ -18,11 +17,8 @@ sub import {
        $export = "$package\::$export";
 
     my $builder = sub {
-        my %args = @_ == 1 ? %{$_[0]} : @_;
-
         $class->new(
             teng => MetaKGS->context->teng,
-            %args,
         );
     };
 
@@ -34,27 +30,36 @@ sub import {
     return;
 }
 
+sub table_name {
+    croak 'call to abstract method ', __PACKAGE__, '::table_name';
+}
+
 sub new {
     my $class = shift;
     my %args = @_ == 1 ? %{$_[0]} : @_;
-    bless \%args, $class;
+    my $self = bless {}, $class;
+
+    for my $key (qw/teng/) {
+        $self->{$key} = $args{$key} if exists $args{$key};
+    }
+
+    $self->init( \%args );
+
+    $self;
+}
+
+sub init {
+    my ( $self, $args ) = @_;
+
+    for my $method (qw/where limit offset order_by/) {
+        $self->$method( $args->{$method} ) if exists $args->{$method};
+    }
+
+    return;
 }
 
 sub teng {
     $_[0]->{teng};
-}
-
-sub table_name {
-    my $self = shift;
-    $self->{table_name} ||= $self->_build_table_name;
-}
-
-sub _build_table_name {
-    my $self = shift;
-    my $name = ref $self;
-    $name =~ s/.+:://;
-    $name = decamelize $name;
-    $name;
 }
 
 sub where {
@@ -135,6 +140,7 @@ sub clone {
 sub do_select {
     my $self = shift;
     my %args = @_ == 1 ? %{$_[0]} : @_;
+    my $table_name = ref( $self )->table_name;
 
     my @columns;
     while ( my ($key, $value) = each %args ) {
@@ -148,7 +154,7 @@ sub do_select {
     );
 
     my ( $sql, @bind ) = $self->teng->sql_builder->select(
-        $self->table_name,
+        $table_name,
         @columns ? \@columns : [ '*' ],
         $self->where,
         \%options,
@@ -162,16 +168,18 @@ sub do_select {
 
 sub do_delete {
     my ( $self, @args ) = @_;
+    my $table_name = ref( $self )->table_name;
     $self = $self->clone->where( @args ) if @args;
-    $self->teng->delete( $self->table_name, $self->where );
+    $self->teng->delete( $table_name, $self->where );
 }
 
 sub do_update {
     my $self = shift;
     my %set = @_ == 1 ? %{$_[0]} : @_;
+    my $table_name = ref( $self )->table_name;
 
     my ( $sql, @bind ) = $self->teng->sql_builder->update(
-        $self->table_name,
+        $table_name,
         \%set,
         $self->where
     );
@@ -186,9 +194,10 @@ sub do_update {
 sub do_insert {
     my $self = shift;
     my %values = @_ == 1 ? %{$_[0]} : @_;
+    my $table_name = ref( $self )->table_name;
 
     my ( $sql, @bind ) = $self->teng->sql_builder->insert(
-        $self->table_name,
+        $table_name,
         \%values
     );
 

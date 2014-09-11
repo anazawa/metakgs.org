@@ -33,6 +33,8 @@ requires 'Log::Minimal';
 requires 'HTML::WikiConverter::Markdown';
 requires 'Text::Unidecode';
 
+requires 'DBIx::QueryLog';
+
 on configure => sub {
     requires 'Module::Build', '0.38';
     requires 'Module::CPANfile', '0.9010';

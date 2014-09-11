@@ -7,7 +7,8 @@ use MetaKGS::FormValidator;
 use MetaKGS::Teng::Constants qw/ASC/;
 use MetaKGS::Teng::Deflators qw/from_uri from_timepiece from_hash/;
 use MetaKGS::Teng::Inflators qw/to_uri to_timepiece to_hash to_string/;
-use Time::Piece qw/gmtime/;
+
+sub table_name { 'resources' }
 
 sub insert {
     my $self = shift;
@@ -65,47 +66,6 @@ sub update {
     $self->do_update( $set );
 }
 
-sub select {
-    my $self = shift;
-
-    my $cursor = $self->do_select(
-        request_id    => 'resources.request_id',
-        request_uri   => 'resources.request_uri',
-        request_date  => 'resources.request_date',
-        status_code   => 'resources.status_code',
-        response_date => 'resources.response_date',
-        content       => 'resources.content',
-    );
-
-    $cursor->add_inflator(
-        request_uri   => \&to_uri,
-        request_date  => \&to_timepiece,
-        status_code   => \&to_string,
-        response_date => \&to_timepiece,
-        content       => \&to_hash,
-    );
-
-    $cursor;
-}
-
-sub select_maximum_request_date {
-    my $self = shift;
-
-    my $row = do {
-        my $cursor = $self->do_select(
-            request_date => \'MAX(resources.request_date)',
-        );
-
-        $cursor->add_inflator(
-            request_date => \&to_timepiece,
-        );
-
-        $cursor->next;
-    };
-
-    $row && $row->{request_date};
-}
-
 sub request_id_eq {
     my ( $self, $id ) = @_;
     $self->where({ 'resources.request_id' => $id });
@@ -124,6 +84,47 @@ sub status_code_ne {
 sub order_by_request_date {
     my ( $self, $direction ) = @_;
     $self->order_by({ 'resources.request_date' => $direction || ASC });
+}
+
+sub select {
+    my $self = shift;
+
+    my $cursor = $self->do_select(
+        request_id    => 'resources.request_id',
+        request_uri   => 'resources.request_uri',
+        request_date  => 'resources.request_date',
+        status_code   => 'resources.status_code',
+        response_date => 'resources.response_date',
+        content       => 'resources.content',
+    );
+
+    $cursor->set_inflators(
+        request_uri   => \&to_uri,
+        request_date  => \&to_timepiece,
+        status_code   => \&to_string,
+        response_date => \&to_timepiece,
+        content       => \&to_hash,
+    );
+
+    $cursor;
+}
+
+sub select_maximum_request_date {
+    my $self = shift;
+
+    my $row = do {
+        my $cursor = $self->do_select(
+            request_date => \'MAX(resources.request_date)',
+        );
+
+        $cursor->set_inflators(
+            request_date => \&to_timepiece,
+        );
+
+        $cursor->next;
+    };
+
+    $row && $row->{request_date};
 }
 
 1;

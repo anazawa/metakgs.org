@@ -1,12 +1,27 @@
 package MetaKGS::Teng::Cursor;
 use strict;
 use warnings;
-use Carp qw/croak/;
 
 sub new {
     my $class = shift;
     my %args = @_ == 1 ? %{$_[0]} : @_;
-    bless \%args, $class;
+    my $self = bless {}, $class;
+
+    for my $key (qw/teng query/) {
+        $self->{$key} = $args{$key} if exists $args{$key};
+    }
+
+    $self->init( \%args );
+
+    $self;
+}
+
+sub init {
+    my ( $self, $args ) = @_;
+
+    $self->set_inflators( $args->{inflators} ) if exists $args->{inflators};
+
+    return;
 }
 
 sub teng {
@@ -15,38 +30,6 @@ sub teng {
 
 sub query {
     $_[0]->{query};
-}
-
-sub _inflators {
-    $_[0]->{_inflators} ||= {};
-}
-
-sub add_inflator {
-    my ( $self, @args ) = @_;
-    my $inflators = $self->_inflators;
-
-    croak "Odd number of arguments passed 'add_inflator'" if @args % 2;
-
-    while ( my ($key, $value) = splice @args, 0, 2 ) {
-        my @values = ref $value eq 'ARRAY' ? @$value : $value;
-        push @{ $inflators->{$key} ||= [] }, @values;
-    }
-
-    return;
-}
-
-sub _run_inflator {
-    my ( $self, $row ) = @_;
-    my $inflators = $self->_inflators;
-
-    for my $key ( keys %$inflators ) {
-        next unless exists $row->{$key};
-        for my $inflator ( @{$inflators->{$key}} ) {
-            $row->{$key} = $inflator->( $row->{$key} );
-        }
-    }
-    
-    return;
 }
 
 sub sth {
@@ -58,9 +41,43 @@ sub sth {
     elsif ( !exists $self->{sth} ) {
         $self->{sth} = $self->teng->execute( @{$self->query} );
     }
-    else {
-        $self->{sth};
+
+    $self->{sth};
+}
+
+sub _inflators {
+    my $self = shift;
+    $self->{_inflators} = shift if @_;
+    $self->{_inflators} ||= {};
+}
+
+sub set_inflators {
+    my $self = shift;
+    my %args = @_ == 1 ? %{$_[0]} : @_;
+
+    my %inflators;
+    while ( my ($key, $val) = each %args ) {
+        $inflators{$key} = [ ref $val eq 'ARRAY' ? @$val : $val ];
     }
+
+    $self->_inflators( \%inflators );
+
+    return;
+}
+
+sub run_inflators {
+    my $self = shift;
+    my %row = @_ == 1 ? %{$_[0]} : @_;
+    my $inflators = $self->_inflators;
+
+    for my $key ( keys %$inflators ) {
+        next unless exists $row{$key};
+        for my $inflator ( @{$inflators->{$key}} ) {
+            $row{$key} = $inflator->( $row{$key} );
+        }
+    }
+
+    \%row;
 }
 
 sub next {
@@ -75,9 +92,7 @@ sub next {
 
     return if !$sth or !$row;
 
-    $self->_run_inflator( $row );
-
-    $row;
+    $self->run_inflators( $row );
 }
 
 sub all {
@@ -90,11 +105,7 @@ sub all {
         $sth->finish;
     }
 
-    for my $row ( @$rows ) {
-        $self->_run_inflator( $row );
-    }
-
-    $rows;
+    [ map { $self->run_inflators($_) } @$rows ];
 }
 
 1;

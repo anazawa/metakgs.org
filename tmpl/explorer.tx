@@ -3,6 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+    <link rel="stylesheet" href="<: uri_for('/static/css/normalize.css') :>" />
     <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Open+Sans">
     <link rel="stylesheet" href="<: uri_for('/static/font-awesome/css/font-awesome.min.css') :>">
     <link rel="stylesheet" href="<: uri_for('/static/jsonview/jquery.jsonview.css') :>">
@@ -14,63 +15,65 @@
     <script src="<: uri_for('/static/js/metakgs/explorer.js') :>"></script>
   </head>
   <body>
-    <header>
-      <img src="<: uri_for('/static/img/zoo2.jpg') :>" width="300">
+    <header class="container">
       <h1>MetaKGS APIs Explorer</h1>
     </header>
 
-    <p>This app allows you to explore MetaKGS APIs.</p>
+    <section class="container">
 
-    <h2 id="request">Request</h2>
+      <p>This app allows you to explore MetaKGS APIs.</p>
 
-    <form id="js-request-form">
-      <input name="url" type="text">
-      <input class="btn" value="GET" type="submit">
-      <input class="btn" value="Cancel" type="reset">
-    </form>
+      <h2>Request</h2>
 
-    <h3>Examples</h3>
+      <form id="js-request-form">
+        <input name="url" type="text">
+        <input class="btn" value="GET" type="submit">
+        <input class="btn" value="Cancel" type="reset">
+      </form>
 
-    <ul>
-      <li><a class="js-request-link" href="/api/archives/anazawa">GET /api/archives/anazawa</a></li>
-      <li><a class="js-request-link" href="/api/archives/anazawa/2014/8">GET /api/archives/anazawa/2014/8</a></li>
-      <li><a class="js-request-link" href="/api/top100">GET /api/top100</a></li>
-      <li><a class="js-request-link" href="/api/tournaments">GET /api/tournaments</a></li>
-      <li><a class="js-request-link" href="/api/tournaments/2012">GET /api/tournaments/2012</a></li>
-      <li><a class="js-request-link" href="/api/tournament/762">GET /api/tournament/762</a></li>
-      <li><a class="js-request-link" href="/api/tournament/762/entrants">GET /api/tournament/762/entrants</a></li>
-      <li><a class="js-request-link" href="/api/tournament/762/round/2">GET /api/tournament/762/round/2</a></li>
-    </ul>
+      <h2>Response</h2>
 
-    <h2 id="response">Response</h2>
+      <h3 id="js-response-status"></h3>
 
-    <h3 id="js-response-status"></h3>
+      <div class="explorer-response">
+        <div id="js-message"></div>
 
-    <div class="response">
-      <div id="js-message"></div>
+        <a id="js-show-headers" href="#"><i class="fa fa-caret-right"></i> Show headers</a>
+        <a id="js-hide-headers" href="#"><i class="fa fa-caret-down"></i> Hide headers</a>
 
-      <a id="js-show-headers" href="#"><i class="fa fa-caret-right"></i> Show headers</a>
-      <a id="js-hide-headers" href="#"><i class="fa fa-caret-down"></i> Hide headers</a>
+        <pre id="js-response-headers"></pre>
+        <div id="js-response-body"></div>
+      </div>
 
-      <pre id="js-response-headers"></pre>
-      <div id="js-response-body"></div>
-    </div>
+      <p class="text-muted" id="js-response-time"></p>
 
-    <p class="text-muted" id="js-response-time"></p>
+      <h2>Examples</h2>
 
-    <h2>See Also</h2>
+      <ul>
+        <li><a class="js-request-link" href="/api/archives/anazawa">GET /api/archives/anazawa</a></li>
+        <li><a class="js-request-link" href="/api/archives/anazawa/2014/8">GET /api/archives/anazawa/2014/8</a></li>
+        <li><a class="js-request-link" href="/api/top100">GET /api/top100</a></li>
+        <li><a class="js-request-link" href="/api/tournaments">GET /api/tournaments</a></li>
+        <li><a class="js-request-link" href="/api/tournaments/2012">GET /api/tournaments/2012</a></li>
+        <li><a class="js-request-link" href="/api/tournament/762">GET /api/tournament/762</a></li>
+        <li><a class="js-request-link" href="/api/tournament/762/entrants">GET /api/tournament/762/entrants</a></li>
+        <li><a class="js-request-link" href="/api/tournament/762/round/2">GET /api/tournament/762/round/2</a></li>
+      </ul>
 
-    <ul>
-      <li><a href="<: uri_for('/#get-api-archives-user') :>">GET /api/archives/:user</a></li>
-      <li><a href="<: uri_for('/#get-api-archives-user-year-month') :>">GET /api/archives/:user/:year/:month</a></li>
-      <li><a href="<: uri_for('/#get-api-top100') :>">GET /api/top100</a></li>
-      <li><a href="<: uri_for('/#get-api-tournaments') :>">GET /api/tornaments</a></li>
-      <li><a href="<: uri_for('/#get-api-tournaments-year') :>">GET /api/tornaments/:year</a></li>
-      <li><a href="<: uri_for('/#get-api-tournament-id') :>">GET /api/tornament/:id</a></li>
-      <li><a href="<: uri_for('/#get-api-tournament-id-entrants') :>">GET /api/tornament/:id/entrants</a></li>
-      <li><a href="<: uri_for('/#get-api-tournament-id-round-round') :>">GET /api/tornament/:id/round/:round</a></li>
-    </ul>
+      <h2>Documentation</h2>
 
+      <ul>
+        <li><a href="<: uri_for('/#get-api-archives-user') :>">GET /api/archives/:user</a></li>
+        <li><a href="<: uri_for('/#get-api-archives-user-year-month') :>">GET /api/archives/:user/:year/:month</a></li>
+        <li><a href="<: uri_for('/#get-api-top100') :>">GET /api/top100</a></li>
+        <li><a href="<: uri_for('/#get-api-tournaments') :>">GET /api/tornaments</a></li>
+        <li><a href="<: uri_for('/#get-api-tournaments-year') :>">GET /api/tornaments/:year</a></li>
+        <li><a href="<: uri_for('/#get-api-tournament-id') :>">GET /api/tornament/:id</a></li>
+        <li><a href="<: uri_for('/#get-api-tournament-id-entrants') :>">GET /api/tornament/:id/entrants</a></li>
+        <li><a href="<: uri_for('/#get-api-tournament-id-round-round') :>">GET /api/tornament/:id/round/:round</a></li>
+      </ul>
+
+    </section><!-- /.container -->
 
   </body>
 </html>
