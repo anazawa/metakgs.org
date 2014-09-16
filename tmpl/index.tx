@@ -1,15 +1,11 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Open+Sans">
-    <link rel="stylesheet" href="<: uri_for('/static/css/normalize.css') :>" />
-    <link rel="stylesheet" href="<: uri_for('/static/css/metakgs.css') :>" />
-    <title>MetaKGS - Unofficial JSON API for KGS Go Server</title>
-  </head>
-  <body>
+: cascade "include/layout.tx"
 
+: after stylesheets -> {
+    <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Open+Sans">
+    <link rel="stylesheet" href="<: uri_for('/static/css/metakgs.css') :>">
+: }
+
+: override content -> {
     <header class="container">
       <h1>
         MetaKGS
@@ -48,6 +44,7 @@
     <section class="container">
 
       <h2 id="version">Version</h2>
+
       <p>This documentation refers to API version 0.01.</p>
 
       <h2 id="changes">Changes</h2>
@@ -85,7 +82,7 @@
         Currently, the only rules around using the API are to <strong>be polite</strong>.
         Being polite includes letting us know who you are and how to reach you.
         This is not mandatory, but please do consider adding your app
-        to the <a href="">API-Consumers</a> page.
+        to the <a href="https://github.com/anazawa/metakgs.org/wiki/API-Consumers">API-Consumers</a> page.
       </p>
 
       <h3 id="methods">Methods</h3>
@@ -152,7 +149,7 @@
 
       <p>The following responses are returned:</p>
 
-     <h5>200 OK</h5>
+      <h5>200 OK</h5>
 
 <pre>Access-Control-Allow-Origin: *
 Content-Type: application/json; charset=utf-8
@@ -202,60 +199,62 @@ Last-Modified: Mon, 11 Aug 2014 12:34:56 GMT
     }
 }</pre>
 
-    <p>Notes:</p>
+      <p>Notes:</p>
 
-    <ul>
-      <li>
-        <code>oldAccounts=y</code> is always added to the end of
-        <code>request_url</code>, where <code>oldAccounts</code> is a flag
-        to include games played by expired and guest accounts.
-      </li>
-      <li>
-        If the game is private,
-        <code>sgf_url</code> is set to <code>null</code>.
-      </li>
-      <li>
-        Game <code>type</code> is set to one of
-        <code>"Demonstration"</code>,
-        <code>"Free"</code>,
-        <code>"Ranked"</code>,
-        <code>"Rengo"</code>,
-        <code>"Rengo Review"</code>,
-        <code>"Review"</code>,
-        <code>"Simul"</code>,
-        <code>"Teaching"</code> or
-        <code>"Tournament"</code>.
-        See <a href="http://www.gokgs.com/help/gametypes.html">KGS Help Files
+      <ul>
+        <li>
+          <code>oldAccounts=y</code> is always added to the end of
+          <code>request_url</code>, where <code>oldAccounts</code> is a flag
+          to include games played by expired and guest accounts.
+        </li>
+        <li>
+          If the game is private,
+          <code>sgf_url</code> is set to <code>null</code>.
+        </li>
+        <li>
+          Game <code>type</code> is set to one of
+          <code>"Demonstration"</code>,
+          <code>"Free"</code>,
+          <code>"Ranked"</code>,
+          <code>"Rengo"</code>,
+          <code>"Rengo Review"</code>,
+          <code>"Review"</code>,
+          <code>"Simul"</code>,
+          <code>"Teaching"</code> or
+          <code>"Tournament"</code>.
+          See <a href="http://www.gokgs.com/help/gametypes.html">KGS Help Files
           / Game Types</a> for details.
-      </li>
-      <li>
-        Game <code>result</code> is set to <code>"Unfinished"</code>
-        or in the <a href="http://www.red-bean.com/sgf/">SGF</a>-compatible
-        format such as <code>"B+Resign"</code>.
-      </li>
-      <li>
-        Player's <code>rank</code> is set to one of
-        <code>"1p"-"9p"</code>,
-        <code>"1d"-"9d"</code>,
-        <code>"1d?"-"9d?"</code>,
-        <code>"1k"-"30k"</code>,
-        <code>"1k?"-"30k?"</code>,
-        <code>"-"</code> or
-        <code>null</code>,
-        where <code>null</code> represents guest account's rank.
-        See <a href="http://www.gokgs.com/help/rank.html">KGS Help Files /
-        Rating System</a> for details.
-      </li>
-      <li>
-        <code>started_at</code> represents when the game started.
-      </li>
-    </ul>
+        </li>
+        <li>
+          Game <code>result</code> is set to <code>"Unfinished"</code>
+          or in the <a href="http://www.red-bean.com/sgf/">SGF</a>-compatible
+          format such as <code>"B+Resign"</code>.
+        </li>
+        <li>
+          Player's <code>rank</code> is set to one of
+          <code>"1p"-"9p"</code>,
+          <code>"1d"-"9d"</code>,
+          <code>"1d?"-"9d?"</code>,
+          <code>"1k"-"30k"</code>,
+          <code>"1k?"-"30k?"</code>,
+          <code>"-"</code> or
+          <code>null</code>,
+          where <code>null</code> represents guest account's rank.
+          See <a href="http://www.gokgs.com/help/rank.html">KGS Help Files /
+          Rating System</a> for details.
+        </li>
+        <li>
+          <code>started_at</code> represents when the game started.
+        </li>
+      </ul>
 
-    <h5>202 Accepted</h5>
+      <h5>202 Accepted</h5>
 
-    <p>If the size of the requested resource on KGS is greater than 100KB,
-    then <code>202</code> is returned since the MetaKGS server can not parse
-    such a large HTML document immediately.</p>
+      <p>
+        If the size of the requested resource on KGS is greater than 100KB,
+        then <code>202</code> is returned since the MetaKGS server can not parse
+        such a large HTML document immediately.
+      </p>
 
 <pre>Retry-After: Tue, 12 Aug 2014 12:34:56 GMT
 
@@ -266,11 +265,11 @@ Last-Modified: Mon, 11 Aug 2014 12:34:56 GMT
     "retry_after": <span class="json-string">"2014-08-12T12:34:56Z"</span>
 }</pre>
 
-    <h4 id="get-api-top100">GET /api/top100</h4>
+      <h4 id="get-api-top100">GET /api/top100</h4>
 
-    <p>Retruns a list of top 100 players. This resource is updated once a day.</p>
+      <p>Retruns a list of top 100 players. This resource is updated once a day.</p>
 
-    <h5>200 OK</h5>
+      <h5>200 OK</h5>
 
 <pre>Access-Control-Allow-Origin: *
 Content-Type: application/json; charset=utf-8
@@ -307,15 +306,14 @@ Last-Modified: Mon, 11 Aug 2014 12:34:56 GMT
     }
 }</pre>
 
-    <h4 id="get-api-tournaments">GET /api/tournaments</h4>
-    <h4 id="get-api-tournaments-year">GET /api/tournaments/:year</h4>
+      <h4 id="get-api-tournaments">GET /api/tournaments</h4>
+      <h4 id="get-api-tournaments-year">GET /api/tournaments/:year</h4>
 
-    <p>Returns a list of tournaments held in the specified <code>:year</code>.</p>
+      <p>Returns a list of tournaments held in the specified <code>:year</code>.</p>
 
-    <h5>200 OK</h5>
+      <h5>200 OK</h5>
 
-    <pre>
-Access-Control-Allow-Origin: *
+<pre>Access-Control-Allow-Origin: *
 Content-Type: application/json; charset=utf-8
 Expires: Tue, 12 Aug 2014 12:34:56 GMT
 Last-Modified: Mon, 11 Aug 2014 12:34:56 GMT
@@ -344,7 +342,7 @@ Last-Modified: Mon, 11 Aug 2014 12:34:56 GMT
     }
 }</pre>
 
-    <h5>404 Not Found</h5>
+      <h5>404 Not Found</h5>
 
 <pre>{
     "message": <span class="json-string">"Not Found"</span>,
@@ -353,13 +351,13 @@ Last-Modified: Mon, 11 Aug 2014 12:34:56 GMT
     "responded_at": <span class="json-string">"2014-08-11T12:34:56Z"</span>
 }</pre>
 
-    <h5>502 Bad Gateway</h5>
+      <h5>502 Bad Gateway</h5>
 
-    <h4 id="get-api-tournament-id">GET /api/tournament/:id</h4>
+      <h4 id="get-api-tournament-id">GET /api/tournament/:id</h4>
 
-    <p>Returns information for the tournament identified by <code>:id</code>.</p>
+      <p>Returns information for the tournament identified by <code>:id</code>.</p>
 
-    <h5>200 OK</h5>
+      <h5>200 OK</h5>
 
 <pre>Access-Control-Allow-Origin: *
 Content-Type: application/json; charset=utf-8
@@ -388,24 +386,24 @@ Last-Modified: Mon, 11 Aug 2014 12:34:56 GMT
     }
 }</pre>
 
-    <p>Notes:</p>
+      <p>Notes:</p>
 
-    <ul>
-      <li>
-        Tournament <code>description</code> is
-        <a href="http://daringfireball.net/projects/markdown/">Markdown</a>-formatted.
-      </li>
-      <li>
-        <code>start_at</code> or <code>end_at</code> represents when the game
-        <strong>will</strong> start or end.
-      </li>
-      <li>
-        If the round has not started yet, <code>end_at</code> and <code>url</code>
-        are set to <code>null</code>.
-      </li>
-    </ul>
+      <ul>
+        <li>
+          Tournament <code>description</code> is
+          <a href="http://daringfireball.net/projects/markdown/">Markdown</a>-formatted.
+        </li>
+        <li>
+          <code>start_at</code> or <code>end_at</code> represents when the game
+          <strong>will</strong> start or end.
+        </li>
+        <li>
+          If the round has not started yet, <code>end_at</code> and <code>url</code>
+          are set to <code>null</code>.
+        </li>
+      </ul>
 
-    <h5>404 Not Found</h5>
+      <h5>404 Not Found</h5>
 
 <pre>{
     "message": <span class="json-string">"Not Found"</span>,
@@ -414,12 +412,14 @@ Last-Modified: Mon, 11 Aug 2014 12:34:56 GMT
     "responded_at": <span class="json-string">"2014-08-11T12:34:56Z"</span>
 }</pre>
 
-    <h4 id="get-api-tournament-id-entrants">GET /api/tournament/:id/entrants</h4>
+      <h4 id="get-api-tournament-id-entrants">GET /api/tournament/:id/entrants</h4>
 
-    <p>Returns a list of the tournament entrants associated with the given
-    tournament <code>:id</code>.</p>
+      <p>
+        Returns a list of the tournament entrants associated with the given
+        tournament <code>:id</code>.
+      </p>
 
-    <h5>200 OK</h5>
+      <h5>200 OK</h5>
 
 <pre>Access-Control-Allow-Origin: *
 Content-Type: application/json; charset=utf-8
@@ -460,35 +460,35 @@ Last-Modified: Mon, 11 Aug 2014 12:34:56 GMT
     }
 }</pre>
 
-    <p>Notes:</p>
+      <p>Notes:</p>
 
-    <ul>
-      <li>
-        <code>sos</code> stands for Sum of Opponents' Scores.
-        See <a href="http://senseis.xmp.net/?SOS">Sensei's Library / SOS</a> for details.
-      </li>
-      <li>
-        <code>sodos</code> stands for Sum of Defeated Opponents' Scores.
-        See <a href="http://senseis.xmp.net/?SODOS">Sensei's Library / SODOS</a> for details.
-      </li>
-      <li>
-        In single-elimination or double-elimination tournaments,
-        <code>position</code>, <code>score</code>, <code>sos</code>
-        and <code>sodos</code> are set to <code>null</code>.
-        In round-robin tournaments,
-        <code>sos</code> and <code>sodos</code> are set to <code>null</code>.
-      </li>
-      <li>
-        <code>start_at</code> or <code>end_at</code> represents when the game
-        <strong>will</strong> start or end.
-      </li>
-      <li>
-        If the round has not started yet, <code>end_at</code> and <code>url</code>
-        are set to <code>null</code>.
-      </li>
-    </ul>
+      <ul>
+        <li>
+          <code>sos</code> stands for Sum of Opponents' Scores.
+          See <a href="http://senseis.xmp.net/?SOS">Sensei's Library / SOS</a> for details.
+        </li>
+        <li>
+          <code>sodos</code> stands for Sum of Defeated Opponents' Scores.
+          See <a href="http://senseis.xmp.net/?SODOS">Sensei's Library / SODOS</a> for details.
+        </li>
+        <li>
+          In single-elimination or double-elimination tournaments,
+          <code>position</code>, <code>score</code>, <code>sos</code>
+          and <code>sodos</code> are set to <code>null</code>.
+          In round-robin tournaments,
+          <code>sos</code> and <code>sodos</code> are set to <code>null</code>.
+        </li>
+        <li>
+          <code>start_at</code> or <code>end_at</code> represents when the game
+          <strong>will</strong> start or end.
+        </li>
+        <li>
+          If the round has not started yet, <code>end_at</code> and <code>url</code>
+          are set to <code>null</code>.
+        </li>
+      </ul>
 
-    <h5>404 Not Found</h5>
+      <h5>404 Not Found</h5>
 
 <pre>{
     "message": <span class="json-string">"Not Found"</span>,
@@ -497,11 +497,11 @@ Last-Modified: Mon, 11 Aug 2014 12:34:56 GMT
     "responded_at": <span class="json-string">"2014-08-11T12:34:56Z"</span>
 }</pre>
 
-    <h4 id="get-api-tournament-id-round-round">GET /api/tournament/:id/round/:round</h4>
+      <h4 id="get-api-tournament-id-round-round">GET /api/tournament/:id/round/:round</h4>
 
-    <p>Returns a list of tournament games played in the specified <code>:round</code>.</p>
+      <p>Returns a list of tournament games played in the specified <code>:round</code>.</p>
 
-    <h5>200 OK</h5>
+      <h5>200 OK</h5>
 
 <pre>Access-Control-Allow-Origin: *
 Content-Type: application/json; charset=utf-8
@@ -558,21 +558,21 @@ Last-Modified: Mon, 11 Aug 2014 12:34:56 GMT
     }
 }</pre>
 
-    <p>Notes:</p>
+      <p>Notes:</p>
 
-    <ul>
-      <li>
-        Bye <code>type</code> is set to one of <code>"System"</code>,
-        <code>"No show"</code> or <code>"Requested"</code>.
-        See <a href="http://www.gokgs.com/help/faq/tournament.html">KGS Help Files / Tournament FAQ</a> for details.
-      </li>
-      <li>
-        <code>start_at</code> or <code>end_at</code> represents when the game
-        <strong>will</strong> start or end.
-      </li>
-    </ul>
+      <ul>
+        <li>
+          Bye <code>type</code> is set to one of <code>"System"</code>,
+          <code>"No show"</code> or <code>"Requested"</code>.
+          See <a href="http://www.gokgs.com/help/faq/tournament.html">KGS Help Files / Tournament FAQ</a> for details.
+        </li>
+        <li>
+          <code>start_at</code> or <code>end_at</code> represents when the game
+          <strong>will</strong> start or end.
+        </li>
+      </ul>
 
-    <h5>404 Not Found</h5>
+      <h5>404 Not Found</h5>
 
 <pre>{
     "message": <span class="json-string">"Not Found"</span>,
@@ -581,29 +581,31 @@ Last-Modified: Mon, 11 Aug 2014 12:34:56 GMT
     "responded_at": <span class="json-string">"2014-08-11T12:34:56Z"</span>
 }</pre>
 
-    <h2 id="see-also">See Also</h2>
+      <h2 id="see-also">See Also</h2>
 
-    <ul>
-      <li><a href="http://www.gokgs.com/">KGS Go Server</a></li>
-      <li><a href="<: uri_for('/explorer') :>">MetaKGS APIs Explorer</a></li>
-      <li><a href="https://metacpan.org/pod/WWW::GoKGS">WWW::GoKGS</a> on CPAN</li>
-      <li><a href="https://github.com/anazawa/metakgs.org">metakgs.org</a> on GitHub</li>
-    </ul>
+      <ul>
+        <li><a href="http://www.gokgs.com/">KGS Go Server</a></li>
+        <li><a href="<: uri_for('/explorer') :>">MetaKGS APIs Explorer</a></li>
+        <li><a href="https://metacpan.org/pod/WWW::GoKGS">WWW::GoKGS</a> on CPAN</li>
+        <li><a href="https://github.com/anazawa/metakgs.org">metakgs.org</a> on GitHub</li>
+      </ul>
 
-    <h2 id="acknowledgement">Acknowledgement</h2>
+      <h2 id="acknowledgement">Acknowledgement</h2>
 
-    <p>Thanks to wms, the author of KGS Go Sever, we can enjoy playing go
-    online for free.</p>
+      <p>
+        Thanks to wms, the author of KGS Go Sever, we can enjoy playing go
+        online for free.
+      </p>
 
-    <h2 id="author">Author</h2>
+      <h2 id="author">Author</h2>
 
-    <div class="profile">
-    <img
- src="https://secure.gravatar.com/avatar/fab5371a46cc0befc9357bcc8237ebab?s=60"
-      width="" height="">
-    <h4>Ryo Anazawa</h4> <p>anazawa@metakgs.org</p></div>
-    </section>
+      <div class="profile">
+        <img src="https://secure.gravatar.com/avatar/fab5371a46cc0befc9357bcc8237ebab?s=60"
+          width="" height="">
+        <h4>Ryo Anazawa</h4>
+        <p>anazawa@metakgs.org</p>
+      </div>
 
+    </section><!-- /.container -->
+: }
 
-  </body>
-</html>

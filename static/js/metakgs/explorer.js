@@ -3,20 +3,12 @@ if ( typeof MetaKGS.Util === "undefined" ) { throw "metakgs/util.js is required"
 if ( typeof jQuery === "undefined" ) { throw "jquery.js is required"; }
 if ( typeof jQuery.fn.JSONView === "undefined" ) { throw "jquery.jsonview.js is required"; }
 
-(function(window, document, $, MetaKGS) {
+(function(window, $, MetaKGS) {
   "use strict";
 
-  //
-  //  Constants
-  //
-
-  var CLICK    = "click";
-  var DISABLED = "disabled";
-  var HREF     = "href";
-
-  //
-  //  MeataKGS Explorer
-  //
+  /*
+   *  MeataKGS Explorer
+   */
 
   MetaKGS.Explorer = {
     eventNamespace:   "metakgsExplorer",
@@ -33,18 +25,9 @@ if ( typeof jQuery.fn.JSONView === "undefined" ) { throw "jquery.jsonview.js is 
     $message:         $()
   };
 
-  //
-  //  The following requests are allowed:
-  //
-  //    * GET /api/archives/:user
-  //    * GET /api/archives/:user/:year/:month
-  //    * GET /api/top100
-  //    * GET /api/tournaments
-  //    * GET /api/tournaments/:year
-  //    * GET /api/tournament/:id
-  //    * GET /api/tournament/:id/entrants
-  //    * GET /api/tournament/:id/round/:round
-  //
+  MetaKGS.Explorer.eventNameFor = function(event) {
+    return this.eventNamespace ? event + "." + this.eventNamespace : event;
+  };
 
   MetaKGS.Explorer.baseURL = (function() {
     var loc = window.location;
@@ -56,6 +39,19 @@ if ( typeof jQuery.fn.JSONView === "undefined" ) { throw "jquery.jsonview.js is 
     if ( url.match(/^https?:\/\//) ) { return url; }
     return this.baseURL + "/" + url.replace( /^\//, "" );
   };
+
+  /*
+   *  The following requests are allowed:
+   * 
+   *    - GET /api/archives/:user
+   *    - GET /api/archives/:user/:year/:month
+   *    - GET /api/top100
+   *    - GET /api/tournaments
+   *    - GET /api/tournaments/:year
+   *    - GET /api/tournament/:id
+   *    - GET /api/tournament/:id/entrants
+   *    - GET /api/tournament/:id/round/:round
+   */
 
   MetaKGS.Explorer.validPaths = new RegExp(
     "^\/api(?:"
@@ -72,10 +68,6 @@ if ( typeof jQuery.fn.JSONView === "undefined" ) { throw "jquery.jsonview.js is 
     var baseURL = MetaKGS.Util.escapeRegExp( this.baseURL );
     var path = this.buildURL( url ).replace( new RegExp("^"+baseURL), "" );
     return this.validPaths.test( path );
-  };
-
-  MetaKGS.Explorer.eventNameFor = function(event) {
-    return this.eventNamespace ? event + "." + this.eventNamespace : event;
   };
 
   MetaKGS.Explorer.get = function(arg) {
@@ -150,7 +142,7 @@ if ( typeof jQuery.fn.JSONView === "undefined" ) { throw "jquery.jsonview.js is 
   };
 
   MetaKGS.Explorer.start = function() {
-    this.$requestButton.prop( DISABLED, true );
+    this.$requestButton.prop( "disabled", true );
     this.$responseStatus.empty().hide();
     this.$message.empty().hide();
     this.$showHeaders.hide();
@@ -161,7 +153,7 @@ if ( typeof jQuery.fn.JSONView === "undefined" ) { throw "jquery.jsonview.js is 
   };
 
   MetaKGS.Explorer.send = function(request) { 
-    var click = this.eventNameFor( CLICK );
+    var click = this.eventNameFor( "click" );
 
     this.$abortButton.one(click, function(event) {
       request.abort();
@@ -169,13 +161,13 @@ if ( typeof jQuery.fn.JSONView === "undefined" ) { throw "jquery.jsonview.js is 
     });
 
     this.$requestURL.val( request.url );
-    this.$abortButton.prop( DISABLED, false );
+    this.$abortButton.prop( "disabled", false );
     this.$message.text( "Loading..." ).show();
   };
 
   MetaKGS.Explorer.done = function(response) {
     var that = this;
-    var click = this.eventNameFor( CLICK );
+    var click = this.eventNameFor( "click" );
 
     this.$message.hide();
 
@@ -187,12 +179,12 @@ if ( typeof jQuery.fn.JSONView === "undefined" ) { throw "jquery.jsonview.js is 
 
     this.$responseBody.find("a").each(function() {
       var $this = $( this );
-      var url = $this.attr( HREF );
+      var url = $this.attr( "href" );
 
       if ( !that.isValidURL(url) ) { return; }
 
       $this.on(click, function(event) {
-        that.$requestURL.val( $(this).attr(HREF) );
+        that.$requestURL.val( $(this).attr("href") );
         that.$requestButton.click();
         event.preventDefault();
       });
@@ -204,17 +196,17 @@ if ( typeof jQuery.fn.JSONView === "undefined" ) { throw "jquery.jsonview.js is 
   };
 
   MetaKGS.Explorer.always = function() {
-    var click = this.eventNameFor( CLICK );
-    this.$abortButton.off( click ).prop( DISABLED, true );
-    this.$requestButton.prop( DISABLED, false );
+    var click = this.eventNameFor( "click" );
+    this.$abortButton.off( click ).prop( "disabled", true );
+    this.$requestButton.prop( "disabled", false );
   };
   
   MetaKGS.Explorer.run = function() {
     var that = this;
-    var click = this.eventNameFor( CLICK );
+    var click = this.eventNameFor( "click" );
 
-    this.$requestButton.prop( DISABLED, false );
-    this.$abortButton.prop( DISABLED, true );
+    this.$requestButton.prop( "disabled", false );
+    this.$abortButton.prop( "disabled", true );
 
     this.$showHeaders.hide();
     this.$hideHeaders.hide();
@@ -244,11 +236,11 @@ if ( typeof jQuery.fn.JSONView === "undefined" ) { throw "jquery.jsonview.js is 
     });
 
     this.$requestLinks.on(click, function(event) {
-      that.$requestURL.val( $(this).attr(HREF) );
+      that.$requestURL.val( $(this).attr("href") );
       that.$requestButton.click();
       event.preventDefault();
     });
   };
 
-}(window, document, jQuery, MetaKGS));
+}(window, jQuery, MetaKGS));
 
