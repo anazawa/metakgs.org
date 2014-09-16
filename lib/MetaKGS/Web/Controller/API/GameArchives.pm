@@ -2,6 +2,7 @@ package MetaKGS::Web::Controller::API::GameArchives;
 use strict;
 use warnings;
 use parent qw/MetaKGS::Web::Controller::API/;
+use List::MoreUtils qw/none/;
 use MetaKGS::FormValidator;
 use MetaKGS::Web::View::JSON::GameArchives;
 use MetaKGS::WWW::GoKGS::Scraper::GameArchives;
@@ -42,9 +43,12 @@ sub show {
 
 sub do_show {
     my ( $class, $c, $resource ) = @_;
-    my $response = $class->SUPER::do_show( $c, $resource );
+    my $calendar = $resource->{content}->{calendar};
 
-    $response;
+    return $class->not_found( $c, $resource )
+        if !$calendar or none { !exists $_->{uri} } @$calendar;
+
+    $class->SUPER::do_show( $c, $resource );
 }
 
 sub expires {

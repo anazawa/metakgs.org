@@ -26,14 +26,9 @@ sub init {
     return;
 }
 
-sub do_scrape {
-    my ( $self, @args ) = @_;
-    $self->SUPER::scrape( @args );
-}
-
 sub scrape {
     my ( $self, @args ) = @_;
-    my $result = $self->do_scrape( @args );
+    my $result = $self->SUPER::scrape( @args );
 
     for my $game ( @{ $result->{games} || [] } ) {
         $game->{sgf_uri}    .= q{} if exists $game->{sgf_uri};

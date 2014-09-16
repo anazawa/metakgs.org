@@ -32,6 +32,7 @@ requires 'Plack::Middleware::Cached';
 requires 'Log::Minimal';
 requires 'HTML::WikiConverter::Markdown';
 requires 'Text::Unidecode';
+requires 'List::MoreUtils';
 
 requires 'DBIx::QueryLog';
 
