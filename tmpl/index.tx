@@ -265,6 +265,16 @@ Last-Modified: Mon, 11 Aug 2014 12:34:56 GMT
     "retry_after": <span class="json-string">"2014-08-12T12:34:56Z"</span>
 }</pre>
 
+      <h5>404 Not Found</h5>
+
+<pre>{
+    "message": <span class="json-string">"Not Found"</span>,
+    "request_url": <span class="json-string">"http://www.gokgs.com/gameArchives.jsp?user=foo&amp;year=2012&amp;month=1&amp;oldAccounts=y"</span>,
+    "requested_at": <span class="json-string">"2014-08-11T12:34:56Z"</span>,
+    "responded_at": <span class="json-string">"2014-08-11T12:34:56Z"</span>,
+    "content": <span class="json-literal">null</span>
+}</pre>
+
       <h4 id="get-api-top100">GET /api/top100</h4>
 
       <p>Retruns a list of top 100 players. This resource is updated once a day.</p>
@@ -348,7 +358,8 @@ Last-Modified: Mon, 11 Aug 2014 12:34:56 GMT
     "message": <span class="json-string">"Not Found"</span>,
     "request_url": <span class="json-string">"http://www.gokgs.com/tournList.jsp?year=1999"</span>,
     "requested_at": <span class="json-string">"2014-08-11T12:34:56Z"</span>,
-    "responded_at": <span class="json-string">"2014-08-11T12:34:56Z"</span>
+    "responded_at": <span class="json-string">"2014-08-11T12:34:56Z"</span>,
+    "content": <span class="json-literal">null</span>
 }</pre>
 
       <h5>502 Bad Gateway</h5>
@@ -409,7 +420,8 @@ Last-Modified: Mon, 11 Aug 2014 12:34:56 GMT
     "message": <span class="json-string">"Not Found"</span>,
     "request_url": <span class="json-string">"http://www.gokgs.com/tournInfo.jsp?id=12345"</span>,
     "requested_at": <span class="json-string">"2014-08-11T12:34:56Z"</span>,
-    "responded_at": <span class="json-string">"2014-08-11T12:34:56Z"</span>
+    "responded_at": <span class="json-string">"2014-08-11T12:34:56Z"</span>,
+    "content": <span class="json-literal">null</span>
 }</pre>
 
       <h4 id="get-api-tournament-id-entrants">GET /api/tournament/:id/entrants</h4>
@@ -494,7 +506,8 @@ Last-Modified: Mon, 11 Aug 2014 12:34:56 GMT
     "message": <span class="json-string">"Not Found"</span>,
     "request_url": <span class="json-string">"http://www.gokgs.com/tournEntrants.jsp?id=12345&amp;sort=s"</span>,
     "requested_at": <span class="json-string">"2014-08-11T12:34:56Z"</span>,
-    "responded_at": <span class="json-string">"2014-08-11T12:34:56Z"</span>
+    "responded_at": <span class="json-string">"2014-08-11T12:34:56Z"</span>,
+    "content": <span class="json-literal">null</span>
 }</pre>
 
       <h4 id="get-api-tournament-id-round-round">GET /api/tournament/:id/round/:round</h4>
@@ -578,7 +591,8 @@ Last-Modified: Mon, 11 Aug 2014 12:34:56 GMT
     "message": <span class="json-string">"Not Found"</span>,
     "request_url": <span class="json-string">"http://www.gokgs.com/tournGames.jsp?id=12345&amp;round=1"</span>,
     "requested_at": <span class="json-string">"2014-08-11T12:34:56Z"</span>,
-    "responded_at": <span class="json-string">"2014-08-11T12:34:56Z"</span>
+    "responded_at": <span class="json-string">"2014-08-11T12:34:56Z"</span>,
+    "content": <span class="json-literal">null</span>
 }</pre>
 
       <h2 id="see-also">See Also</h2>

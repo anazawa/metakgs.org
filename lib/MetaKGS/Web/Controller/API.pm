@@ -69,7 +69,7 @@ sub do_show {
 
     # for cache validation
     $response->headers->last_modified( $resource->{response_date}->epoch );
-    $response->header( 'ETag' => 'W/"'.md5_hex($resource->{request_id}).'"' );
+    $response->header( 'ETag' => '"'.md5_hex($resource->{request_id}).'"' );
 
     # set cache expiration time
     $response->headers->expires( $class->expires($resource)->epoch );
