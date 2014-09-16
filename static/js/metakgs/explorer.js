@@ -1,8 +1,9 @@
-/*global window MetaKGS */
 if ( typeof MetaKGS === "undefined" ) { throw "metakgs.js is required"; }
-if ( typeof jQuery === "undefined" ) { throw "jQuery is required"; }
+if ( typeof MetaKGS.Util === "undefined" ) { throw "metakgs/util.js is required"; }
+if ( typeof jQuery === "undefined" ) { throw "jquery.js is required"; }
+if ( typeof jQuery.fn.JSONView === "undefined" ) { throw "jquery.jsonview.js is required"; }
 
-(function(document, $) {
+(function(window, document, $, MetaKGS) {
   "use strict";
 
   //
@@ -17,17 +18,7 @@ if ( typeof jQuery === "undefined" ) { throw "jQuery is required"; }
   //  MeataKGS Explorer
   //
 
-  MetaKGS.Explorer = {};
-
-  MetaKGS.Explorer.create = function() {
-    return Object.create( this.Prototype );
-  };
-
-  //
-  //  Default values
-  //
-
-  MetaKGS.Explorer.Prototype = {
+  MetaKGS.Explorer = {
     eventNamespace:   "metakgsExplorer",
     $requestURL:      $(),
     $requestButton:   $(),
@@ -55,18 +46,18 @@ if ( typeof jQuery === "undefined" ) { throw "jQuery is required"; }
   //    * GET /api/tournament/:id/round/:round
   //
 
-  MetaKGS.Explorer.Prototype.baseURL = (function() {
+  MetaKGS.Explorer.baseURL = (function() {
     var loc = window.location;
     var path = loc.pathname.replace( /\/explorer$/, "" );
     return loc.protocol + "//" + loc.host + path;
   }());
 
-  MetaKGS.Explorer.Prototype.buildURL = function(url) {
+  MetaKGS.Explorer.buildURL = function(url) {
     if ( url.match(/^https?:\/\//) ) { return url; }
     return this.baseURL + "/" + url.replace( /^\//, "" );
   };
 
-  MetaKGS.Explorer.Prototype.validPaths = new RegExp(
+  MetaKGS.Explorer.validPaths = new RegExp(
     "^\/api(?:"
       + [ "\/archives\/[a-zA-Z][a-zA-Z0-9]{0,9}(?:\/[1-9]\\d*\/(?:[1-9]|1[0-2]))?",
           "\/top100",
@@ -77,19 +68,19 @@ if ( typeof jQuery === "undefined" ) { throw "jQuery is required"; }
       + ")$"
   );
 
-  MetaKGS.Explorer.Prototype.isValidURL = function(url) {
-    var baseURL = MetaKGS.Explorer.Util.escapeRegExp( this.baseURL );
+  MetaKGS.Explorer.isValidURL = function(url) {
+    var baseURL = MetaKGS.Util.escapeRegExp( this.baseURL );
     var path = this.buildURL( url ).replace( new RegExp("^"+baseURL), "" );
     return this.validPaths.test( path );
   };
 
-  MetaKGS.Explorer.Prototype.eventNameFor = function(event) {
+  MetaKGS.Explorer.eventNameFor = function(event) {
     return this.eventNamespace ? event + "." + this.eventNamespace : event;
   };
 
-  MetaKGS.Explorer.Prototype.get = function(arg) {
+  MetaKGS.Explorer.get = function(arg) {
     var url = this.buildURL( arg );
-    var stopwatch = Object.create( MetaKGS.Explorer.Util.Stopwatch );
+    var stopwatch = Object.create( MetaKGS.Util.Stopwatch );
 
     this.start();
 
@@ -158,7 +149,7 @@ if ( typeof jQuery === "undefined" ) { throw "jQuery is required"; }
     });
   };
 
-  MetaKGS.Explorer.Prototype.start = function() {
+  MetaKGS.Explorer.start = function() {
     this.$requestButton.prop( DISABLED, true );
     this.$responseStatus.empty().hide();
     this.$message.empty().hide();
@@ -169,7 +160,7 @@ if ( typeof jQuery === "undefined" ) { throw "jQuery is required"; }
     this.$responseTime.empty().hide();
   };
 
-  MetaKGS.Explorer.Prototype.send = function(request) { 
+  MetaKGS.Explorer.send = function(request) { 
     var click = this.eventNameFor( CLICK );
 
     this.$abortButton.one(click, function(event) {
@@ -182,7 +173,7 @@ if ( typeof jQuery === "undefined" ) { throw "jQuery is required"; }
     this.$message.text( "Loading..." ).show();
   };
 
-  MetaKGS.Explorer.Prototype.done = function(response) {
+  MetaKGS.Explorer.done = function(response) {
     var that = this;
     var click = this.eventNameFor( CLICK );
 
@@ -198,30 +189,27 @@ if ( typeof jQuery === "undefined" ) { throw "jQuery is required"; }
       var $this = $( this );
       var url = $this.attr( HREF );
 
-      if ( that.isValidURL(url) ) {
-        $this.on(click, function(event) {
-          that.$requestURL.val( $(this).attr(HREF) );
-          that.$requestButton.click();
-          event.preventDefault();
-        });
-      }
-      else {
-        $this.attr( "target", "_blank" );
-      }
+      if ( !that.isValidURL(url) ) { return; }
+
+      $this.on(click, function(event) {
+        that.$requestURL.val( $(this).attr(HREF) );
+        that.$requestButton.click();
+        event.preventDefault();
+      });
     });
   };
 
-  MetaKGS.Explorer.Prototype.fail = function(message) {
+  MetaKGS.Explorer.fail = function(message) {
     this.$message.text( message ).show();
   };
 
-  MetaKGS.Explorer.Prototype.always = function() {
+  MetaKGS.Explorer.always = function() {
     var click = this.eventNameFor( CLICK );
     this.$abortButton.off( click ).prop( DISABLED, true );
     this.$requestButton.prop( DISABLED, false );
   };
   
-  MetaKGS.Explorer.Prototype.registerEvents = function() {
+  MetaKGS.Explorer.run = function() {
     var that = this;
     var click = this.eventNameFor( CLICK );
 
@@ -262,86 +250,5 @@ if ( typeof jQuery === "undefined" ) { throw "jQuery is required"; }
     });
   };
 
-  //
-  //  Utility objects
-  //
-    
-  MetaKGS.Explorer.Util = {};
-
-  //
-  //  Stopwatch object to calculate response times
-  //
-
-  MetaKGS.Explorer.Util.Stopwatch = {
-    startedAt: null,
-    elapsedTime: 0,
-    start: function() {
-      if ( !this.startedAt ) {
-        this.startedAt = new Date();
-      }
-    },
-    stop: function() {
-      var now = new Date();
-      if ( this.startedAt ) {
-        this.elapsedTime += now.getTime() - this.startedAt.getTime();
-        this.startedAt = null;
-      }
-    },
-    getElapsedTime: function() {
-      var now = new Date();
-      if ( this.startedAt ) {
-        return this.elapsedTime + now.getTime() - this.startedAt.getTime();
-      }
-      else {
-        return this.elapsedTime;
-      }
-    }
-  };
-
-  //
-  //  Copied and rearranged from:
-  //  https://developer.mozilla.org/docs/Web/JavaScript/Guide/Regular_Expressions
-  //
-
-  MetaKGS.Explorer.Util.escapeRegExp = function(string) {
-    return string.replace( /([.*+?\^=!:${}()|\[\]\/\\])/g, "\\$1" );
-  };
-
-  //
-  //  Activate MetaKGS Explorer
-  //
-
-  $(document).ready(function() {
-    var explorer = MetaKGS.Explorer.create();
-    var $requestForm = $( "#js-request-form" );
-
-    //
-    //  Request
-    //
-
-    explorer.$requestURL    = $requestForm.find( "input[name='url']" );
-    explorer.$requestButton = $requestForm.find( "input[type='submit']" );
-    explorer.$abortButton   = $requestForm.find( "input[type='reset']" );
-    explorer.$requestLinks  = $( ".js-request-link" );
-
-    //
-    //  Response
-    //
-
-    explorer.$responseStatus  = $( "#js-response-status" );
-    explorer.$responseHeaders = $( "#js-response-headers" );
-    explorer.$showHeaders     = $( "#js-show-headers" );
-    explorer.$hideHeaders     = $( "#js-hide-headers" );
-    explorer.$responseBody    = $( "#js-response-body" );
-    explorer.$responseTime    = $( "#js-response-time" );
-
-    //
-    //  Error, progress, etc.
-    //
-
-    explorer.$message = $( "#js-message" );
-
-    explorer.registerEvents();
-  });
-}(document, jQuery));
+}(window, document, jQuery, MetaKGS));
 

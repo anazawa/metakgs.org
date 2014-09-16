@@ -2,6 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta http-equiv="X-UA-Compatible" content="IE=Edge">
     <link rel="stylesheet" href="<: uri_for('/static/css/normalize.css') :>" />
     <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Open+Sans">
@@ -12,7 +13,42 @@
     <script src="<: uri_for('/static/js/jquery-2.1.0.min.js') :>"></script>
     <script src="<: uri_for('/static/jsonview/jquery.jsonview.js') :>"></script>
     <script src="<: uri_for('/static/js/metakgs.js') :>"></script>
+    <script src="<: uri_for('/static/js/metakgs/util.js') :>"></script>
     <script src="<: uri_for('/static/js/metakgs/explorer.js') :>"></script>
+    <script>
+      $(document).ready(function() {
+        var explorer = Object.create( MetaKGS.Explorer );
+        var $requestForm = $( "#js-request-form" );
+
+        //
+        //  Request
+        //
+
+        explorer.$requestURL    = $requestForm.find( "input[name='url']" );
+        explorer.$requestButton = $requestForm.find( "input[type='submit']" );
+        explorer.$abortButton   = $requestForm.find( "input[type='reset']" );
+        explorer.$requestLinks  = $( ".js-request-link" );
+
+        //
+        //  Response
+        //
+
+        explorer.$responseStatus  = $( "#js-response-status" );
+        explorer.$responseHeaders = $( "#js-response-headers" );
+        explorer.$showHeaders     = $( "#js-show-headers" );
+        explorer.$hideHeaders     = $( "#js-hide-headers" );
+        explorer.$responseBody    = $( "#js-response-body" );
+        explorer.$responseTime    = $( "#js-response-time" );
+
+        //
+        //  Error, progress, etc.
+        //
+
+        explorer.$message = $( "#js-message" );
+
+        explorer.run();
+      });
+    </script>
   </head>
   <body>
     <header class="container">
