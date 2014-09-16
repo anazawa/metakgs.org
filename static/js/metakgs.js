@@ -6,7 +6,15 @@
 
 var MetaKGS = {};
 
-(function(MetaKGS) {
+(function(window, MetaKGS) {
   "use strict";
 
-}(MetaKGS));
+  if ( typeof window.console === "undefined" ) {
+    window.console = {
+      log: function() {},
+      warn: function() {},
+      error: function() {}
+    };
+  }
+
+}(window, MetaKGS));
