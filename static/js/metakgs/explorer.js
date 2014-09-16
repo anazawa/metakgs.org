@@ -54,14 +54,14 @@ if ( typeof jQuery.fn.JSONView === "undefined" ) { throw "jquery.jsonview.js is 
    */
 
   MetaKGS.Explorer.validPaths = new RegExp(
-    "^\/api(?:"
-      + [ "\/archives\/[a-zA-Z][a-zA-Z0-9]{0,9}(?:\/[1-9]\\d*\/(?:[1-9]|1[0-2]))?",
-          "\/top100",
-          "\/tournament\/[1-9]\\d*",
-          "\/tournament\/[1-9]\\d*\/entrants",
-          "\/tournament\/[1-9]\\d*\/round\/[1-9]\\d*",
-          "\/tournaments(?:\/[1-9]\\d*)?" ].join("|")
-      + ")$"
+    "^\/api(?:" + [
+      "\/archives\/[a-zA-Z][a-zA-Z0-9]{0,9}(?:\/[1-9]\\d*\/(?:[1-9]|1[0-2]))?",
+      "\/top100",
+      "\/tournament\/[1-9]\\d*",
+      "\/tournament\/[1-9]\\d*\/entrants",
+      "\/tournament\/[1-9]\\d*\/round\/[1-9]\\d*",
+      "\/tournaments(?:\/[1-9]\\d*)?"
+    ].join("|") + ")$"
   );
 
   MetaKGS.Explorer.isValidURL = function(url) {
