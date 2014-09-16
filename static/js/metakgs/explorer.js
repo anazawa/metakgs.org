@@ -123,11 +123,11 @@ if ( typeof jQuery.fn.JSONView === "undefined" ) { throw "jquery.jsonview.js is 
         this.done({
           code: jqXHR.status,
           message: jqXHR.statusText,
-          body: jqXHR.responseJSON,
           headers: {
             get: function(field) { return jqXHR.getResponseHeader(field); },
             stringify: function() { return jqXHR.getAllResponseHeaders(); }
           },
+          body: jqXHR.responseJSON,
           time: stopwatch.getElapsedTime()
         });
       }
@@ -136,11 +136,11 @@ if ( typeof jQuery.fn.JSONView === "undefined" ) { throw "jquery.jsonview.js is 
       this.done({
         code: jqXHR.status,
         message: jqXHR.statusText,
-        body: data,
         headers: {
           get: function(field) { return jqXHR.getResponseHeader(field); },
           stringify: function() { return jqXHR.getAllResponseHeaders(); }
         },
+        body: data,
         time: stopwatch.getElapsedTime()
       });
     }).
