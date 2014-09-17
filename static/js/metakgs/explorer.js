@@ -1,5 +1,4 @@
 if ( typeof MetaKGS === "undefined" ) { throw "metakgs.js is required"; }
-if ( typeof MetaKGS.Util === "undefined" ) { throw "metakgs/util.js is required"; }
 if ( typeof jQuery === "undefined" ) { throw "jquery.js is required"; }
 if ( typeof jQuery.fn.JSONView === "undefined" ) { throw "jquery.jsonview.js is required"; }
 
@@ -10,7 +9,7 @@ if ( typeof jQuery.fn.JSONView === "undefined" ) { throw "jquery.jsonview.js is 
    *  MeataKGS Explorer
    */
 
-  MetaKGS.Explorer = {
+  MetaKGS.App.Explorer = {
     eventNamespace:   "metakgsExplorer",
     $requestURL:      $(),
     $requestButton:   $(),
@@ -25,17 +24,17 @@ if ( typeof jQuery.fn.JSONView === "undefined" ) { throw "jquery.jsonview.js is 
     $message:         $()
   };
 
-  MetaKGS.Explorer.eventNameFor = function(event) {
+  MetaKGS.App.Explorer.eventNameFor = function(event) {
     return this.eventNamespace ? event + "." + this.eventNamespace : event;
   };
 
-  MetaKGS.Explorer.baseURL = (function() {
+  MetaKGS.App.Explorer.baseURL = (function() {
     var loc = window.location;
     var path = loc.pathname.replace( /\/explorer$/, "" );
     return loc.protocol + "//" + loc.host + path;
   }());
 
-  MetaKGS.Explorer.buildURL = function(url) {
+  MetaKGS.App.Explorer.buildURL = function(url) {
     if ( url.match(/^https?:\/\//) ) { return url; }
     return this.baseURL + "/" + url.replace( /^\//, "" );
   };
@@ -53,7 +52,7 @@ if ( typeof jQuery.fn.JSONView === "undefined" ) { throw "jquery.jsonview.js is 
    *    - GET /api/tournament/:id/round/:round
    */
 
-  MetaKGS.Explorer.validPaths = new RegExp(
+  MetaKGS.App.Explorer.validPaths = new RegExp(
     "^\/api(?:" + [
       "\/archives\/[a-zA-Z][a-zA-Z0-9]{0,9}(?:\/[1-9]\\d*\/(?:[1-9]|1[0-2]))?",
       "\/top100",
@@ -64,13 +63,13 @@ if ( typeof jQuery.fn.JSONView === "undefined" ) { throw "jquery.jsonview.js is 
     ].join("|") + ")$"
   );
 
-  MetaKGS.Explorer.isValidURL = function(url) {
+  MetaKGS.App.Explorer.isValidURL = function(url) {
     var baseURL = MetaKGS.Util.escapeRegExp( this.baseURL );
     var path = this.buildURL( url ).replace( new RegExp("^"+baseURL), "" );
     return this.validPaths.test( path );
   };
 
-  MetaKGS.Explorer.get = function(arg) {
+  MetaKGS.App.Explorer.get = function(arg) {
     var url = this.buildURL( arg );
     var stopwatch = Object.create( MetaKGS.Util.Stopwatch );
 
@@ -141,7 +140,7 @@ if ( typeof jQuery.fn.JSONView === "undefined" ) { throw "jquery.jsonview.js is 
     });
   };
 
-  MetaKGS.Explorer.start = function() {
+  MetaKGS.App.Explorer.start = function() {
     this.$requestButton.prop( "disabled", true );
     this.$responseStatus.empty().hide();
     this.$message.empty().hide();
@@ -152,7 +151,7 @@ if ( typeof jQuery.fn.JSONView === "undefined" ) { throw "jquery.jsonview.js is 
     this.$responseTime.empty().hide();
   };
 
-  MetaKGS.Explorer.send = function(request) { 
+  MetaKGS.App.Explorer.send = function(request) { 
     var click = this.eventNameFor( "click" );
 
     this.$abortButton.one(click, function(event) {
@@ -165,7 +164,7 @@ if ( typeof jQuery.fn.JSONView === "undefined" ) { throw "jquery.jsonview.js is 
     this.$message.text( "Loading..." ).show();
   };
 
-  MetaKGS.Explorer.done = function(response) {
+  MetaKGS.App.Explorer.done = function(response) {
     var that = this;
     var click = this.eventNameFor( "click" );
 
@@ -191,17 +190,17 @@ if ( typeof jQuery.fn.JSONView === "undefined" ) { throw "jquery.jsonview.js is 
     });
   };
 
-  MetaKGS.Explorer.fail = function(message) {
+  MetaKGS.App.Explorer.fail = function(message) {
     this.$message.text( message ).show();
   };
 
-  MetaKGS.Explorer.always = function() {
+  MetaKGS.App.Explorer.always = function() {
     var click = this.eventNameFor( "click" );
     this.$abortButton.off( click ).prop( "disabled", true );
     this.$requestButton.prop( "disabled", false );
   };
   
-  MetaKGS.Explorer.run = function() {
+  MetaKGS.App.Explorer.run = function() {
     var that = this;
     var click = this.eventNameFor( "click" );
 
@@ -242,5 +241,38 @@ if ( typeof jQuery.fn.JSONView === "undefined" ) { throw "jquery.jsonview.js is 
     });
   };
 
+  $(document).ready(function() {
+    var explorer = Object.create( MetaKGS.App.Explorer );
+    var $requestForm = $( "#js-request-form" );
+
+    /*
+     *  Request
+     */
+
+    explorer.$requestURL    = $requestForm.find( "input[name='url']" );
+    explorer.$requestButton = $requestForm.find( "input[type='submit']" );
+    explorer.$abortButton   = $requestForm.find( "input[type='reset']" );
+    explorer.$requestLinks  = $( ".js-request-link" );
+
+    /*
+     *  Response
+     */
+
+    explorer.$responseStatus  = $( "#js-response-status" );
+    explorer.$responseHeaders = $( "#js-response-headers" );
+    explorer.$showHeaders     = $( "#js-show-headers" );
+    explorer.$hideHeaders     = $( "#js-hide-headers" );
+    explorer.$responseBody    = $( "#js-response-body" );
+    explorer.$responseTime    = $( "#js-response-time" );
+
+    /*
+     *  Error, progress, etc.
+     */
+
+    explorer.$message = $( "#js-message" );
+
+    explorer.run();
+  });
+ 
 }(window, jQuery, MetaKGS));
 

@@ -4,12 +4,34 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><: $title || "MetaKGS - Unofficial JSON API for KGS Go Server" :></title>
-: block stylesheets -> {
     <link rel="stylesheet" href="<: static_file('/static/css/normalize.css') :>">
+: block fonts -> {
+    <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Open+Sans">
 : }
-: block javascripts -> {}
+: block stylesheets -> {
+    <link rel="stylesheet" href="<: static_file('/static/css/metakgs.css') :>">
+: }
+: block jquery -> {
+    <script src="<: static_file('/static/js/jquery-2.1.0.min.js') :>"></script>
+: }
+: block javascripts -> {
+    <script src="<: static_file('/static/js/metakgs.js') :>"></script>
+: }
   </head>
   <body>
-: block content -> {}
+: block content -> {
+    <nav class="container clearfix">
+      <a class="navbar-header" href="<: uri_for('/') :>">
+        <img src="<: static_file('/static/img/logo.png') :>"
+          height="50" width="198" alt="MetaKGS Logo">
+      </a>
+      <ul class="navbar-list" data-toggle="navbar">
+        <li><a href="<: uri_for('/docs') :>">Documentation</a></li>
+        <li><a href="<: uri_for('/explorer') :>">APIs Explorer</a></li>
+        <li><a href="https://github.com/anazawa/metakgs.org/issues">Issues</a></li>
+      </ul>
+    </nav>
+
+: }
   </body>
 </html>

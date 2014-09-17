@@ -2,56 +2,23 @@
 :   title => "MetaKGS APIs Explorer",
 : }
 
-: after stylesheets -> {
-    <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Open+Sans">
+: after fonts -> {
     <link rel="stylesheet" href="<: static_file('/static/font-awesome/css/font-awesome.min.css') :>">
-    <link rel="stylesheet" href="<: static_file('/static/jsonview/jquery.jsonview.css') :>">
-    <link rel="stylesheet" href="<: static_file('/static/css/metakgs.css') :>">
 : }
 
-: override javascripts -> {
-    <script src="<: static_file('/static/js/jquery-2.1.0.min.js') :>"></script>
-    <script src="<: static_file('/static/jsonview/jquery.jsonview.js') :>"></script>
-    <script src="<: static_file('/static/js/metakgs.js') :>"></script>
-    <script src="<: static_file('/static/js/metakgs/util.js') :>"></script>
+: after stylesheets -> {
+    <link rel="stylesheet" href="<: static_file('/static/css/metakgs/jsonview.css') :>">
+: }
+
+: after jquery -> {
+    <script src="<: static_file('/static/js/jquery.jsonview.js') :>"></script>
+: }
+
+: after javascripts -> {
     <script src="<: static_file('/static/js/metakgs/explorer.js') :>"></script>
-    <script>
-      $(document).ready(function() {
-        var explorer = Object.create( MetaKGS.Explorer );
-        var $requestForm = $( "#js-request-form" );
-
-        //
-        //  Request
-        //
-
-        explorer.$requestURL    = $requestForm.find( "input[name='url']" );
-        explorer.$requestButton = $requestForm.find( "input[type='submit']" );
-        explorer.$abortButton   = $requestForm.find( "input[type='reset']" );
-        explorer.$requestLinks  = $( ".js-request-link" );
-
-        //
-        //  Response
-        //
-
-        explorer.$responseStatus  = $( "#js-response-status" );
-        explorer.$responseHeaders = $( "#js-response-headers" );
-        explorer.$showHeaders     = $( "#js-show-headers" );
-        explorer.$hideHeaders     = $( "#js-hide-headers" );
-        explorer.$responseBody    = $( "#js-response-body" );
-        explorer.$responseTime    = $( "#js-response-time" );
-
-        //
-        //  Error, progress, etc.
-        //
-
-        explorer.$message = $( "#js-message" );
-
-        explorer.run();
-      });
-    </script>
 : }
 
-: override content -> {
+: after content -> {
     <header class="container">
       <h1>MetaKGS APIs Explorer</h1>
     </header>
@@ -60,7 +27,10 @@
 
       <p>This app allows you to explore MetaKGS APIs.</p>
 
-      <h2>Request</h2>
+      <h2>
+        <i class="fa fa-arrow-circle-right"></i>
+        Request
+      </h2>
 
       <form id="js-request-form">
         <input name="url" type="text">
@@ -68,7 +38,10 @@
         <input class="btn" value="Cancel" type="reset">
       </form>
 
-      <h2>Response</h2>
+      <h2>
+        <i class="fa fa-arrow-circle-left"></i>
+        Response
+      </h2>
 
       <h3 id="js-response-status"></h3>
 
@@ -95,19 +68,6 @@
         <li><a class="js-request-link" href="/api/tournament/762">GET /api/tournament/762</a></li>
         <li><a class="js-request-link" href="/api/tournament/762/entrants">GET /api/tournament/762/entrants</a></li>
         <li><a class="js-request-link" href="/api/tournament/762/round/2">GET /api/tournament/762/round/2</a></li>
-      </ul>
-
-      <h2>Documentation</h2>
-
-      <ul>
-        <li><a href="<: uri_for('/#get-api-archives-user') :>">GET /api/archives/:user</a></li>
-        <li><a href="<: uri_for('/#get-api-archives-user-year-month') :>">GET /api/archives/:user/:year/:month</a></li>
-        <li><a href="<: uri_for('/#get-api-top100') :>">GET /api/top100</a></li>
-        <li><a href="<: uri_for('/#get-api-tournaments') :>">GET /api/tornaments</a></li>
-        <li><a href="<: uri_for('/#get-api-tournaments-year') :>">GET /api/tornaments/:year</a></li>
-        <li><a href="<: uri_for('/#get-api-tournament-id') :>">GET /api/tornament/:id</a></li>
-        <li><a href="<: uri_for('/#get-api-tournament-id-entrants') :>">GET /api/tornament/:id/entrants</a></li>
-        <li><a href="<: uri_for('/#get-api-tournament-id-round-round') :>">GET /api/tornament/:id/round/:round</a></li>
       </ul>
 
     </section><!-- /.container -->

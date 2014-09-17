@@ -1,7 +1,7 @@
 /*
- jQuery JSON View v1.2.0
- Author: yesmeck, https://github.com/yesmeck/jquery-jsonview
- License: MIT
+ *  jQuery JSON View v1.2.0
+ *  Author: yesmeck, https://github.com/yesmeck/jquery-jsonview
+ *  License: MIT
  */
 
 @charset "UTF-8";
@@ -54,3 +54,13 @@
     padding: 0; }
   .jsonview h1 {
     font-size: 1.2em; }
+
+/*  MetaKGS-specific definition */
+
+.jsonview {
+  margin-top: 1em;
+  font-family: Menlo, Monaco, Consolas, "Courier New", monospace;
+  font-size: 0.8em;
+  line-height: 1.4;
+}
+
