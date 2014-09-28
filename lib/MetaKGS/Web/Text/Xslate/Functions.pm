@@ -3,7 +3,7 @@ use strict;
 use warnings;
 use Exporter qw/import/;
 use File::Spec;
-use MetaKGS;
+use MetaKGS::Web;
 
 our @EXPORT = qw(
     c
@@ -14,13 +14,13 @@ our @EXPORT = qw(
 
 our %StaticFile;
 
-sub c        { MetaKGS->context }
-sub uri_with { MetaKGS->context->request->uri_with(@_) }
-sub uri_for  { MetaKGS->context->uri_for(@_) }
+sub c        { MetaKGS::Web->context }
+sub uri_with { MetaKGS::Web->context->request->uri_with(@_) }
+sub uri_for  { MetaKGS::Web->context->uri_for(@_) }
 
 sub static_file {
     my $file = shift;
-    my $c = MetaKGS->context;
+    my $c = MetaKGS::Web->context;
 
     unless ( exists $StaticFile{$file} ) {
         my $fullpath = File::Spec->catfile( $c->base_dir, $file );
