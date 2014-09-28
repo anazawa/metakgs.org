@@ -5,7 +5,7 @@ use parent qw/MetaKGS Amon2::Web/;
 use LWP::UserAgent;
 use MetaKGS::Web::Response;
 use MetaKGS::Web::RouterBoom;
-use MetaKGS::Web::View::Xslate;
+use MetaKGS::Web::Text::Xslate;
 use TheSchwartz::Simple;
 use TheSchwartz::Simple::Job;
 use Try::Tiny;
@@ -33,7 +33,7 @@ __PACKAGE__->add_trigger(
 );
 
 sub create_view {
-    MetaKGS::Web::View::Xslate->instance;
+    MetaKGS::Web::Text::Xslate->instance;
 }
 
 sub create_response {

@@ -1,4 +1,4 @@
-package MetaKGS::Web::View::Xslate::Functions;
+package MetaKGS::Web::Text::Xslate::Functions;
 use strict;
 use warnings;
 use Exporter qw/import/;
