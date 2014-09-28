@@ -1,10 +1,9 @@
 #!/usr/bin/env perl
 use strict;
 use warnings;
-use Getopt::Long;
+use Getopt::Long qw(:config auto_help);
 use JSON;
 use LWP::UserAgent;
-use Pod::Usage;
 use Time::Piece;
 
 my $now = gmtime;
@@ -16,10 +15,11 @@ GetOptions(
     'month=i' => \$month,
 ) or exit 1;
 
-my ( $command, $user ) = @ARGV;
+my $user = shift @ARGV;
 
-pod2usage(2) unless $command and $user;
-die "Unknown command '$command'" unless $command eq 'search';
+die "<username> is required" unless defined $user;
+die "Invalid <username>: $user" unless $user =~ /^[a-zA-Z][a-zA-Z0-9]{0,9}$/;
+die "Invalid --month: $month" unless $month >= 1 and $month <= 12;
 
 my $json = JSON->new;
 my $user_agent = LWP::UserAgent->new;
@@ -33,5 +33,5 @@ __END__
 
 =head1 SYNOPSIS
 
-  archives.pl search [-y year] [-m month] <username>
+  archives.pl [-y year] [-m month] <username>
 
