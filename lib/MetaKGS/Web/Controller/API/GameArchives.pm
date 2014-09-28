@@ -43,10 +43,15 @@ sub show {
 
 sub do_show {
     my ( $class, $c, $resource ) = @_;
-    my $calendar = $resource->{content}->{calendar};
+    my %query = $resource->{request_uri}->query_form;
+    my $cal = $resource->{content}->{calendar};
+
+    my $month = sprintf '%04d%02d', @query{qw/year month/};
+    my $start = $cal && sprintf '%04d%02d', @{$cal->[0]}{qw/year month/};
+    my $end   = gmtime->strftime( '%Y%m' );
 
     return $class->not_found( $c, $resource )
-        if !$calendar or none { !exists $_->{uri} } @$calendar;
+        if !$cal or $month < $start or $end < $month;
 
     $class->SUPER::do_show( $c, $resource );
 }
