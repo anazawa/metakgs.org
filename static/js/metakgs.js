@@ -23,6 +23,12 @@ if ( typeof window.console === "undefined" ) {
 (function(window, document, $, MetaKGS) {
   "use strict";
 
+  MetaKGS.GitHub = {
+    getRepository: function() {
+      return $.getJSON( "https://api.github.com/repos/anazawa/metakgs.org" );
+    }
+  };
+
   /*
    *  Navbar
    */
@@ -94,6 +100,16 @@ if ( typeof window.console === "undefined" ) {
       navbar.path   = $this.data( "path" ) || window.location.pathname;
 
       navbar.activate();
+    });
+
+    $(".js-github-issues-count").each(function() {
+      var $this = $( this );
+
+      $this.hide();
+      MetaKGS.GitHub.getRepository().done(function(repository) {
+        if ( repository.open_issues_count === 0 ) { return; }
+        $this.text( repository.open_issues_count ).show();
+      });
     });
   });
 

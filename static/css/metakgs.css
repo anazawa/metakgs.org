@@ -189,6 +189,16 @@ form input[type="text"] {
 
 .photo { box-shadow: 3px 3px 5px rgba(119,119,119,0.8); }
 
+.badge {
+    border-radius: 10px;
+    padding: 2px 6px;
+    margin-left: 0.5em;
+    font-size: 0.9em;
+    font-weight: bold;
+    color: #fff;
+    background-color: #777;
+}
+
 /* Navbar */
 
 @media (min-width: 768px) {

@@ -28,7 +28,7 @@
       <ul class="navbar-list" data-toggle="navbar">
         <li><a href="<: uri_for('/docs') :>">Documentation</a></li>
         <li><a href="<: uri_for('/explorer') :>">APIs Explorer</a></li>
-        <li><a href="https://github.com/anazawa/metakgs.org/issues">Issues</a></li>
+        <li><a href="https://github.com/anazawa/metakgs.org/issues">Issues<span class="badge js-github-issues-count"></span></a></li>
       </ul>
     </nav>
 
