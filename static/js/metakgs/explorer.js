@@ -89,9 +89,10 @@ if ( typeof jQuery.fn.JSONView === "undefined" ) { throw "jquery.jsonview.js is 
     $.ajax(url, {
       context: this,
       dataType: "json",
+      cache: false,
       beforeSend: function(jqXHR, settings) {
         this.send({
-          url: settings.url,
+          url: url,
           abort: function() { jqXHR.abort(); }
         });
 
