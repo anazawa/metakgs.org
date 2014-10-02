@@ -377,6 +377,16 @@ DISTRIBUTIONS
       Class::Singleton 1.4
     requirements:
       ExtUtils::MakeMaker 0
+  Class-Trigger-0.14
+    pathname: M/MI/MIYAGAWA/Class-Trigger-0.14.tar.gz
+    provides:
+      Class::Trigger 0.14
+    requirements:
+      ExtUtils::MakeMaker 6.42
+      Filter::Util::Call 0
+      IO::Scalar 0
+      IO::WrapTie 0
+      Test::More 0.32
   Cookie-Baker-0.03
     pathname: K/KA/KAZEBURO/Cookie-Baker-0.03.tar.gz
     provides:
@@ -587,6 +597,44 @@ DISTRIBUTIONS
       Test::Requires 0
       XSLoader 0.02
       perl 5.008001
+  Data-ObjectDriver-0.09
+    pathname: S/SI/SIXAPART/Data-ObjectDriver-0.09.tar.gz
+    provides:
+      Data::ObjectDriver 0.09
+      Data::ObjectDriver::BaseObject undef
+      Data::ObjectDriver::BaseView undef
+      Data::ObjectDriver::Driver::BaseCache undef
+      Data::ObjectDriver::Driver::Cache::Apache undef
+      Data::ObjectDriver::Driver::Cache::Cache undef
+      Data::ObjectDriver::Driver::Cache::Memcached undef
+      Data::ObjectDriver::Driver::Cache::RAM undef
+      Data::ObjectDriver::Driver::DBD undef
+      Data::ObjectDriver::Driver::DBD::Oracle undef
+      Data::ObjectDriver::Driver::DBD::Oracle::db undef
+      Data::ObjectDriver::Driver::DBD::Pg undef
+      Data::ObjectDriver::Driver::DBD::SQLite undef
+      Data::ObjectDriver::Driver::DBD::mysql undef
+      Data::ObjectDriver::Driver::DBI undef
+      Data::ObjectDriver::Driver::GearmanDBI undef
+      Data::ObjectDriver::Driver::MultiPartition undef
+      Data::ObjectDriver::Driver::Multiplexer undef
+      Data::ObjectDriver::Driver::Partition undef
+      Data::ObjectDriver::Driver::SimplePartition undef
+      Data::ObjectDriver::Errors undef
+      Data::ObjectDriver::Iterator undef
+      Data::ObjectDriver::Profiler undef
+      Data::ObjectDriver::ResultSet undef
+      Data::ObjectDriver::SQL undef
+      Data::ObjectDriver::SQL::Oracle undef
+    requirements:
+      Class::Accessor::Fast 0
+      Class::Data::Inheritable 0
+      Class::Trigger 0
+      DBI 0
+      ExtUtils::MakeMaker 6.42
+      List::Util 0
+      Test::Exception 0
+      perl 5.006001
   Data-OptList-0.109
     pathname: R/RJ/RJBS/Data-OptList-0.109.tar.gz
     provides:
@@ -2162,6 +2210,24 @@ DISTRIBUTIONS
       Encode 2.10
       Exporter 5.57
       ExtUtils::MakeMaker 6.30
+  IO-stringy-2.110
+    pathname: D/DS/DSKOLL/IO-stringy-2.110.tar.gz
+    provides:
+      Common undef
+      ExtUtils::TBone 1.1
+      IO::AtomicFile 2.110
+      IO::Clever 1.01
+      IO::InnerFile 2.110
+      IO::Lines 2.110
+      IO::Scalar 2.110
+      IO::ScalarArray 2.110
+      IO::Stringy 2.110
+      IO::Wrap 2.110
+      IO::WrapTie 2.110
+      IO::WrapTie::Master 2.110
+      IO::WrapTie::Slave 2.110
+    requirements:
+      ExtUtils::MakeMaker 0
   IPC-Signal-1.00
     pathname: R/RO/ROSCH/IPC-Signal-1.00.tar.gz
     provides:
@@ -3414,6 +3480,22 @@ DISTRIBUTIONS
       XSLoader 0.02
       parent 0.221
       perl 5.008001
+  TheSchwartz-1.10
+    pathname: S/SI/SIXAPART/TheSchwartz-1.10.tar.gz
+    provides:
+      TheSchwartz 1.10
+      TheSchwartz::Error undef
+      TheSchwartz::ExitStatus undef
+      TheSchwartz::FuncMap undef
+      TheSchwartz::Job undef
+      TheSchwartz::JobHandle undef
+      TheSchwartz::Worker undef
+    requirements:
+      Data::ObjectDriver 0.04
+      Digest::MD5 0
+      ExtUtils::MakeMaker 6.42
+      Storable 0
+      Test::More 0.88
   TheSchwartz-Simple-0.05
     pathname: M/MI/MIYAGAWA/TheSchwartz-Simple-0.05.tar.gz
     provides:

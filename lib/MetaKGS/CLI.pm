@@ -2,7 +2,7 @@ package MetaKGS::CLI;
 use strict;
 use warnings;
 use parent qw/MetaKGS/;
-use Data::ObjectDriver::DBI;
+use Data::ObjectDriver::Driver::DBI;
 use TheSchwartz;
 
 sub the_schwartz {
@@ -13,8 +13,8 @@ sub the_schwartz {
 sub _build_the_schwartz {
     my $self = shift;
     my $config = $self->config->{'TheSchwartz'};
-    my $dbh = DBI->connect([ @$config ]);
-    my $driver = Data::ObjectDriver::DBI->new( dbh => $dbh );
+    my $dbh = DBI->connect( @$config );
+    my $driver = Data::ObjectDriver::Driver::DBI->new( dbh => $dbh );
 
     TheSchwartz->new(
         databases => [{ driver => $driver }],

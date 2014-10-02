@@ -1,0 +1,52 @@
+#!perl
+use strict;
+use warnings;
+use File::Spec;
+use File::Basename;
+use lib File::Spec->catdir( dirname(__FILE__), '../lib' );
+
+use MetaKGS::CLI;
+use MetaKGS::TheSchwartz::Worker::Scraper;
+use Parallel::Prefork;
+
+use constant MaxRequestsPerChild => 60;
+
+my $pm = Parallel::Prefork->new({
+    max_workers => 3,
+    fork_delay => 1,
+    trap_signals => {
+        TERM => 'TERM',
+        HUP  => 'TERM',
+    },
+});
+
+while ( $pm->signal_received ne 'TERM' ) {
+    $pm->start and next;
+
+    my $metakgs = MetaKGS::CLI->new;
+    my $guard = $metakgs->context_guard;
+
+    my $the_schwartz = $metakgs->the_schwartz;
+       $the_schwartz->set_verbose( 1 );
+       $the_schwartz->can_do( 'MetaKGS::TheSchwartz::Worker::Scraper' );
+
+    my $reqs_before_exit = MaxRequestsPerChild;
+
+    $SIG{TERM} = sub {
+        $reqs_before_exit = 0;
+    };
+
+    while ( $reqs_before_exit > 0 ) {
+        if ( $the_schwartz->work_once ) {
+            $reqs_before_exit--;
+        }
+        else {
+            sleep 5;
+        }
+    }
+
+    $pm->finish;
+}
+
+$pm->wait_all_children;
+
