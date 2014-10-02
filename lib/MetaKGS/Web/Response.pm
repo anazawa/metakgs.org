@@ -10,4 +10,6 @@ sub push_link_header {
     $self->headers->push_header( 'Link' => $link );
 }
 
+sub retry_after { shift->headers->_date_header( 'Retry-After', @_ ) }
+
 1;

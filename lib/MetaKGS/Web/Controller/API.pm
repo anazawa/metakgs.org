@@ -183,7 +183,7 @@ sub accepted {
     my $response = $c->render_json( $body );
 
     $response->status( HTTP_ACCEPTED );
-    $response->headers->retry_after( $job->{grabbed_until} ) if $is_grabbed;
+    $response->retry_after( $job->{grabbed_until} ) if $is_grabbed;
     $response->header( 'Access-Control-Allow-Origin' => '*' );
     $response->header( 'Access-Control-Allow-Methods' => 'GET' );
 
