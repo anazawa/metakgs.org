@@ -26,7 +26,9 @@ __PACKAGE__->add_trigger(
         $response->header( 'X-Frame-Options' => 'DENY' );
 
         # Cache control.
-        $response->header( 'Cache-Control' => 'private' );
+        if ( !$response->header('Cache-Control') ) {
+            $response->header( 'Cache-Control' => 'private' );
+        }
 
         return;
     },
