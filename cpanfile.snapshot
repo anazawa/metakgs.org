@@ -414,6 +414,21 @@ DISTRIBUTIONS
       Test::More 0.47
       Tie::Hash 0
       perl 5.006
+  DBD-mysql-4.028
+    pathname: C/CA/CAPTTOFU/DBD-mysql-4.028.tar.gz
+    provides:
+      Bundle::DBD::mysql 4.027
+      DBD::mysql 4.028
+      DBD::mysql::GetInfo undef
+      DBD::mysql::db 4.028
+      DBD::mysql::dr 4.028
+      DBD::mysql::st 4.028
+    requirements:
+      DBI 1.08
+      Data::Dumper 0
+      Test::Deep 0
+      Test::More 0
+      perl 5.008001
   DBI-1.631
     pathname: T/TI/TIMB/DBI-1.631.tar.gz
     provides:
@@ -3212,6 +3227,65 @@ DISTRIBUTIONS
     requirements:
       ExtUtils::MakeMaker 6.30
       Spiffy 0.30
+  Test-Deep-0.113
+    pathname: R/RJ/RJBS/Test-Deep-0.113.tar.gz
+    provides:
+      Test::Deep 0.113
+      Test::Deep::All undef
+      Test::Deep::Any undef
+      Test::Deep::Array undef
+      Test::Deep::ArrayEach undef
+      Test::Deep::ArrayElementsOnly undef
+      Test::Deep::ArrayLength undef
+      Test::Deep::ArrayLengthOnly undef
+      Test::Deep::Blessed undef
+      Test::Deep::Boolean undef
+      Test::Deep::Cache undef
+      Test::Deep::Cache::Simple undef
+      Test::Deep::Class undef
+      Test::Deep::Cmp undef
+      Test::Deep::Code undef
+      Test::Deep::Hash undef
+      Test::Deep::HashEach undef
+      Test::Deep::HashElements undef
+      Test::Deep::HashKeys undef
+      Test::Deep::HashKeysOnly undef
+      Test::Deep::Ignore undef
+      Test::Deep::Isa undef
+      Test::Deep::ListMethods undef
+      Test::Deep::MM undef
+      Test::Deep::Methods undef
+      Test::Deep::NoTest undef
+      Test::Deep::Number undef
+      Test::Deep::Obj undef
+      Test::Deep::Ref undef
+      Test::Deep::RefType undef
+      Test::Deep::Regexp undef
+      Test::Deep::RegexpMatches undef
+      Test::Deep::RegexpRef undef
+      Test::Deep::RegexpRefOnly undef
+      Test::Deep::RegexpVersion undef
+      Test::Deep::ScalarRef undef
+      Test::Deep::ScalarRefOnly undef
+      Test::Deep::Set undef
+      Test::Deep::Shallow undef
+      Test::Deep::Stack undef
+      Test::Deep::String undef
+      Test::Deep::SubHash undef
+      Test::Deep::SubHashElements undef
+      Test::Deep::SubHashKeys undef
+      Test::Deep::SubHashKeysOnly undef
+      Test::Deep::SuperHash undef
+      Test::Deep::SuperHashElements undef
+      Test::Deep::SuperHashKeys undef
+      Test::Deep::SuperHashKeysOnly undef
+    requirements:
+      ExtUtils::MakeMaker 0
+      List::Util 1.09
+      Scalar::Util 1.09
+      Test::More 0
+      Test::NoWarnings 0.02
+      Test::Tester 0.04
   Test-Differences-0.62
     pathname: D/DC/DCANTRELL/Test-Differences-0.62.tar.gz
     provides:
@@ -3335,6 +3409,17 @@ DISTRIBUTIONS
       Test::Differences 0
       Test::Fatal 0
       Test::More 0
+  Test-NoWarnings-1.04
+    pathname: A/AD/ADAMK/Test-NoWarnings-1.04.tar.gz
+    provides:
+      Test::NoWarnings 1.04
+      Test::NoWarnings::Warning 1.04
+    requirements:
+      ExtUtils::MakeMaker 0
+      Test::Builder 0.86
+      Test::More 0.47
+      Test::Tester 0.107
+      perl 5.006
   Test-Requires-0.07
     pathname: T/TO/TOKUHIROM/Test-Requires-0.07.tar.gz
     provides:
@@ -3374,6 +3459,16 @@ DISTRIBUTIONS
       Test::SharedFork 0.19
       Time::HiRes 0
       perl 5.008001
+  Test-Tester-0.109
+    pathname: F/FD/FDALY/Test-Tester-0.109.tar.gz
+    provides:
+      Test::Tester 0.109
+      Test::Tester::Capture undef
+      Test::Tester::CaptureRunner undef
+      Test::Tester::Delegate undef
+    requirements:
+      ExtUtils::MakeMaker 0
+      Test::Builder 0
   Test-WWW-Mechanize-1.44
     pathname: P/PE/PETDANCE/Test-WWW-Mechanize-1.44.tar.gz
     provides:
