@@ -1,13 +1,36 @@
 : cascade "include/layout.tx"
 
 : after content -> {
+
     <header class="container">
-      <h1>Changes</h1>
+      <h1>Home</h1>
     </header>
 
     <section class="container">
 
-      <h2 id="changes">Changes</h2>
+      <p>
+        MetaKGS.org is a non-commercial organization which aims
+        to make the <a href="http://www.gokgs.com/">KGS Go Server</a> more fun.
+        It's unofficial. Currently, MetaKGS only provides read-only JSON APIs
+        for KGS. See the <a href="<: uri_for('/docs') :>">documentaion</a>
+        for details.
+      </p>
+
+      <p>
+        Thanks to wms, the author of the KGS Go Server, the service is provided
+        for free. Joining <a href="http://www.gokgs.com/kgsPlus.jsp">KGS Plus</a>,
+        a group of extra go services, contributes to the maintenance
+        of the server.
+      </p>
+
+      <p>
+        <a href="http://www.gokgs.com/kgsPlus.jsp">
+          <img src="<: static_file('/static/img/kgsPlus.png') :>"
+            width="300" alt="KGS Plus Logo">
+        </a>
+      </p>
+
+      <h2 id="news">News</h2>
 
       <dl>
         <dt>0.01 Aug 11th, 2014</dt>
