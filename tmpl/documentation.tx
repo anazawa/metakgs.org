@@ -15,6 +15,7 @@
           <ul>
             <li><a href="#synopsis-javascript">Javascript</a></li>
             <li><a href="#synopsis-perl">Perl</a></li>
+            <li><a href="#synopsis-ruby">Ruby</a></li>
           </ul>
         </li>
         <li><a href="#version">Version</a></li>
@@ -78,9 +79,29 @@ if ( $response-&gt;is_success ) {
 }
 else {
     die "Failed to GET $url: ", $response-&gt;status_line;
-}
+}</pre>
 
-</pre>
+      <h3 id="synopsis-ruby">Ruby</h3>
+
+<pre>require 'net/http'
+require 'uri'
+require 'json'
+require 'pp'
+
+if ARGV.empty?
+  puts "Usage: #{__FILE__} &lt;username&gt;"
+  exit 2
+end
+
+user = ARGV.shift
+url = "http://metakgs.org/api/archives/#{user}"
+response = Net::HTTP.get_response( URI.parse(url) )
+
+if Net::HTTPSuccess === response
+  pp JSON.parse( response.body )
+else
+  response.value
+end</pre>
 
       <h2 id="version">Version</h2>
 
