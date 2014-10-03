@@ -10,6 +10,13 @@
     <nav class="container toc">
       <ul>
         <li><a href="#name">Name</a></li>
+        <li>
+          <a href="#synopsis">Synopsis</a>
+          <ul>
+            <li><a href="#synopsis-javascript">Javascript</a></li>
+            <li><a href="#synopsis-perl">Perl</a></li>
+          </ul>
+        </li>
         <li><a href="#version">Version</a></li>
         <li>
           <a href="#description">Description</a>
@@ -40,6 +47,40 @@
       <h2 id="name">Name</h2>
 
       <p>MetaKGS - Unofficial JSON API for KGS Go Server</p>
+
+      <h2 id="synopsis">Synopsis</h2>
+
+      <h3 id="synopsis-javascript">Javascript</h3>
+
+<pre>// Using jQuery
+
+var user = "foo";
+var url = "http://metakgs.org/api/archives/" + user;
+
+$.getJSON(url, function(data) {
+  // do something with data
+});
+</pre>
+
+      <h3 id="synopsis-perl">Perl</h3>
+
+<pre>use Data::Dumper qw/Dumper/;
+use JSON qw/decode_json/;
+use LWP::UserAgent;
+
+my $user = shift or die "Must provide &lt;username&gt;";
+my $url = "http://metakgs.org/api/archives/$user";
+my $user_agent = LWP::UserAgent-&gt;new;
+my $response = $user_agent-&gt;get( $url );
+
+if ( $response-&gt;is_success ) {
+    print Dumper decode_json $response-&gt;content;
+}
+else {
+    die "Failed to GET $url: ", $response-&gt;status_line;
+}
+
+</pre>
 
       <h2 id="version">Version</h2>
 
@@ -140,7 +181,6 @@
 
 <pre>Access-Control-Allow-Origin: *
 Content-Type: application/json; charset=utf-8
-Expires: Tue, 12 Aug 2014 12:34:56 GMT
 Last-Modified: Mon, 11 Aug 2014 12:34:56 GMT
 
 {
@@ -270,7 +310,6 @@ Last-Modified: Mon, 11 Aug 2014 12:34:56 GMT
 
 <pre>Access-Control-Allow-Origin: *
 Content-Type: application/json; charset=utf-8
-Expires: Tue, 12 Aug 2014 12:34:56 GMT
 Last-Modified: Mon, 11 Aug 2014 12:34:56 GMT
 
 {
@@ -312,7 +351,6 @@ Last-Modified: Mon, 11 Aug 2014 12:34:56 GMT
 
 <pre>Access-Control-Allow-Origin: *
 Content-Type: application/json; charset=utf-8
-Expires: Tue, 12 Aug 2014 12:34:56 GMT
 Last-Modified: Mon, 11 Aug 2014 12:34:56 GMT
 
 {
@@ -359,7 +397,6 @@ Last-Modified: Mon, 11 Aug 2014 12:34:56 GMT
 
 <pre>Access-Control-Allow-Origin: *
 Content-Type: application/json; charset=utf-8
-Expires: Tue, 12 Aug 2014 12:34:56 GMT
 Last-Modified: Mon, 11 Aug 2014 12:34:56 GMT
 
 {
@@ -422,7 +459,6 @@ Last-Modified: Mon, 11 Aug 2014 12:34:56 GMT
 
 <pre>Access-Control-Allow-Origin: *
 Content-Type: application/json; charset=utf-8
-Expires: Tue, 12 Aug 2014 12:34:56 GMT
 Last-Modified: Mon, 11 Aug 2014 12:34:56 GMT
 
 {
@@ -505,7 +541,6 @@ Last-Modified: Mon, 11 Aug 2014 12:34:56 GMT
 
 <pre>Access-Control-Allow-Origin: *
 Content-Type: application/json; charset=utf-8
-Expires: Tue, 12 Aug 2014 12:34:56 GMT
 Last-Modified: Mon, 11 Aug 2014 12:34:56 GMT
 
 {
