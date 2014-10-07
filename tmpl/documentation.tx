@@ -37,6 +37,7 @@
             </li>
           </ul>
         </li>
+        <li><a href="#clients">Clients</a></li>
         <li><a href="#see-also">See Also</a></li>
         <li><a href="#acknowledgement">Acknowledgement</a></li>
         <li><a href="#author">Author</a></li>
@@ -637,6 +638,12 @@ Last-Modified: Mon, 11 Aug 2014 12:34:56 GMT
     "responded_at": <span class="json-string">"2014-08-11T12:34:56Z"</span>,
     "content": <span class="json-literal">null</span>
 }</pre>
+
+      <h2 id="clients">Clients</h2>
+
+      <ul>
+        <li><a href="https://github.com/anazawa/metakgs.rb">metakgs.rb</a> (Ruby)</li>
+      </ul>
 
       <h2 id="see-also">See Also</h2>
 
