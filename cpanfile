@@ -10,6 +10,7 @@ requires 'Scalar::Util';
 requires 'Time::HiRes';
 requires 'Time::Piece', '1.20';
 requires 'Time::Seconds';
+requires 'Date::Simple';
 
 # Web Application Framework
 requires 'Amon2', '6.02';
@@ -63,6 +64,7 @@ requires 'HTML::TreeBuilder::LibXML';
 requires 'LWP::UserAgent';
 requires 'HTTP::Status';
 requires 'URI';
+requires 'URI::Fetch';
 requires 'URI::Escape';
 requires 'HTTP::Request';
 requires 'HTTP::Headers::Util';

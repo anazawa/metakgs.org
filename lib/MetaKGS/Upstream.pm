@@ -10,6 +10,10 @@ use Plack::Response;
 use Time::HiRes qw/time sleep/;
 use Try::Tiny;
 
+sub base_uri {
+    $_[0]->{base_uri};
+}
+
 sub user_agent {
     my $self = shift;
 
@@ -52,7 +56,7 @@ sub call {
     my $delay = $self->last_visit + $self->delay - time;
 
     my $req = do {
-        my $uri = URI->new( 'http://www.gokgs.com/' );
+        my $uri = URI->new( $self->base_uri );
            $uri->path( $request->path );
            $uri->query_form( $request->uri->query_form );
 

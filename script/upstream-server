@@ -18,8 +18,6 @@ my $cache = Cache::FileCache->new({
     auto_purge_on_get  => 1,
 });
 
-warn $cache->get_cache_root;
-
 my $app = builder {
     enable 'Cached',
            cache => $cache,
@@ -31,7 +29,9 @@ my $app = builder {
 
                $res;
            };
-    MetaKGS::Upstream->new->to_app;
+    MetaKGS::Upstream->new(
+        base_uri => 'http://www.gokgs.com/',
+    )->to_app;
 };
 
 return $app if caller;
@@ -46,16 +46,16 @@ my $parser = Getopt::Long::Parser->new(
 
 $parser->getoptions(
     'p|port=i' => \$port,
-    'host=s' => \$host,
+    'host=s'   => \$host,
     'version!' => \$version,
 );
 
 if ( $version ) {
-    print "MetaKGS::Proxy: $MetaKGS::Upstream::VERSION";
+    print "MetaKGS::Upstream: $MetaKGS::Upstream::VERSION";
     exit 0;
 }
 
-print "MetaKGS::Proxy: http://$host\:$port\n";
+print "MetaKGS::Upstream: http://$host\:$port\n";
 
 my $loader = Plack::Loader->load(
     'Starlet' => (

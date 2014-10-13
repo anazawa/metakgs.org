@@ -1,0 +1,51 @@
+#!/usr/bin/env perl
+use strict;
+use warnings;
+use File::Basename;
+use File::Spec;
+use lib File::Spec->catdir(dirname(__FILE__), '../lib');
+
+use Getopt::Long;
+use MetaKGS::UpstreamGames;
+use Plack::Builder;
+use Plack::Loader;
+
+my $app = builder {
+    enable 'ConditionalGET';
+    enable 'ReverseProxy';
+    MetaKGS::UpstreamGames->new(
+    )->to_app;
+};
+
+return $app if caller;
+
+my $port = 5002;
+my $host = '127.0.0.1';
+my $version;
+
+my $parser = Getopt::Long::Parser->new(
+    config => [qw(posix_default no_ignore_case auto_help)],
+);
+
+$parser->getoptions(
+    'p|port=i' => \$port,
+    'host=s'   => \$host,
+    'version!' => \$version,
+);
+
+if ( $version ) {
+    print "MetaKGS::UpstreamGames: $MetaKGS::UpstreamGames::VERSION";
+    exit 0;
+}
+
+print "MetaKGS::UpstreamGames: http://$host\:$port\n";
+
+my $loader = Plack::Loader->load(
+    'Starlet' => (
+        port => $port,
+        host => $host,
+        max_workers => 3,
+    )
+);
+
+$loader->run( $app );

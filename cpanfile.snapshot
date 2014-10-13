@@ -286,6 +286,16 @@ DISTRIBUTIONS
       Class::Data::Inheritable 0.08
     requirements:
       ExtUtils::MakeMaker 0
+  Class-ErrorHandler-0.03
+    pathname: T/TO/TOKUHIROM/Class-ErrorHandler-0.03.tar.gz
+    provides:
+      Class::ErrorHandler 0.03
+    requirements:
+      CPAN::Meta 0
+      CPAN::Meta::Prereqs 0
+      ExtUtils::CBuilder 0
+      Module::Build 0.38
+      perl 5.008_001
   Class-Inspector-1.28
     pathname: A/AD/ADAMK/Class-Inspector-1.28.tar.gz
     provides:
@@ -636,6 +646,17 @@ DISTRIBUTIONS
       Bit::Vector 7.1
       Carp::Clan 6.04
       ExtUtils::MakeMaker 0
+  Date-Simple-3.03
+    pathname: I/IZ/IZUT/Date-Simple-3.03.tar.gz
+    provides:
+      Date::Simple 3.03
+      Date::Simple::D8 undef
+      Date::Simple::Fmt undef
+      Date::Simple::ISO undef
+    requirements:
+      ExtUtils::MakeMaker 0
+      Scalar::Util 0
+      Test::More 0
   DateTime-1.12
     pathname: D/DR/DROLSKY/DateTime-1.12.tar.gz
     provides:
@@ -3495,6 +3516,22 @@ DISTRIBUTIONS
       parent 0
       perl 5.008001
       utf8 0
+  URI-Fetch-0.10
+    pathname: N/NE/NEILB/URI-Fetch-0.10.tar.gz
+    provides:
+      URI::Fetch 0.10
+      URI::Fetch::Response 0.10
+    requirements:
+      Carp 0
+      Class::ErrorHandler 0
+      ExtUtils::MakeMaker 6.30
+      LWP::UserAgent 0
+      Storable 0
+      URI 0
+      base 0
+      constant 0
+      strict 0
+      warnings 0
   Variable-Magic-0.54
     pathname: V/VP/VPIT/Variable-Magic-0.54.tar.gz
     provides:
