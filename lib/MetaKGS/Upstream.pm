@@ -4,7 +4,7 @@ use warnings;
 use parent qw/Amon2/;
 use HTTP::Status qw/HTTP_BAD_GATEWAY HTTP_GATEWAY_TIMEOUT status_message/;
 use Log::Minimal qw/warnf/;
-use LWP::UserAgent;
+use MetaKGS::LWP::UserAgent;
 use Plack::Request;
 use Plack::Response;
 use Time::HiRes qw/time sleep/;
@@ -14,7 +14,7 @@ sub user_agent {
     my $self = shift;
 
     unless ( exists $self->{user_agent} ) {
-        $self->{user_agent} = LWP::UserAgent->new(do {
+        $self->{user_agent} = MetaKGS::LWP::UserAgent->new(do {
             my $config = $self->config->{+__PACKAGE__} || {};
             %{ $config->{user_agent} || {} };
         });
@@ -69,30 +69,17 @@ sub call {
 
     sleep $delay if $delay > 0;
 
-    my $res = $self->user_agent->simple_request( $req );
+    my $res = try {
+        $self->user_agent->get_response( $req );
+    }
+    catch {
+        warnf '%s %s failed: %s', $req->method, $req->uri, $_;
+        undef;
+    };
 
     $self->last_visit( time );
 
-    my $error = do {
-        my $client_warning = $res->header('Client-Warning') || q{};
-        my $client_aborted = $res->header('Client-Aborted') || q{};
-
-        if ( $client_warning eq 'Internal response' ) {
-            $res->content || q{};
-        }
-        elsif ( $client_aborted eq 'die' ) {
-            $res->header('X-Died') || q{};
-        }
-        else {
-            undef;
-        }
-    };
-
-    if ( defined $error ) {
-        warnf '%s %s failed: %s', $req->method, $req->uri, $error;
-        return $self->gateway_timeout if $error =~ /read timeout/;
-        return $self->bad_gateway;
-    }
+    return $self->bad_gateway unless $res;
 
     my $h = $res->headers->clone;
 

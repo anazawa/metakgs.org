@@ -2,7 +2,7 @@ package MetaKGS::Web;
 use strict;
 use warnings;
 use parent qw/MetaKGS Amon2::Web/;
-use LWP::UserAgent;
+use MetaKGS::LWP::UserAgent;
 use MetaKGS::Web::Response;
 use MetaKGS::Web::RouterBoom;
 use MetaKGS::Web::Text::Xslate;
@@ -83,7 +83,7 @@ sub user_agent {
     unless ( exists $self->{user_agent} ) {
         my $config = $self->config->{+__PACKAGE__} || {};
 
-        $self->{user_agent} = LWP::UserAgent->new(
+        $self->{user_agent} = MetaKGS::LWP::UserAgent->new(
             agent => 'MetaKGS/0.01',
             %{ $config->{user_agent} || {} },
         );

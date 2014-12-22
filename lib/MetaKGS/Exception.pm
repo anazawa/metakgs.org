@@ -8,6 +8,10 @@ use Exception::Class (
         isa => 'MetaKGS::Exception',
         fields => [qw(result)],
     },
+    'MetaKGS::Exception::LWPUserAgent' => {
+        isa => 'MetaKGS::Exception',
+        fields => [qw(response)],
+    },
 );
 
 package MetaKGS::Exception::FormValidator;

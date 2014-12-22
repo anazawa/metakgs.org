@@ -7,10 +7,10 @@ use Digest::MD5 qw/md5_hex/;
 use Encode qw/encode_utf8/;
 use HTTP::Status qw/:constants/;
 use Log::Minimal qw/warnf/;
-use MetaKGS::HTTP::Request;
 use MetaKGS::Model::Resources;
 use MetaKGS::Teng::Constants qw/DESC NOT_APPLICABLE UNKNOWN/;
 use Time::Piece qw/gmtime/;
+use Try::Tiny;
 
 sub scraper_class {
     croak 'call to abstract method ', __PACKAGE__, '::scraper_class';
@@ -89,7 +89,7 @@ sub do_update {
 
     $upstream_uri->query_form( $uri->query_form );
 
-    my $request = MetaKGS::HTTP::Request->new( 'GET', $upstream_uri );
+    my $request = $c->user_agent->build_request( 'GET', $upstream_uri );
        $request->date( $request_date->epoch );
 
     my $resource = Resources->insert(
@@ -98,35 +98,22 @@ sub do_update {
         request_date => $request_date,
     );
 
-    my $response = $c->user_agent->simple_request( $request );
+    my $response = try {
+        $c->user_agent->get_response( $request );
+    }
+    catch {
+        warnf '%s %s failed: %s', $request->method, $request->uri, $_;
 
-    my $error = do {
-        my $client_warning = $response->header('Client-Warning') || q{};
-        my $client_aborted = $response->header('Client-Aborted') || q{};
-
-        if ( $client_warning eq 'Internal response' ) {
-            $response->content || q{};
-        }
-        elsif ( $client_aborted eq 'die' ) {
-            $response->header('X-Died') || q{};
-        }
-        else {
-            undef;
-        }
-    };
-
-    if ( defined $error ) {
         $resource->do_update(
             status_code   => NOT_APPLICABLE,
             response_date => NOT_APPLICABLE,
             content       => NOT_APPLICABLE,
         );
 
-        warnf '%s %s failed: %s', $request->method, $request->uri, $error;
+        undef;
+    };
 
-        return $class->gateway_timeout( $c ) if $error =~ /read timeout/;
-        return $class->bad_gateway( $c );
-    }
+    return $class->bad_gateway($c) unless $response;
 
     unless ( $response->is_success ) {
         my $response_date = $response->date;
