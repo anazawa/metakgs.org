@@ -252,6 +252,9 @@ Last-Modified: Mon, 11 Aug 2014 12:34:56 GMT
 
       <ul>
         <li>
+          <code>:user</code> is case-insensitive.
+        </li>
+        <li>
           <code>oldAccounts=y</code> is always added to the end of
           <code>request_url</code>, where <code>oldAccounts</code> is a flag
           to include games played by expired and guest accounts.
