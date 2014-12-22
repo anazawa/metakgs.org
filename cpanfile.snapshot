@@ -2984,13 +2984,6 @@ DISTRIBUTIONS
     requirements:
       ExtUtils::MakeMaker 6.30
       IO::File 1.14
-  String-CamelCase-0.02
-    pathname: H/HI/HIO/String-CamelCase-0.02.tar.gz
-    provides:
-      String::CamelCase 0.02
-    requirements:
-      ExtUtils::MakeMaker 0
-      Test::More 0
   Sub-Exporter-Progressive-0.001011
     pathname: F/FR/FREW/Sub-Exporter-Progressive-0.001011.tar.gz
     provides:
