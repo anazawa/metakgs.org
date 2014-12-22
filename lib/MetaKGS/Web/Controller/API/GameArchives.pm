@@ -29,8 +29,11 @@ sub show {
             year  => $now->year,
             month => $now->mon,
         },
+        field_filters => {
+            user => sub { lc shift },
+        },
         constraint_methods => {
-            user  => sub { $_[1] =~ m/^[a-zA-Z][a-zA-Z0-9]{0,9}$/ },
+            user  => sub { $_[1] =~ m/^[a-z][a-z0-9]{0,9}$/ },
             year  => sub { $_[1] =~ m/^[2-9]\d\d\d$/ },
             month => sub { $_[1] =~ m/^(?:[1-9]|1[012])$/ },
         },
