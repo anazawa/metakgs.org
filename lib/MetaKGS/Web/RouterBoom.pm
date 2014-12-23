@@ -4,10 +4,12 @@ use warnings;
 use MetaKGS::Web::RouterBoom::Declare;
 
 get '/' => 'Root#index';
-
 get '/docs' => 'Documentation#show';
-
 get '/explorer' => 'Explorer#show';
+
+get '/users/:user' => 'Users::Games#show';
+get '/users/:user/games' => 'Users::Games#show';
+get '/users/:user/rank' => 'Users::Rank#show';
 
 get '/api/archives/:user' => 'API::GameArchives#show';
 get '/api/archives/:user/:year/:month' => 'API::GameArchives#show';

@@ -1,0 +1,102 @@
+: cascade "users.tx" {
+:   title => "MetaKGS Archives",
+: }
+
+: override tab_content -> {
+
+      <h2 class="calendar-month">July 2014</h2>
+
+      <ol class="calendar">
+        <li class="calendar-header clearfix">
+          <ol class="calendar-weekday-names">
+            <li class="calendar-weekday-name">Sunday</li>
+            <li class="calendar-weekday-name">Monday</li>
+            <li class="calendar-weekday-name">Tuesday</li>
+            <li class="calendar-weekday-name">Wednesday</li>
+            <li class="calendar-weekday-name">Thursday</li>
+            <li class="calendar-weekday-name">Friday</li>
+            <li class="calendar-weekday-name">Saturday</li>
+          </ol>
+        </li>
+        <li class="calendar-week clearfix">
+          <ol class="calendar-days">
+            <li class="calendar-day-muted">
+              <div class="calendar-day-number">29</div>
+              <div class="calendar-day-content"></div>
+            </li>
+            <li class="calendar-day-muted">
+              <div class="calendar-day-number">30</div>
+              <div class="calendar-day-content"></div>
+            </li>
+            <li class="calendar-day">
+              <div class="calendar-day-number">1</div>
+              <div class="calendar-day-content">
+                <ul class="list-unstyled">
+                  <li class="text-info">
+                    <i class="fa fa-plus"></i>
+                    30 games
+                  </li>
+                  <li class="text-success">
+                    <i class="fa fa-circle-o"></i>
+                    10 wins
+                  </li>
+                  <li class="text-danger">
+                    <i class="fa fa-circle"></i>
+                    20 losses
+                  </li>
+                </ul>
+              </div>
+            </li>
+            <li class="calendar-day">
+              <div class="calendar-day-number">2</div>
+              <div class="calendar-day-content"></div>
+            </li>
+            <li class="calendar-day">
+              <div class="calendar-day-number">3</div>
+              <div class="calendar-day-content"></div>
+            </li>
+            <li class="calendar-day">
+              <div class="calendar-day-number">4</div>
+              <div class="calendar-day-content"></div>
+            </li>
+            <li class="calendar-day">
+              <div class="calendar-day-number">5</div>
+              <div class="calendar-day-content"></div>
+            </li>
+          </ol>
+        </li>
+        <li class="calendar-week clearfix">
+          <ol class="calendar-days">
+            <li class="calendar-day">
+              <div class="calendar-day-number">6</div>
+              <div class="calendar-day-content"></div>
+            </li>
+            <li class="calendar-day">
+              <div class="calendar-day-number">7</div>
+              <div class="calendar-day-content"></div>
+            </li>
+            <li class="calendar-day">
+              <div class="calendar-day-number">8</div>
+              <div class="calendar-day-content"></div>
+            </li>
+            <li class="calendar-day">
+              <div class="calendar-day-number">9</div>
+              <div class="calendar-day-content"></div>
+            </li>
+            <li class="calendar-day">
+              <div class="calendar-day-number">10</div>
+              <div class="calendar-day-content"></div>
+            </li>
+            <li class="calendar-day-muted">
+              <div class="calendar-day-number">1</div>
+              <div class="calendar-day-content"></div>
+            </li>
+            <li class="calendar-day-muted">
+              <div class="calendar-day-number">2</div>
+              <div class="calendar-day-content"></div>
+            </li>
+          </ol>
+        </li>
+      </ol>
+
+: }

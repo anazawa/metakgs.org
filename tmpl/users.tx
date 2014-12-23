@@ -1,0 +1,27 @@
+: cascade "include/layout.tx" {
+:   title => "MetaKGS Archives",
+: }
+
+: after fonts -> {
+    <link rel="stylesheet" href="<: static_file('/static/font-awesome/css/font-awesome.min.css') :>">
+: }
+
+: after stylesheets -> {
+    <link rel="stylesheet" href="<: static_file('/static/css/metakgs/users.css') :>">
+: }
+
+: after content -> {
+    <section class="container">
+
+      <h1>User "<: $user :>"</h1>
+
+      <ul class="nav-tabs clearfix" data-toggle="navbar">
+        <li class="active"><a href="<: uri_for('/users/'~$user~'/games') :>">Games</a></li>
+        <li><a href="<: uri_for('/users/'~$user~'/rank') :>">Rank</a></li>
+      </ul>
+
+: block tab_content -> {
+: }
+
+    </section>
+: }

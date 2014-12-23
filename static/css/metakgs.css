@@ -31,9 +31,12 @@ body {
 
 p { line-height: 1.5; }
 
+.text-muted   { color: #777 }
+.text-primary { color: #337AB7 }
 .text-success { color: #3c763d }
-.text-danger { color: #a94442 }
-.text-muted { color: #777 }
+.text-info    { color: #31708F }
+.text-warning { color: #8A6D3B }
+.text-danger  { color: #a94442 }
 
 /* Headings */
 
@@ -61,6 +64,11 @@ ul { padding-left: 1.5em; }
 
 @media (min-width: 768px) {
   ul { padding-left: 2em; }
+}
+
+.list-unstyled {
+    padding-left: 0px;
+    list-style: outside none none;
 }
 
 /* Code */

@@ -1,0 +1,7 @@
+: cascade "users.tx" {
+:   title => "MetaKGS Archives",
+: }
+
+: override tab_content -> {
+      <figure class="kgs-graph"><img src="<: $graph_url :>"></figure>
+: }

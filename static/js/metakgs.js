@@ -38,13 +38,23 @@ if ( typeof window.console === "undefined" ) {
     $items: $(),
     activate: function() {
       var path = this.path;
+      var $found;
+
       this.$items.each(function() {
         var $this = $( this );
         if ( $this.find("a").attr("href") === path ) {
-          $this.addClass( "active" );
+          $found = $this;
           return false;
         }
       });
+
+      if ( !$found ) { return; }
+
+      this.$items.each(function() {
+        $(this).removeClass("active");
+      });
+
+      $found.addClass( "active" );
     }
   };
 

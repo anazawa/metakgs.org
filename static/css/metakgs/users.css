@@ -1,0 +1,105 @@
+.nav-tabs {
+    border-bottom: 1px solid #ddd;
+    padding-left: 0px;
+    list-style: outside none none;
+}
+
+.nav-tabs li {
+    float: left;
+    margin-bottom: -1px;
+}
+
+.nav-tabs li a {
+    padding: 8px 13px;
+    display: block;
+    border-radius: 4px 4px 0px 0px;
+    border: 1px solid transparent;
+    margin-right: 4px;
+}
+
+.nav-tabs li a:hover {
+    border-color: #eee #eee #ddd;
+}
+
+.nav-tabs li a:hover,
+.nav-tabs li a:focus {
+    text-decoration: none;
+    background-color: #eee;
+}
+
+.nav-tabs li.active a,
+.nav-tabs li.active a:hover,
+.nav-tabs li.active a:focus {
+    color: #555;
+    cursor: default;
+    background-color: #fff;
+    border-width: 1px;
+    border-style: solid;
+    border-color: #ddd #ddd transparent;
+}
+
+.kgs-graph {
+    background-color: #dd8;
+    border-radius: 6px;
+}
+
+.calendar-month {
+    text-align: center;
+}
+
+.calendar {
+    width: 100%;
+    padding: 0;
+    margin: 1em auto;
+}
+
+.calendar-header {
+    list-style-type: none;
+}
+
+.calendar-week {
+    list-style-type: none;
+    border-left: 1px solid #aaa;
+}
+
+.calendar-days,
+.calendar-weekday-names {
+    padding: 0;
+}
+
+.calendar-day,
+.calendar-day-muted,
+.calendar-weekday-name {
+    width: 14.2%;
+    box-sizing: border-box;
+    float: left;
+    margin: 0px;
+    padding: .3em;
+    overflow: auto;
+    list-style-type: none;
+}
+
+.calendar-day,
+.calendar-day-muted {
+    height: 7em;
+    border-right: 1px solid #aaa;
+    border-bottom: 1px solid #aaa;
+}
+
+.calendar-day-muted { color: #aaa }
+
+.calendar-weekday-name {
+    font-size: 0.9em;
+    color: #666;
+    text-align: center;
+    border-bottom: 1px solid #aaa;
+}
+
+.calendar-day-number {
+    text-align: right;
+}
+
+.calendar-day-content {
+    font-size: 0.9em;
+}
+
