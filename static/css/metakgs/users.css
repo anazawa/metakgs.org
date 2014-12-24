@@ -43,33 +43,29 @@
     border-radius: 6px;
 }
 
-.calendar-month {
-    text-align: center;
-}
-
-.calendar {
+.js-calendar {
     width: 100%;
     padding: 0;
     margin: 1em auto;
 }
 
-.calendar-header {
+.js-calendar-header {
     list-style-type: none;
 }
 
-.calendar-week {
+.js-calendar-week {
     list-style-type: none;
     border-left: 1px solid #aaa;
 }
 
-.calendar-days,
-.calendar-weekday-names {
+.js-calendar-days,
+.js-calendar-weekday-names {
     padding: 0;
 }
 
-.calendar-day,
-.calendar-day-muted,
-.calendar-weekday-name {
+.js-calendar-day,
+.js-calendar-day-muted,
+.js-calendar-weekday-name {
     width: 14.2%;
     box-sizing: border-box;
     float: left;
@@ -79,27 +75,33 @@
     list-style-type: none;
 }
 
-.calendar-day,
-.calendar-day-muted {
+.js-calendar-day,
+.js-calendar-day-muted {
     height: 7em;
     border-right: 1px solid #aaa;
     border-bottom: 1px solid #aaa;
 }
 
-.calendar-day-muted { color: #aaa }
+.js-calendar-day-muted { color: #aaa }
 
-.calendar-weekday-name {
+.js-calendar-weekday-name {
     font-size: 0.9em;
     color: #666;
     text-align: center;
     border-bottom: 1px solid #aaa;
 }
 
-.calendar-day-number {
+.js-calendar-day-number {
     text-align: right;
+    display: none;
 }
 
-.calendar-day-content {
+.js-calendar-day-content {
     font-size: 0.9em;
+    display: none;
+}
+
+.js-calendar-day-disabled {
+    background-color: #f5f5f5;
 }
 

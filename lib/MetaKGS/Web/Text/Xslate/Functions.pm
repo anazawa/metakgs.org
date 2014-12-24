@@ -10,6 +10,7 @@ our @EXPORT = qw(
     uri_with
     uri_for
     static_file
+    num2fullmon
 );
 
 our %StaticFile;
@@ -30,6 +31,25 @@ sub static_file {
     $c->uri_for($file, {
         t => $StaticFile{$file} || 0,
     });
+}
+
+sub num2fullmon {
+    my $mon = shift;
+
+    [qw(
+        January
+        February
+        March
+        April
+        May
+        June
+        July
+        August
+        September
+        October
+        November
+        December
+    )]->[$mon-1];
 }
 
 1;

@@ -1,10 +1,20 @@
 package MetaKGS::Web::Controller::Users::Rank;
 use strict;
 use warnings;
-use parent qw/MetaKGS::Web::Controller::Users/;
+use parent qw/MetaKGS::Web::Controller/;
+use MetaKGS::FormValidator;
 
-sub do_show {
-    my ( $class, $c, $query ) = @_;
+sub show {
+    my ( $class, $c, $args ) = @_;
+
+    my $query = MetaKGS::FormValidator->validate($args, {
+        required => [qw(
+            user
+        )],
+        constraint_methods => {
+            user  => sub { $_[1] =~ m/^[a-z][a-z0-9]{0,9}$/ },
+        },
+    });
 
     $c->render('users/rank.tx', {
        user => $query->{user},

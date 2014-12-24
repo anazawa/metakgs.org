@@ -3,100 +3,54 @@
 : }
 
 : override tab_content -> {
+      <div class="js-archives" data-user="<: $user :>"
+        data-year="<: $year :>" data-month="<: $month :>">
 
-      <h2 class="calendar-month">July 2014</h2>
+        <h2 class="text-center">
+          <span class="js-calendar-month"><: num2fullmon($month) :></span>
+          <span class="js-calendar-year"><: $year :></span>
+        </h2>
 
-      <ol class="calendar">
-        <li class="calendar-header clearfix">
-          <ol class="calendar-weekday-names">
-            <li class="calendar-weekday-name">Sunday</li>
-            <li class="calendar-weekday-name">Monday</li>
-            <li class="calendar-weekday-name">Tuesday</li>
-            <li class="calendar-weekday-name">Wednesday</li>
-            <li class="calendar-weekday-name">Thursday</li>
-            <li class="calendar-weekday-name">Friday</li>
-            <li class="calendar-weekday-name">Saturday</li>
-          </ol>
-        </li>
-        <li class="calendar-week clearfix">
-          <ol class="calendar-days">
-            <li class="calendar-day-muted">
-              <div class="calendar-day-number">29</div>
-              <div class="calendar-day-content"></div>
-            </li>
-            <li class="calendar-day-muted">
-              <div class="calendar-day-number">30</div>
-              <div class="calendar-day-content"></div>
-            </li>
-            <li class="calendar-day">
-              <div class="calendar-day-number">1</div>
-              <div class="calendar-day-content">
-                <ul class="list-unstyled">
-                  <li class="text-info">
-                    <i class="fa fa-plus"></i>
-                    30 games
-                  </li>
-                  <li class="text-success">
-                    <i class="fa fa-circle-o"></i>
-                    10 wins
-                  </li>
-                  <li class="text-danger">
-                    <i class="fa fa-circle"></i>
-                    20 losses
-                  </li>
-                </ul>
-              </div>
-            </li>
-            <li class="calendar-day">
-              <div class="calendar-day-number">2</div>
-              <div class="calendar-day-content"></div>
-            </li>
-            <li class="calendar-day">
-              <div class="calendar-day-number">3</div>
-              <div class="calendar-day-content"></div>
-            </li>
-            <li class="calendar-day">
-              <div class="calendar-day-number">4</div>
-              <div class="calendar-day-content"></div>
-            </li>
-            <li class="calendar-day">
-              <div class="calendar-day-number">5</div>
-              <div class="calendar-day-content"></div>
-            </li>
-          </ol>
-        </li>
-        <li class="calendar-week clearfix">
-          <ol class="calendar-days">
-            <li class="calendar-day">
-              <div class="calendar-day-number">6</div>
-              <div class="calendar-day-content"></div>
-            </li>
-            <li class="calendar-day">
-              <div class="calendar-day-number">7</div>
-              <div class="calendar-day-content"></div>
-            </li>
-            <li class="calendar-day">
-              <div class="calendar-day-number">8</div>
-              <div class="calendar-day-content"></div>
-            </li>
-            <li class="calendar-day">
-              <div class="calendar-day-number">9</div>
-              <div class="calendar-day-content"></div>
-            </li>
-            <li class="calendar-day">
-              <div class="calendar-day-number">10</div>
-              <div class="calendar-day-content"></div>
-            </li>
-            <li class="calendar-day-muted">
-              <div class="calendar-day-number">1</div>
-              <div class="calendar-day-content"></div>
-            </li>
-            <li class="calendar-day-muted">
-              <div class="calendar-day-number">2</div>
-              <div class="calendar-day-content"></div>
-            </li>
-          </ol>
-        </li>
-      </ol>
+        <ol class="js-calendar">
+          <li class="js-calendar-header clearfix">
+            <ol class="js-calendar-weekday-names">
+              <li class="js-calendar-weekday-name">Sunday</li>
+              <li class="js-calendar-weekday-name">Monday</li>
+              <li class="js-calendar-weekday-name">Tuesday</li>
+              <li class="js-calendar-weekday-name">Wednesday</li>
+              <li class="js-calendar-weekday-name">Thursday</li>
+              <li class="js-calendar-weekday-name">Friday</li>
+              <li class="js-calendar-weekday-name">Saturday</li>
+            </ol>
+          </li>
+: for [1..6] -> $nth_week {
+          <li class="js-calendar-week clearfix">
+            <ol class="js-calendar-days">
+: for [1..7] -> $wday {
+              <li class="js-calendar-day">
+                <div class="js-calendar-day-number"></div>
+                <div class="js-calendar-day-content">
+                  <ul class="list-unstyled">
+                    <li class="text-info js-calendar-games">
+                      <i class="fa fa-plus"></i>
+                      <span class="js-calendar-games-count">0</span> games
+                    </li>
+                    <li class="text-success js-calendar-wins">
+                      <i class="fa fa-circle-o"></i>
+                      <span class="js-calendar-wins-count">0</span> wins
+                    </li>
+                    <li class="text-danger js-calendar-losses">
+                      <i class="fa fa-circle"></i>
+                      <span class="js-calendar-losses-count">0</span> losses
+                    </li>
+                  </ul>
+                </div>
+              </li><!-- /.js-calendar-day -->
+: }
+            </ol><!-- /.js-calendar-days -->
+          </li><!-- /.js-calendar-week -->
+: }
+        </ol><!-- /.js-calendar-month -->
 
+      </div><!-- /.js-calendar -->
 : }

@@ -190,6 +190,8 @@ form input[type="text"] {
   *zoom: 1;
 }
 
+.text-center { text-align: center; }
+
 /*
  *  Components
  *  ==========

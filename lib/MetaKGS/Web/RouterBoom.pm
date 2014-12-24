@@ -9,6 +9,7 @@ get '/explorer' => 'Explorer#show';
 
 get '/users/:user' => 'Users::Games#show';
 get '/users/:user/games' => 'Users::Games#show';
+get '/users/:user/games/:year/:month' => 'Users::Games#show';
 get '/users/:user/rank' => 'Users::Rank#show';
 
 get '/api/archives/:user' => 'API::GameArchives#show';
