@@ -1,5 +1,7 @@
 (function() {
- 'use strict';
+  'use strict';
+
+  var foreach = MetaKGS.Util.foreach;
  
   var MON_LIST = [
     'Jan',
@@ -31,7 +33,7 @@
     'December'
   ];
 
-  MetaKGS.App.archives = function (args) {
+  var archives = function (args) {
     var spec = args || {};
     var that = MetaKGS.App.archives.component( spec );
 
@@ -117,7 +119,7 @@
     return that;
   };
 
-  MetaKGS.App.archives.component = function (args) {
+  archives.component = function (args) {
     var spec = args || {};
  
     var that = {
@@ -141,7 +143,7 @@
     return that;
   };
 
-  MetaKGS.App.archives.game = function (args) {
+  archives.game = function (args) {
     var that = {
       boardSize: args.board_size,
       handicap: args.handicap,
@@ -155,11 +157,11 @@
       'Simul'        : 'Simultaneous'
     }[args.type] || args.type;
 
-    MetaKGS.Util.foreach(['white', 'black'], function (role) {
+    foreach(['white', 'black'], function (role) {
       var players = [];
 
-      MetaKGS.Util.foreach(args[role] || [], function (arg) {
-        players.push( MetaKGS.App.archives.user(arg) );
+      foreach(args[role] || [], function (arg) {
+        players.push( archives.user(arg) );
       });
 
       that[role] = players;
@@ -188,7 +190,7 @@
       var winners = ( this.result.match(/^(W|B)\+/) || [] )[1];
           winners = winners ? this[ winners === 'W' ? 'white' : 'black' ] : [];
 
-      MetaKGS.Util.foreach(winners, function (winner) {
+      foreach(winners, function (winner) {
         if ( winner.name.toLowerCase() === name ) {
           found = true;
           return false;
@@ -205,7 +207,7 @@
     return that;
   };
 
-  MetaKGS.App.archives.user = function (args) {
+  archives.user = function (args) {
     var that = {
       name: args.name,
       rank: args.rank
@@ -218,9 +220,9 @@
     return that;
   };
 
-  MetaKGS.App.archives.calendar = function (args) {
+  archives.calendar = function (args) {
     var spec = args || {};
-    var that = MetaKGS.App.archives.component( spec );
+    var that = archives.component( spec );
 
     that.year = spec.year;
     that.month = spec.month;
@@ -240,7 +242,7 @@
     }());
 
     that.eachDate = function (callback) {
-      MetaKGS.Util.foreach( this.dates, callback );
+      foreach( this.dates, callback );
     };
 
     that.buildDates = function (args) {
@@ -296,12 +298,12 @@
         });
       }
 
-      MetaKGS.Util.foreach(games, function (game) {
+      foreach(games, function (game) {
         gamesOf[ game.date.getUTCDate() ].push( game );
       });
 
-      MetaKGS.Util.foreach(dates, function (date) {
-        dateObjects.push(MetaKGS.App.archives.calendar.date({
+      foreach(dates, function (date) {
+        dateObjects.push(archives.calendar.date({
           $context        : $template.clone(),
           classNamePrefix : classNamePrefix,
           user  : user,
@@ -332,7 +334,7 @@
 
       this.findByClassName( 'date', $dateList ).remove();
 
-      MetaKGS.Util.foreach(dates, function (date) {
+      foreach(dates, function (date) {
         var $date = date.$context;
 
         date.render();
@@ -360,9 +362,9 @@
     return that;
   };
 
-  MetaKGS.App.archives.calendar.date = function (args) {
+  archives.calendar.date = function (args) {
     var spec = args || {};
-    var that = MetaKGS.App.archives.component( spec );
+    var that = archives.component( spec );
 
     that.year = spec.year;
     that.month = spec.month;
@@ -385,7 +387,7 @@
         draws  : 0
       };
  
-      MetaKGS.Util.foreach(games, function (game) {
+      foreach(games, function (game) {
         if ( !game.isFinished() ) {
           return;
         }
@@ -402,7 +404,7 @@
 
       $day.text( day );
 
-      MetaKGS.Util.foreach(Object.keys(gamesCount), function (key) {
+      foreach(Object.keys(gamesCount), function (key) {
         var $item = that.findByClassName( key );
         var $itemCount = that.findByClassName( key+'-count', $item );
 
@@ -425,9 +427,9 @@
     return that;
   };
 
-  MetaKGS.App.archives.gameList = function (args) {
+  archives.gameList = function (args) {
     var spec = args || {};
-    var that = MetaKGS.App.archives.component( spec );
+    var that = archives.component( spec );
 
     that.$itemTemplate = (function () {
       var $template = that.findByClassName( 'item-template' );
@@ -441,14 +443,17 @@
       return $clone;
     }());
 
-    that.buildItems = function (games) {
+    that.buildItems = function (args) {
       var that = this;
+      var games = args || [];
+      var $template = this.$itemTemplate;
+      var classNamePrefix = this.classNameFor('item') + '-';
       var items = [];
 
-      MetaKGS.Util.foreach(games, function (game) {
-        items.push(MetaKGS.App.archives.gameList.item({
-          classNamePrefix: that.classNameFor('item')+'-',
-          $context: that.$itemTemplate.clone(),
+      foreach(games, function (game) {
+        items.push(archives.gameList.item({
+          classNamePrefix: classNamePrefix,
+          $context: $template.clone(),
           game: game
         }));
       });
@@ -456,31 +461,21 @@
       return items;
     };
 
-    that.items = spec.games && that.buildItems(spec.games);
+    that.items = that.buildItems( spec.games );
 
     that.eachItem = function (callback) {
-      MetaKGS.Util.foreach( this.items, callback );
+      foreach( this.items, callback );
     };
 
     that.render = function (games) {
       var $context = this.$context;
+      var items = games ? this.buildItems(games) : this.items;
 
       this.findByClassName('item').remove();
 
-      this.renderItems( games );
-
-      this.eachItem(function (item) {
-        $context.append( item.$context );
-      });
-
-      return;
-    };
-
-    that.renderItems = function (games) {
-      var items = games ? this.buildItems(games) : this.items;
-
-      MetaKGS.Util.foreach(items, function (item) {
+      foreach(items, function (item) {
         item.render();
+        $context.append( item.$context );
       });
 
       this.items = items;
@@ -491,9 +486,9 @@
     return that;
   };
 
-  MetaKGS.App.archives.gameList.item = function (args) {
+  archives.gameList.item = function (args) {
     var spec = args || {};
-    var that = MetaKGS.App.archives.component( spec );
+    var that = archives.component( spec );
 
     that.game = spec.game;
 
@@ -502,11 +497,11 @@
       var users = args || [];
       var players = [];
 
-      MetaKGS.Util.foreach([0, 1], function (i) {
+      foreach([0, 1], function (i) {
         var user = users[i];
         var className = role + (i + 1);
 
-        players.push(MetaKGS.App.archives.gameList.player({
+        players.push(archives.gameList.player({
           classNamePrefix: that.classNameFor(className)+'-',
           $context: that.findByClassName(className),
           user: user
@@ -567,7 +562,7 @@
     that.renderPlayers = function (role, args) {
       var players = args ? this.buildPlayers(role, args) : this[role];
 
-      MetaKGS.Util.foreach(players, function (player) {
+      foreach(players, function (player) {
         player.render();
       });
 
@@ -579,9 +574,9 @@
     return that;
   };
 
-  MetaKGS.App.archives.gameList.player = function (args) {
+  archives.gameList.player = function (args) {
     var spec = args || {};
-    var that = MetaKGS.App.archives.component( spec );
+    var that = archives.component( spec );
 
     that.user = spec.user;
 
@@ -605,6 +600,8 @@
 
     return that;
   };
+
+  MetaKGS.App.archives = archives;
 
   $(document).ready(function () {
     var archives = MetaKGS.App.archives({
