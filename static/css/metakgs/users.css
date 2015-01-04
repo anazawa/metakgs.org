@@ -1,3 +1,7 @@
+.archives h2 {
+    margin-top: 1.5em;
+}
+
 .nav-tabs {
     border-bottom: 1px solid #ddd;
     padding-left: 0px;
@@ -38,70 +42,101 @@
     border-color: #ddd #ddd transparent;
 }
 
+.table {
+    width: 100%;
+    max-width: 100%;
+    border-spacing: 0px;
+    border-collapse: collapse;
+}
+
+.table thead tr th,
+.table tbody tr td {
+    padding: 8px;
+    border-top: 1px solid #ddd;
+}
+
+.table thead tr th {
+    vertical-align: bottom;
+    border-top: 0px none;
+    border-bottom: 2px solid #ddd;
+    text-align: left;
+}
+
+.table tbody tr td {
+    vertical-align: center;
+}
+
+.table tbody tr td ul {
+    margin: 0;
+}
+
+/*
+ *  KGS Rank Graph
+ *  ==============
+ */
+
 .kgs-graph {
     background-color: #dd8;
     border-radius: 6px;
 }
 
-.js-calendar {
-    width: 100%;
-    padding: 0;
+/*
+ *  Calendar
+ *  ========
+ */
+
+.calendar {
     margin: 1em auto;
 }
 
-.js-calendar-header {
-    list-style-type: none;
-}
-
-.js-calendar-week {
-    list-style-type: none;
-    border-left: 1px solid #aaa;
-}
-
-.js-calendar-days,
-.js-calendar-weekday-names {
+.calendar-header,
+.calendar-body {
     padding: 0;
+    margin: 0;
+    list-style: outside none none;
 }
 
-.js-calendar-day,
-.js-calendar-day-muted,
-.js-calendar-weekday-name {
+.calendar-header > li,
+.calendar-body > li {
     width: 14.2%;
     box-sizing: border-box;
     float: left;
     margin: 0px;
     padding: .3em;
     overflow: auto;
-    list-style-type: none;
 }
 
-.js-calendar-day,
-.js-calendar-day-muted {
-    height: 7em;
-    border-right: 1px solid #aaa;
-    border-bottom: 1px solid #aaa;
-}
-
-.js-calendar-day-muted { color: #aaa }
-
-.js-calendar-weekday-name {
+.calendar-header > li {
     font-size: 0.9em;
-    color: #666;
     text-align: center;
-    border-bottom: 1px solid #aaa;
+    border-bottom: 1px solid #ddd;
 }
 
-.js-calendar-day-number {
+.calendar-body > li {
+    height: 7em;
+    border-right: 1px solid #ddd;
+    border-bottom: 1px solid #ddd;
+}
+
+.calendar-body > li:nth-child(7n+1) {
+    border-left: 1px solid #ddd;
+}
+
+.calendar-date-day {
     text-align: right;
-    display: none;
 }
 
-.js-calendar-day-content {
+.calendar-date-content {
     font-size: 0.9em;
-    display: none;
 }
 
-.js-calendar-day-disabled {
-    background-color: #f5f5f5;
+/*
+.js-calendar-date-number  { display: none; }
+.js-calendar-date-content { display: none; }
+*/
+
+.js-calendar-prev-month,
+.js-calendar-next-month {
+    color: #777;
 }
 

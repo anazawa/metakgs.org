@@ -191,6 +191,7 @@ form input[type="text"] {
 }
 
 .text-center { text-align: center; }
+.text-right { text-align: right; }
 
 /*
  *  Components

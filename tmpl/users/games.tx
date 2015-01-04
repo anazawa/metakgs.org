@@ -2,55 +2,125 @@
 :   title => "MetaKGS Archives",
 : }
 
+: after javascripts -> {
+    <script src="<: static_file('/static/js/metakgs/archives.js') :>"></script>
+: }
+
 : override tab_content -> {
-      <div class="js-archives" data-user="<: $user :>"
+      <div class="js-archives archives" data-user="<: $user :>"
         data-year="<: $year :>" data-month="<: $month :>">
 
         <h2 class="text-center">
-          <span class="js-calendar-month"><: num2fullmon($month) :></span>
-          <span class="js-calendar-year"><: $year :></span>
+          <span class="js-month"><: num2fullmon($month) :></span>
+          <span class="js-year"><: $year :></span>
         </h2>
 
-        <ol class="js-calendar">
-          <li class="js-calendar-header clearfix">
-            <ol class="js-calendar-weekday-names">
-              <li class="js-calendar-weekday-name">Sunday</li>
-              <li class="js-calendar-weekday-name">Monday</li>
-              <li class="js-calendar-weekday-name">Tuesday</li>
-              <li class="js-calendar-weekday-name">Wednesday</li>
-              <li class="js-calendar-weekday-name">Thursday</li>
-              <li class="js-calendar-weekday-name">Friday</li>
-              <li class="js-calendar-weekday-name">Saturday</li>
-            </ol>
-          </li>
-: for [1..6] -> $nth_week {
-          <li class="js-calendar-week clearfix">
-            <ol class="js-calendar-days">
-: for [1..7] -> $wday {
-              <li class="js-calendar-day">
-                <div class="js-calendar-day-number"></div>
-                <div class="js-calendar-day-content">
-                  <ul class="list-unstyled">
-                    <li class="text-info js-calendar-games">
-                      <i class="fa fa-plus"></i>
-                      <span class="js-calendar-games-count">0</span> games
-                    </li>
-                    <li class="text-success js-calendar-wins">
-                      <i class="fa fa-circle-o"></i>
-                      <span class="js-calendar-wins-count">0</span> wins
-                    </li>
-                    <li class="text-danger js-calendar-losses">
-                      <i class="fa fa-circle"></i>
-                      <span class="js-calendar-losses-count">0</span> losses
-                    </li>
-                  </ul>
-                </div>
-              </li><!-- /.js-calendar-day -->
-: }
-            </ol><!-- /.js-calendar-days -->
-          </li><!-- /.js-calendar-week -->
-: }
-        </ol><!-- /.js-calendar-month -->
+        <div class="calendar js-calendar">
+          <ol class="calendar-header text-muted clearfix">
+            <li>Sunday</li>
+            <li>Monday</li>
+            <li>Tuesday</li>
+            <li>Wednesday</li>
+            <li>Thursday</li>
+            <li>Friday</li>
+            <li>Saturday</li>
+          </ol>
+          <ol class="calendar-body clearfix js-calendar-datelist">
+            <li class="calendar-date js-calendar-date-template">
+              <div class="text-right">
+                <span class="js-calendar-date-day"></span>
+              </div>
+              <div class="calendar-date-content">
+                <ul class="list-unstyled">
+                  <li class="text-info js-calendar-date-games">
+                    <i class="fa fa-plus"></i>
+                    <span class="js-calendar-date-games-count">0</span> games
+                  </li>
+                  <li class="text-success js-calendar-date-wins">
+                    <i class="fa fa-circle-o"></i>
+                    <span class="js-calendar-date-wins-count">0</span> wins
+                  </li>
+                  <li class="text-danger js-calendar-date-losses">
+                    <i class="fa fa-circle"></i>
+                    <span class="js-calendar-date-losses-count">0</span> losses
+                  </li>
+                  <li class="text-warning js-calendar-date-draws">
+                    <i class="fa fa-circle"></i>
+                    <span class="js-calendar-date-draws-count">0</span> draws
+                  </li>
+                </ul>
+              </div>
+            </li>
+          </ol><!-- /.calendar-body -->
+        </div><!-- /.calendar -->
 
-      </div><!-- /.js-calendar -->
+        <h2 class="text-center">Games</h2>
+
+        <table class="table js-gamelist">
+          <thead>
+            <tr>
+              <th></th>
+              <th>
+                <i class="fa fa-circle-thin"></i>
+                White
+              </th>
+              <th>
+                <i class="fa fa-circle"></i>
+                Black
+              </th>
+              <th>
+                <i class="fa fa-arrows"></i>
+                Setup
+              </th>
+              <th>
+                <i class="fa fa-calculator"></i>
+                Result
+              </th>
+              <th>
+                <i class="fa fa-clock-o"></i>
+                Start Time
+              </th>
+            </tr>
+          </thead>
+          <tbody class="js-gamelist-item-template">
+            <tr>
+              <td><span class="js-gamelist-item-type"></span></td>
+              <td>
+                <ul class="list-unstyled">
+                  <li class="js-gamelist-item-white1">
+                    <a href="#"><span class="js-gamelist-item-white1-name"></span></a>
+                    <span class="js-gamelist-item-white1-rank"></span>
+                  </li>
+                  <li class="js-gamelist-item-white2">
+                    <a href="#"><span class="js-gamelist-item-white2-name"></span></a>
+                    <span class="js-gamelist-item-white2-rank"></span>
+                  </li>
+                </ul>
+              </td>
+              <td>
+                <ul class="list-unstyled">
+                  <li class="js-gamelist-item-black1">
+                    <a href="#"><span class="js-gamelist-item-black1-name"></span></a>
+                    <span class="js-gamelist-item-black1-rank"></span>
+                  </li>
+                  <li class="js-gamelist-item-black2">
+                    <a href="#"><span class="js-gamelist-item-black2-name"></span></a>
+                    <span class="js-gamelist-item-black2-rank"></span>
+                  </li>
+                </ul>
+              </td>
+              <td><span class="js-gamelist-item-setup"></span></td>
+              <td><span class="js-gamelist-item-result"></span></td>
+              <td><span class="js-gamelist-item-date" data-format="%b %e '%y at %R"></span></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>Notes</h3>
+
+        <ul>
+          <li>Start times are shown in GMT.</li>
+        </ul>
+
+      </div><!-- /.js-archives -->
 : }

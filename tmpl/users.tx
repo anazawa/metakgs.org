@@ -10,10 +10,6 @@
     <link rel="stylesheet" href="<: static_file('/static/css/metakgs/users.css') :>">
 : }
 
-: after javascripts -> {
-    <script src="<: static_file('/static/js/metakgs/users.js') :>"></script>
-: }
-
 : after content -> {
     <section class="container">
 
