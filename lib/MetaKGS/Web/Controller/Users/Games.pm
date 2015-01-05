@@ -22,7 +22,7 @@ sub show {
             month => $now->mon,
         },
         constraint_methods => {
-            user  => sub { $_[1] =~ m/^[a-z][a-z0-9]{0,9}$/ },
+            user  => sub { $_[1] =~ m/^[a-z][a-z0-9]{0,9}$/i },
             year  => sub { $_[1] =~ m/^[2-9]\d\d\d$/ },
             month => sub { $_[1] =~ m/^(?:[1-9]|1[012])$/ },
         },

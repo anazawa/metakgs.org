@@ -1,5 +1,5 @@
 : cascade "users.tx" {
-:   title => "MetaKGS Archives",
+:   title => 'MetaKGS: User "' ~ $user ~ '"',
 : }
 
 : after javascripts -> {
@@ -7,15 +7,18 @@
 : }
 
 : override tab_content -> {
-      <div class="js-archives archives" data-user="<: $user :>"
+      <div class="archives js-archives" data-user="<: $user :>"
         data-year="<: $year :>" data-month="<: $month :>">
 
-        <h2 class="text-center">
-          <span class="js-month"><: num2fullmon($month) :></span>
-          <span class="js-year"><: $year :></span>
-        </h2>
-
-        <div class="calendar js-calendar">
+        <div class="calendar js-archives-calendar">
+          <ul class="calendar-nav">
+            <li><i class="fa fa-caret-left"></i></li>
+            <li class="js-archives-show-allgames">
+              <span class="js-archives-calendar-month"><: num2fullmon($month) :></span>
+              <span class="js-archives-calendar-year"><: $year :></span>
+            </li>
+            <li><i class="fa fa-caret-right"></i></li>
+          </ul>
           <ol class="calendar-header text-muted clearfix">
             <li>Sunday</li>
             <li>Monday</li>
@@ -25,38 +28,38 @@
             <li>Friday</li>
             <li>Saturday</li>
           </ol>
-          <ol class="calendar-body clearfix js-calendar-datelist">
-            <li class="calendar-date js-calendar-date-template">
-              <div class="text-right">
-                <span class="js-calendar-date-day"></span>
-              </div>
-              <div class="calendar-date-content">
-                <ul class="list-unstyled">
-                  <li class="text-info js-calendar-date-games">
-                    <i class="fa fa-plus"></i>
-                    <span class="js-calendar-date-games-count">0</span> games
-                  </li>
-                  <li class="text-success js-calendar-date-wins">
-                    <i class="fa fa-circle-o"></i>
-                    <span class="js-calendar-date-wins-count">0</span> wins
-                  </li>
-                  <li class="text-danger js-calendar-date-losses">
-                    <i class="fa fa-circle"></i>
-                    <span class="js-calendar-date-losses-count">0</span> losses
-                  </li>
-                  <li class="text-warning js-calendar-date-draws">
-                    <i class="fa fa-circle"></i>
-                    <span class="js-calendar-date-draws-count">0</span> draws
-                  </li>
-                </ul>
-              </div>
+          <ol class="calendar-body clearfix js-archives-calendar-datelist">
+            <li class="calendar-date js-archives-calendar-date-template">
+              <a class="js-archives-calendar-date-show-games" href="#games">
+                <div class="text-right js-archives-calendar-date-day"></div>
+                <div class="calendar-date-content">
+                  <ul class="list-unstyled">
+                    <li class="text-info js-archives-calendar-date-games">
+                      <i class="fa fa-plus"></i>
+                      <span class="js-archives-calendar-date-games-count">0</span> games
+                    </li>
+                    <li class="text-success js-archives-calendar-date-wins">
+                      <i class="fa fa-circle-o"></i>
+                      <span class="js-archives-calendar-date-wins-count">0</span> wins
+                    </li>
+                    <li class="text-danger js-archives-calendar-date-losses">
+                      <i class="fa fa-circle"></i>
+                      <span class="js-archives-calendar-date-losses-count">0</span> losses
+                    </li>
+                    <li class="text-warning js-archives-calendar-date-draws">
+                      <i class="fa fa-circle"></i>
+                      <span class="js-archives-calendar-date-draws-count">0</span> draws
+                    </li>
+                  </ul>
+                </div>
+              </a>
             </li>
           </ol><!-- /.calendar-body -->
         </div><!-- /.calendar -->
 
-        <h2 class="text-center">Games</h2>
+        <h2 class="text-center" id="games">Games</h2>
 
-        <table class="table js-gamelist">
+        <table class="table table-hover js-archives-gamelist">
           <thead>
             <tr>
               <th></th>
@@ -68,53 +71,57 @@
                 <i class="fa fa-circle"></i>
                 Black
               </th>
-              <th>
+              <th class="js-archives-gamelist-sortby-setup">
                 <i class="fa fa-arrows"></i>
                 Setup
               </th>
-              <th>
-                <i class="fa fa-calculator"></i>
+              <th class="js-archives-gamelist-sortby-result">
                 Result
               </th>
-              <th>
+              <th class="js-archives-gamelist-sortby-date">
                 <i class="fa fa-clock-o"></i>
                 Start Time
               </th>
             </tr>
           </thead>
-          <tbody class="js-gamelist-item-template">
+          <tbody class="js-archives-gamelist-item-template">
             <tr>
-              <td><span class="js-gamelist-item-type"></span></td>
+              <td class="js-archives-gamelist-item-type"></td>
               <td>
                 <ul class="list-unstyled">
-                  <li class="js-gamelist-item-white1">
-                    <a href="#"><span class="js-gamelist-item-white1-name"></span></a>
-                    <span class="js-gamelist-item-white1-rank"></span>
+                  <li class="js-archives-gamelist-item-white1">
+                    <a href="#" class="js-archives-gamelist-item-white1-name"></a>
+                    <span class="js-archives-gamelist-item-white1-rank"></span>
                   </li>
-                  <li class="js-gamelist-item-white2">
-                    <a href="#"><span class="js-gamelist-item-white2-name"></span></a>
-                    <span class="js-gamelist-item-white2-rank"></span>
+                  <li class="js-archives-gamelist-item-white2">
+                    <a href="#" class="js-archives-gamelist-item-white2-name"></a>
+                    <span class="js-archives-gamelist-item-white2-rank"></span>
                   </li>
                 </ul>
               </td>
               <td>
                 <ul class="list-unstyled">
-                  <li class="js-gamelist-item-black1">
-                    <a href="#"><span class="js-gamelist-item-black1-name"></span></a>
-                    <span class="js-gamelist-item-black1-rank"></span>
+                  <li class="js-archives-gamelist-item-black1">
+                    <a href="#" class="js-archives-gamelist-item-black1-name"></a>
+                    <span class="js-archives-gamelist-item-black1-rank"></span>
                   </li>
-                  <li class="js-gamelist-item-black2">
-                    <a href="#"><span class="js-gamelist-item-black2-name"></span></a>
-                    <span class="js-gamelist-item-black2-rank"></span>
+                  <li class="js-archives-gamelist-item-black2">
+                    <a href="#" class="js-archives-gamelist-item-black2-name"></a>
+                    <span class="js-archives-gamelist-item-black2-rank"></span>
                   </li>
                 </ul>
               </td>
-              <td><span class="js-gamelist-item-setup"></span></td>
-              <td><span class="js-gamelist-item-result"></span></td>
-              <td><span class="js-gamelist-item-date" data-format="%b %e '%y at %R"></span></td>
+              <td class="js-archives-gamelist-item-setup"></td>
+              <td class="js-archives-gamelist-item-result"></td>
+              <td class="js-archives-gamelist-item-date" data-format="%b %e '%y at %R"></td>
             </tr>
           </tbody>
         </table>
+
+        <ul class="pager clearfix">
+          <li class="previous js-archives-show-prevpage"><a href="#games">&larr; Prev</a></li>
+          <li class="next js-archives-show-nextpage"><a href="#games">Next &rarr;</a></li>
+        </ul>
 
         <h3>Notes</h3>
 

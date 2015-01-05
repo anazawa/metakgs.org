@@ -1,5 +1,4 @@
 : cascade "include/layout.tx" {
-:   title => "MetaKGS Archives",
 : }
 
 : after fonts -> {

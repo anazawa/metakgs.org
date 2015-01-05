@@ -37,184 +37,102 @@
     var spec = args || {};
     var that = MetaKGS.App.archives.component( spec );
 
-    //that.games = MetaKGS.App.archives.games({
-    //  $context: that.findByClassName('games'),
-    //  classNamePrefix: that.classNamePrefix
-    //});
+    that.user = spec.user || that.$context.data('user');
+    that.year = spec.year || that.$context.data('year');
+    that.month = spec.month || that.$context.data('month');
 
-    that.buildCalendar = function (args) {
-      return MetaKGS.App.archives.calendar({
-        $context: this.findByClassName('calendar'),
-        classNamePrefix: this.classNameFor('calendar')+'-',
-        year: args.year,
-        month: args.month
+    that.gameList = archives.gameList({
+      classNamePrefix: that.classNameFor('gamelist') + '-',
+      $context: that.findByClassName('gamelist')
+    });
+
+    that.calendar = archives.calendar({
+      classNamePrefix: that.classNameFor('calendar') + '-',
+      $context: that.findByClassName('calendar')
+    });
+
+    that.query = function (args) {
+      var that = this;
+      var query = args || {};
+      var user = query.user || this.user;
+      var year = query.year || this.year;
+      var month = query.month || this.month;
+      var url = 'http://metakgs.org/api/archives/'+user+'/'+year+'/'+month;
+
+      $.getJSON(url, function (response) {
+        var games = [];
+
+        foreach(response.content.games, function (game) {
+          games.push( archives.game(game) );
+        });
+
+        that.render({
+          games: games,
+          query: {
+            user: user,
+            year: year,
+            month: month
+          }
+        });
+
+        that.bind();
       });
     };
 
     that.render = function (args) {
       var that = this;
-      var query = args || {};
-      var user = query.user || this.$context.data('user');
-      var year = query.year || this.$context.data('year');
-      var month = query.month || this.$context.data('month');
-      var url = 'http://metakgs.org/api/archives/'+user+'/'+year+'/'+month;
+      var query = args.query;
+      var games = args.games;
+      var $year = this.findByClassName( 'year' );
+      var $month = this.findByClassName( 'month' );
 
-      var calendar = this.buildCalendar({
-        year: year,
-        month: month
+      $year.text( query.year );
+      $month.text( FULLMON_LIST[query.month-1] );
+
+      this.calendar.render({
+        user  : query.user,
+        year  : query.year,
+        month : query.month,
+        games : games
       });
 
-      var gameList = MetaKGS.App.archives.gameList({
-        classNamePrefix: this.classNameFor('gamelist')+'-',
-        $context: this.findByClassName('gamelist')
+      this.gameList.render({
+        games: games
       });
 
-      $.getJSON(url, function (response) {
-        that.findByClassName('year').text( year );
-        that.findByClassName('month').text( FULLMON_LIST[month-1] );
+      this.user = query.user;
+      this.year = query.year;
+      this.month = query.month;
+      this.games = games;
 
-        //calendar.draw({
-        //  user: user,
-        //  year: year,
-        //  month: month,
-        //  games: response.content.games
-        //});
+      return;
+    };
 
-        //calendar.render();
+    that.bind = function () {
+      var that = this;
+      var click = this.eventNameFor( 'click' );
+      var $showAllGames = this.findByClassName( 'show-allgames' );
 
-        //calendar.eachDate(function (date) {
-        //  if ( date.content && date.content.games ) {
-        //    date.$context.on('click', function (event) {
-        //      console.log('Day '+date.day);
-        //    });
-        //  }
-        //});
+      this.calendar.eachDate(function (date) {
+        var $showGames = date.findByClassName( 'show-games' );
 
-        var games = [];
-        MetaKGS.Util.foreach(response.content.games, function (game) {
-          games.push( MetaKGS.App.archives.game(game) );
+        $showGames.on(click, function () {
+          that.gameList.render({
+            games: date.games
+          });
         });
+      });
 
-        //that.games.render( response.content.games );
-        //games.draw( response.content.games );
-        //console.log(games);
-        gameList.render( games );
-
-        console.log(gameList);
-
-        calendar.render({
-          user: user,
-          year: year,
-          month: month,
-          games: games
+      $showAllGames.on(click, function () {
+        that.gameList.render({
+          games: that.games
         });
-        console.log(calendar);
-      });
-    };
-
-    that.draw = function (args) {
-      var calendar = args.calendar;
-    };
-
-    return that;
-  };
-
-  archives.component = function (args) {
-    var spec = args || {};
- 
-    var that = {
-      $context: spec.$context || $(),
-      classNamePrefix: spec.classNamePrefix || ''
-    };
-
-    that.classNameFor = function (name) {
-      return this.classNamePrefix + name;
-    };
-
-    that.findByClassName = function (name, $context) {
-      var $c = $context || this.$context;
-      return $c.find( '.'+this.classNameFor(name) );
-    };
-
-    that.render = function () {
-      throw new Error("call to abstract method 'render'");
-    };
-
-    return that;
-  };
-
-  archives.game = function (args) {
-    var that = {
-      boardSize: args.board_size,
-      handicap: args.handicap,
-      date: new Date( args.started_at ),
-      result: args.result
-    };
-    
-    that.type = {
-      'Review'       : 'Demonstration',
-      'Rengo Review' : 'Demonstration',
-      'Simul'        : 'Simultaneous'
-    }[args.type] || args.type;
-
-    foreach(['white', 'black'], function (role) {
-      var players = [];
-
-      foreach(args[role] || [], function (arg) {
-        players.push( archives.user(arg) );
       });
 
-      that[role] = players;
-    });
+      this.calendar.bind();
+      this.gameList.bind();
 
-    that.getTypeInitial = function () {
-      return {
-        'Demonstration' : 'D',
-        'Free'          : 'F',
-        'Ranked'        : 'R',
-        'Rengo'         : '2',
-        'Simultaneous'  : 'S',
-        'Teaching'      : 'T',
-        'Tournament'    : '*'
-      }[this.type];
-    };
-
-    that.isDraw = function () {
-      return this.result === 'Draw';
-    };
-
-    that.wonBy = function (arg) {
-      var name = arg.toLowerCase();
-      var found = false;
-
-      var winners = ( this.result.match(/^(W|B)\+/) || [] )[1];
-          winners = winners ? this[ winners === 'W' ? 'white' : 'black' ] : [];
-
-      foreach(winners, function (winner) {
-        if ( winner.name.toLowerCase() === name ) {
-          found = true;
-          return false;
-        }
-      });
-
-      return found;
-    };
-
-    that.isFinished = function () {
-      return this.result !== 'Unfinished';
-    };
-
-    return that;
-  };
-
-  archives.user = function (args) {
-    var that = {
-      name: args.name,
-      rank: args.rank
-    };
-
-    that.hasRank = function () {
-      return this.rank && this.rank !== '-' ? true : false;
+      return;
     };
 
     return that;
@@ -323,6 +241,8 @@
       var games = args && args.games;
       var year = args && args.year || this.year;
       var month = args && args.month || this.month;
+      var $year = this.findByClassName( 'year' );
+      var $month = this.findByClassName( 'month' );
       var $dateList = this.findByClassName( 'datelist' );
 
       var dates = this.buildDates({
@@ -334,15 +254,18 @@
 
       this.findByClassName( 'date', $dateList ).remove();
 
+      $year.text( year );
+      $month.text( FULLMON_LIST[month-1] );
+
       foreach(dates, function (date) {
         var $date = date.$context;
 
         date.render();
 
-        if ( date.year === that.year && date.month === that.month ) {
+        if ( date.year === year && date.month === month ) {
           $date.addClass( that.classNameFor('this-month') );
         }
-        else if ( date.year > that.year || date.month > that.month ) {
+        else if ( date.year > year || date.month > month ) {
           $date.addClass( that.classNameFor('next-month') );
         }
         else {
@@ -356,6 +279,29 @@
       this.month = month;
       this.dates = dates;
       
+      return;
+    };
+
+    that.bind = function () {
+      var that = this;
+      var click = this.eventNameFor('click');
+      var $dateList = this.findByClassName( 'datelist' );
+      var $dates = this.findByClassName( 'date', $dateList );
+
+      this.eachDate(function (date) {
+        var $date = date.$context;
+        var selected = date.classNameFor( 'selected' );
+
+        if ( date.year === that.year && date.month === that.month ) {
+          $date.on(click, function () {
+            $dates.removeClass( selected );
+            $( this ).addClass( selected );
+          });
+        }
+
+        date.bind();
+      });
+
       return;
     };
 
@@ -424,6 +370,21 @@
       return;
     };
 
+    that.bind = function () {
+      var that = this;
+
+      /*
+      this.$context.on('click', function (event) {
+        that.eachDate(function (d) {
+          d.$context.removeClass(that.classNameFor('date-selected'));
+        });
+        date.$context.addClass(that.classNameFor('date-selected'));
+      });
+      */
+
+      return;
+    };
+
     return that;
   };
 
@@ -463,22 +424,157 @@
 
     that.items = that.buildItems( spec.games );
 
+    that.page = archives.page({
+      totalEntries: that.items.length
+    });
+
     that.eachItem = function (callback) {
       foreach( this.items, callback );
     };
 
-    that.render = function (games) {
+    that.sortByWhite = function (args) {
+      return this.sort(args, {
+        asc: function (a, b) {
+        }
+      });
+    };
+
+    that.sortBySetup = function (args) {
+      return this.sort(args, {
+        asc: function (a, b) {
+          return a.game.boardSize - b.game.boardSize
+              || a.game.handicap  - b.game.handicap
+              || a.game.date      - b.game.date;
+        },
+        desc: function (a, b) {
+          return b.game.boardSize - a.game.boardSize
+              || b.game.handicap  - a.game.handicap
+              || a.game.date      - b.game.date;
+        }
+      });
+    };
+
+    that.sortByResult = function (args) {
+      var getScore = /^([BW])\+(\d+\.\d+)$/;
+
+      var make = function (arg) {
+        var dir = arg === 'desc' ? -1 : 1;
+
+        return function (a, b) {
+          var aScore = getScore.exec( a.game.result );
+          var bScore = getScore.exec( b.game.result );
+
+          if ( a.game.result === b.game.result ) {
+            return a.game.date - b.game.date;
+          }
+
+          if ( aScore && bScore && aScore[1] === bScore[1] ) {
+            return dir * (parseFloat(aScore[2]) - parseFloat(bScore[2]));
+          }
+
+          return a.game.result > b.game.result ? dir : -dir;
+        };
+      };
+ 
+      return this.sort(args, {
+        asc  : make('asc'),
+        desc : make('desc')
+      });
+    };
+
+    that.sortByDate = function (args) {
+      return this.sort(args, {
+        asc: function (a, b) {
+          return a.game.date - b.game.date;
+        }
+      });
+    };
+
+    that.sort = function (args, callback) {
+      var toggle = args && args.toggle === true || false;
+      var items = this.items.slice(0).sort(callback.asc);
+      var isSorted = true;
+      var i;
+
+      if ( toggle ) {
+        for ( i = 0; i < items.length; i++ ) {
+          if ( items[i] !== this.items[i] ) {
+            isSorted = false;
+            break;
+          }
+        }
+        if ( isSorted && callback.desc ) {
+          items.sort( callback.desc );
+        }
+        else if ( isSorted ) {
+          items = items.reverse();
+        }
+      }
+
+      this.items = items;
+
+      return this;
+    };
+
+    that.render = function (args) {
+      var that = this;
       var $context = this.$context;
-      var items = games ? this.buildItems(games) : this.items;
+      var items = (args && args.games) ? this.buildItems(args.games) : this.items;
+
+      /*
+      var page = archives.page({
+        totalEntries: items.length,
+        currentPage: args.games ? 1 : (args.page || this.page.currentPage)
+      });
+      */
 
       this.findByClassName('item').remove();
 
+      //foreach(page.slice(items), function (item) {
       foreach(items, function (item) {
+        var $item = item.$context;
+
         item.render();
-        $context.append( item.$context );
+
+        if ( item.game.isPrivate() ) {
+          $item.addClass( item.classNameFor('private') );
+        }
+
+        $context.append( $item );
       });
 
+      //this.page = page;
       this.items = items;
+
+      return;
+    };
+
+    that.bind = function () {
+      var that = this;
+      var click = this.eventNameFor( 'click' );
+      var $sortByDate = this.findByClassName( 'sortby-date' );
+      var $sortBySetup = this.findByClassName( 'sortby-setup' );
+      var $sortByResult = this.findByClassName( 'sortby-result' );
+
+      this.eachItem(function (item) {
+        item.bind();
+      });
+
+      $sortByDate.off( click );
+      $sortBySetup.off( click );
+      $sortByResult.off( click );
+
+      $sortByDate.on(click, function() {
+        that.sortByDate({ toggle: true }).render();
+      });
+
+      $sortBySetup.on(click, function() {
+        that.sortBySetup({ toggle: true }).render();
+      });
+
+      $sortByResult.on(click, function() {
+        that.sortByResult({ toggle: true }).render();
+      });
 
       return;
     };
@@ -571,6 +667,16 @@
       return;
     };
 
+    that.bind = function () {
+      var players = [].concat( this.white, this.black );
+
+      foreach(players, function (player) {
+        player.bind();
+      });
+
+      return;
+    };
+
     return that;
   };
 
@@ -587,6 +693,7 @@
 
       if ( user ) {
         $name.text( user.name );
+        $name.attr( 'href', user.getHtmlUrl() );
         $rank.text( user.hasRank() ? user.rank : '' );
       }
       else {
@@ -598,6 +705,177 @@
       return;
     };
 
+    that.bind = function () {
+      // nothing to bind
+    };
+
+    return that;
+  };
+
+  archives.component = function (args) {
+    var spec = args || {};
+ 
+    var that = {
+      $context: spec.$context || $(),
+      classNamePrefix: spec.classNamePrefix || '',
+      eventNamespace: spec.eventNamespace || 'metakgsArchives'
+    };
+
+    that.classNameFor = function (name) {
+      return this.classNamePrefix + name;
+    };
+
+    that.findByClassName = function (name, $context) {
+      var $c = $context || this.$context;
+      return $c.find( '.'+this.classNameFor(name) );
+    };
+
+    that.eventNameFor = function (name) {
+      return this.eventNamespace ? name+'.'+this.eventNamespace : name;
+    };
+
+    that.render = function () {
+      throw new Error("call to abstract method 'render'");
+    };
+
+    that.bind = function () {
+      throw new Error("call to abstract method 'bind'");
+    };
+
+    return that;
+  };
+
+  archives.user = function (args) {
+    var that = {
+      name: args.name,
+      rank: args.rank
+    };
+
+    that.hasRank = function () {
+      return this.rank && this.rank !== '-' ? true : false;
+    };
+
+    that.getHtmlUrl = function () {
+      return '/users/' + this.name;
+    };
+
+    return that;
+  };
+
+  archives.game = function (args) {
+    var that = {
+      sgfUrl: args.sgf_url,
+      boardSize: args.board_size,
+      handicap: args.handicap || 0,
+      date: new Date( args.started_at ),
+      result: args.result
+    };
+    
+    that.type = {
+      'Review'       : 'Demonstration',
+      'Rengo Review' : 'Demonstration',
+      'Simul'        : 'Simultaneous'
+    }[args.type] || args.type;
+
+    foreach(['white', 'black'], function (role) {
+      var players = [];
+
+      foreach(args[role] || [], function (arg) {
+        players.push( archives.user(arg) );
+      });
+
+      that[role] = players;
+    });
+
+    that.getTypeInitial = function () {
+      return {
+        'Demonstration' : 'D',
+        'Free'          : 'F',
+        'Ranked'        : 'R',
+        'Rengo'         : '2',
+        'Simultaneous'  : 'S',
+        'Teaching'      : 'T',
+        'Tournament'    : '*'
+      }[this.type];
+    };
+
+    that.isDraw = function () {
+      return this.result === 'Draw';
+    };
+
+    that.wonBy = function (arg) {
+      var name = arg.toLowerCase();
+      var found = false;
+
+      var winners = ( this.result.match(/^([WB])\+/) || [] )[1];
+          winners = winners ? this[ winners === 'W' ? 'white' : 'black' ] : [];
+
+      foreach(winners, function (winner) {
+        if ( winner.name.toLowerCase() === name ) {
+          found = true;
+          return false;
+        }
+      });
+
+      return found;
+    };
+
+    that.isFinished = function () {
+      return this.result !== 'Unfinished';
+    };
+
+    that.isPrivate = function () {
+      return !this.sgfUrl;
+    };
+
+    return that;
+  };
+
+  // ported from Data::Page on CPAN
+
+  archives.page = function (args) {
+    var spec = args || {};
+
+    var that = {
+      totalEntries: spec.totalEntries || 0,
+      entriesPerPage: spec.entriesPerPage || 10,
+      currentPage: spec.currentPage || 1
+    };
+
+    that.getFirstPage = function () {
+      return 1;
+    };
+
+    that.getLastPage = function () {
+      return Math.ceil( this.totalEntries/this.entriesPerPage );
+    };
+
+    that.getFirst = function () {
+      return ((this.currentPage - 1) * this.entriesPerPage) + 1;
+    };
+
+    that.getLast = function () {
+      if ( this.currentPage === this.getLastPage() ) {
+        return this.totalEntries;
+      }
+      else {
+        return this.currentPage * this.entriesPerPage;
+      }
+    };
+
+    that.getPreviousPage = function () {
+      return this.currentPage > 1 ? this.currentPage-1 : null;
+    };
+
+    that.getNextPage = function () {
+      return this.currentPage < this.getLastPage() ? this.currentPage+1 : null;
+    };
+
+    that.slice = function (array) {
+      var end = array.length > this.getLast() ? this.getLast() : array.length;
+      return array.slice( this.getFirst()-1, end );
+    };
+
     return that;
   };
 
@@ -606,10 +884,10 @@
   $(document).ready(function () {
     var archives = MetaKGS.App.archives({
       $context: $('.js-archives'),
-      classNamePrefix: 'js-',
+      classNamePrefix: 'js-archives-',
     });
 
-    archives.render();
+    archives.query();
   });
 
 }());
