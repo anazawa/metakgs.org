@@ -17,8 +17,8 @@
                 <i class="fa fa-caret-left"></i>
               </a>
             </li>
-            <li class="js-archives-show-allgames">
-              <a class="js-archives-show-allgames" href="#gamelist">
+            <li>
+              <a class="js-archives-calendar-show-allgames" href="#gamelist">
                 <span class="js-archives-calendar-month"><: num2fullmon($month) :></span>
                 <span class="js-archives-calendar-year"><: $year :></span>
               </a>
@@ -141,6 +141,42 @@
             <li class="previous js-archives-gamelist-show-prevpage"><a href="#gamelist">&larr; Prev</a></li>
             <li class="next js-archives-gamelist-show-nextpage"><a href="#gamelist">Next &rarr;</a></li>
           </ul>
+
+          <h3>Filters</h3>
+
+          <div class="form-group">
+ 
+          <label class="checkbox-inline disabled">
+            <input type="checkbox" id="" value="" disabled> Demonstration
+          </label>
+
+          <label class="checkbox-inline disabled">
+            <input type="checkbox" id="" value="" disabled> Free
+          </label>
+
+          <label class="checkbox-inline">
+            <input type="checkbox" id="" value=""> Ranked
+          </label>
+
+          <label class="checkbox-inline disabled">
+            <input type="checkbox" id="" value="" disabled> Rengo
+          </label><br>
+
+          <label class="checkbox-inline disabled">
+            <input type="checkbox" id="" value="" disabled> Simultaneous
+          </label>
+
+          <label class="checkbox-inline disabled">
+            <input type="checkbox" id="" value="" disabled> Teaching
+          </label>
+
+          <label class="checkbox-inline disabled">
+            <input type="checkbox" id="" value="" disabled> Tournament
+          </label>
+
+          </div>
+
+          <a class="btn" href="#gamelist">Apply</a>
 
           <h3>Notes</h3>
 
