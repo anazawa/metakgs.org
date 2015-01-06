@@ -43,12 +43,12 @@
 
     that.gameList = archives.gameList({
       classNamePrefix: that.classNameFor('gamelist') + '-',
-      $context: that.findByClassName('gamelist')
+      $context: that.find('gamelist')
     });
 
     that.calendar = archives.calendar({
       classNamePrefix: that.classNameFor('calendar') + '-',
-      $context: that.findByClassName('calendar')
+      $context: that.find('calendar')
     });
 
     that.start = function (args) {
@@ -84,11 +84,9 @@
       var month = args.month;
       var day = args.games;
       var games = args.games;
-      var $year = this.findByClassName( 'year' );
-      var $month = this.findByClassName( 'month' );
 
-      $year.text( year );
-      $month.text( FULLMON_LIST[month-1] );
+      this.find('year').text( year );
+      this.find('month').text( FULLMON_LIST[month-1] );
 
       this.calendar.render({
         user  : user,
@@ -114,12 +112,9 @@
     that.bind = function () {
       var that = this;
       var click = this.eventNameFor( 'click' );
-      var $showAllGames = this.findByClassName( 'show-allgames' );
 
       this.calendar.eachDate(function (date) {
-        var $showGames = date.findByClassName( 'show-games' );
-
-        $showGames.on(click, function () {
+        date.find('show-games').on(click, function () {
           that.gameList.render({
             year: date.year,
             month: date.month,
@@ -129,7 +124,7 @@
         });
       });
 
-      $showAllGames.on(click, function () {
+      this.find('show-allgames').on(click, function () {
         that.gameList.render({
           year: that.year,
           month: that.month,
@@ -155,7 +150,7 @@
     that.dates = null;
 
     that.$dateTemplate = (function () {
-      var $template = that.findByClassName( 'date-template' );
+      var $template = that.find( 'date-template' );
       var $dateList = $template.parent();
       var $clone = $template.clone();
 
@@ -251,9 +246,6 @@
       var games = args && args.games;
       var year = args && args.year || this.year;
       var month = args && args.month || this.month;
-      var $year = this.findByClassName( 'year' );
-      var $month = this.findByClassName( 'month' );
-      //var $dateList = this.findByClassName( 'datelist' );
       var $dateList = this.$dateList;
 
       var dates = this.buildDates({
@@ -263,10 +255,10 @@
         games : games
       });
 
-      this.findByClassName( 'date', $dateList ).remove();
+      this.find( 'date', $dateList ).remove();
 
-      $year.text( year );
-      $month.text( FULLMON_LIST[month-1] );
+      this.find('year').text( year );
+      this.find('month').text( FULLMON_LIST[month-1] );
 
       foreach(dates, function (date) {
         var $date = date.$context;
@@ -290,9 +282,7 @@
     that.bind = function () {
       var that = this;
       var click = this.eventNameFor('click');
-      //var $dateList = this.findByClassName( 'datelist' );
-      //var $dates = this.findByClassName( 'date', $dateList );
-      var $dates = this.findByClassName( 'date', this.$dateList );
+      var $dates = this.find( 'date', this.$dateList );
 
       this.eachDate(function (date) {
         var $date = date.$context;
@@ -329,7 +319,6 @@
       var user = args && args.user || this.user;
       var games = args && args.games || this.games;
       var day = args && args.day || this.day;
-      var $day = this.findByClassName( 'day' );
 
       var gamesCount = {
         games  : games.length,
@@ -353,11 +342,11 @@
         }
       });
 
-      $day.text( day );
+      this.find('day').text( day );
 
       foreach(Object.keys(gamesCount), function (key) {
-        var $item = that.findByClassName( key );
-        var $itemCount = that.findByClassName( key+'-count', $item );
+        var $item = that.find( key );
+        var $itemCount = that.find( key+'-count', $item );
 
         if ( gamesCount[key] ) {
           $itemCount.text( gamesCount[key] );
@@ -376,9 +365,7 @@
     };
 
     that.bind = function () {
-      var that = this;
-
-      return;
+      // nothing to bind
     };
 
     return that;
@@ -389,7 +376,7 @@
     var that = archives.component( spec );
 
     that.$itemTemplate = (function () {
-      var $template = that.findByClassName( 'item-template' );
+      var $template = that.find( 'item-template' );
       var $clone = $template.clone();
       var $list = $template.parent();
 
@@ -523,18 +510,8 @@
       var year = games ? args.year : this.year;
       var month = games ? args.month : this.month;
       var day = games ? args.day : this.day;
-      var $list = this.$list;
       var items = games ? this.buildItems(games) : this.items;
-      var $showPrevPage = this.findByClassName( 'show-prevpage' );
-      var $showNextPage = this.findByClassName( 'show-nextpage' );
-      var $totalGames = this.findByClassName( 'totalgames' );
-      var $dateRange = this.findByClassName( 'daterange' );
-      var $ifHasGames = this.findByClassName( 'if-hasgames' );
-      var $pageRange = this.findByClassName( 'page-range' );
-
-      var dateRange = FULLMON_LIST[month-1];
-          dateRange += day ? ' ' + day + ', ' : ' ';
-          dateRange += year;
+      var $list = this.$list;
 
       var pageObject = archives.page({
         entriesPerPage: this.page.entriesPerPage,
@@ -542,28 +519,40 @@
         currentPage: games ? 1 : (page || this.page.currentPage)
       });
 
-      this.findByClassName('item', $list).remove();
+      var dateRange = FULLMON_LIST[month-1];
+          dateRange += day ? ' ' + day + ', ' : ' ';
+          dateRange += year;
 
-      $showPrevPage.removeClass( 'disabled' );
-      $showNextPage.removeClass( 'disabled' );
+      var pageRange = pageObject.getFirst() + '-' + pageObject.getLast();
 
-      if ( !pageObject.getNextPage() ) {
-        $showNextPage.addClass('disabled');
-      }
+      var totalGames = MetaKGS.Util.commify( ''+items.length );
 
-      if ( !pageObject.getPreviousPage() ) {
-        $showPrevPage.addClass('disabled');
-      }
+      this.find( 'item', $list ).remove();
 
-      $totalGames.text( MetaKGS.Util.commify(''+items.length) );
-      $dateRange.text( dateRange );
-      $pageRange.text( pageObject.getFirst()+'-'+pageObject.getLast() );
-
-      if ( items.length ) {
-        $ifHasGames.show();
+      if ( pageObject.getPreviousPage() ) {
+        this.find('show-prevpage').removeClass('disabled');
       }
       else {
-        $ifHasGames.hide();
+        this.find('show-prevpage').addClass('disabled');
+      }
+
+      if ( pageObject.getNextPage() ) {
+        this.find('show-nextpage').removeClass('disabled');
+      }
+      else {
+        this.find('show-nextpage').addClass('disabled');
+      }
+
+      this.find('totalgames').text( totalGames );
+      this.find('daterange').text( dateRange );
+      this.find('page-range').text( pageRange );
+
+      // XXX
+      if ( items.length ) {
+        this.find('if-hasgames').show();
+      }
+      else {
+        this.find('if-hasgames').hide();
       }
 
       foreach(pageObject.slice(items), function (item) {
@@ -591,11 +580,11 @@
       var that = this;
       var click = this.eventNameFor( 'click' );
 
-      var $sortByDate   = this.findByClassName( 'sortby-date' );
-      var $sortBySetup  = this.findByClassName( 'sortby-setup' );
-      var $sortByResult = this.findByClassName( 'sortby-result' );
-      var $showPrevPage = this.findByClassName( 'show-prevpage' );
-      var $showNextPage = this.findByClassName( 'show-nextpage' );
+      var $sortByDate   = this.find( 'sortby-date' );
+      var $sortBySetup  = this.find( 'sortby-setup' );
+      var $sortByResult = this.find( 'sortby-result' );
+      var $showPrevPage = this.find( 'show-prevpage' );
+      var $showNextPage = this.find( 'show-nextpage' );
 
       this.eachItem(function (item) {
         item.bind();
@@ -608,23 +597,23 @@
       $showPrevPage.off( click );
       $showNextPage.off( click );
 
-      $sortByDate.on(click, function () {
+      this.find('sortby-date').on(click, function () {
         that.sortByDate({ toggle: true }).render({ page: 1 });
       });
 
-      $sortBySetup.on(click, function () {
+      this.find('sortby-setup').on(click, function () {
         that.sortBySetup({ toggle: true }).render({ page: 1 });
       });
 
-      $sortByResult.on(click, function () {
+      this.find('sortby-result').on(click, function () {
         that.sortByResult({ toggle: true }).render({ page: 1 });
       });
 
-      $showPrevPage.on(click, function () {
+      this.find('show-prevpage').on(click, function () {
         that.render({ page: that.page.getPreviousPage() });
       });
 
-      $showNextPage.on(click, function () {
+      this.find('show-nextpage').on(click, function () {
         that.render({ page: that.page.getNextPage() });
       });
 
@@ -650,8 +639,8 @@
         var className = role + (i + 1);
 
         players.push(archives.gameList.player({
-          classNamePrefix: that.classNameFor(className)+'-',
-          $context: that.findByClassName(className),
+          classNamePrefix: that.classNameFor(className) + '-',
+          $context: that.find( className ),
           user: user
         }));
       });
@@ -666,11 +655,6 @@
       var that = this;
       var game = args || this.game;
 
-      var $type   = this.findByClassName( 'type' );
-      var $setup  = this.findByClassName( 'setup' );
-      var $result = this.findByClassName( 'result' );
-      var $date   = this.findByClassName( 'date' );
-
       var type = game.getTypeInitial();
 
       var setup = game.boardSize + 'x' + game.boardSize;
@@ -684,10 +668,10 @@
           date += ' at ' + ('0'+game.date.getUTCHours()).slice(-2);
           date += ':' + ('0'+game.date.getUTCMinutes()).slice(-2);
 
-      $type.text( type );
-      $setup.text( setup );
-      $result.text( result );
-      $date.text( date );
+      this.find('type').text( type );
+      this.find('setup').text( setup );
+      this.find('result').text( result );
+      this.find('date').text( date );
 
       this.renderWhite( game.white );
       this.renderBlack( game.black );
@@ -740,8 +724,8 @@
 
     that.render = function (arg) {
       var user = arg || this.user;
-      var $name = this.findByClassName( 'name' );
-      var $rank = this.findByClassName( 'rank' );
+      var $name = this.find( 'name' );
+      var $rank = this.find( 'rank' );
 
       if ( user ) {
         $name.text( user.name );
@@ -777,7 +761,7 @@
       return this.classNamePrefix + name;
     };
 
-    that.findByClassName = function (name, $context) {
+    that.find = function (name, $context) {
       var $c = $context || this.$context;
       return $c.find( '.'+this.classNameFor(name) );
     };
@@ -814,84 +798,74 @@
     return that;
   };
 
-  (function () {
-    var id = 0; // to sort
-    var idOf = {};
-
-    function getId (url) {
-      return url ? (idOf[url] || (idOf[url] = ++id)) : ++id;
-    }
-
-    archives.game = function (args) {
-      var that = {
-        sgfUrl: args.sgf_url,
-        boardSize: args.board_size,
-        handicap: args.handicap || 0,
-        date: new Date( args.started_at ),
-        result: args.result
-      };
+  archives.game = function (args) {
+    var that = {
+      sgfUrl: args.sgf_url,
+      boardSize: args.board_size,
+      handicap: args.handicap || 0,
+      date: new Date( args.started_at ),
+      result: args.result
+    };
     
-      that.type = {
-        'Review'       : 'Demonstration',
-        'Rengo Review' : 'Demonstration',
-        'Simul'        : 'Simultaneous'
-      }[args.type] || args.type;
+    that.type = {
+      'Review'       : 'Demonstration',
+      'Rengo Review' : 'Demonstration',
+      'Simul'        : 'Simultaneous'
+    }[args.type] || args.type;
 
-      foreach(['white', 'black'], function (role) {
-        var players = [];
+    foreach(['white', 'black'], function (role) {
+      var players = [];
 
-        foreach(args[role] || [], function (arg) {
-          players.push( archives.user(arg) );
-        });
-
-        that[role] = players;
+      foreach(args[role] || [], function (arg) {
+        players.push( archives.user(arg) );
       });
 
-      that.getTypeInitial = function () {
-        return {
-          'Demonstration' : 'D',
-          'Free'          : 'F',
-          'Ranked'        : 'R',
-          'Rengo'         : '2',
-          'Simultaneous'  : 'S',
-          'Teaching'      : 'T',
-          'Tournament'    : '*'
-        }[this.type];
-      };
+      that[role] = players;
+    });
 
-      that.isDraw = function () {
-        return this.result === 'Draw';
-      };
-
-      that.wonBy = function (arg) {
-        var name = arg.toLowerCase();
-        var found = false;
-
-        var winners = ( this.result.match(/^([WB])\+/) || [] )[1];
-            winners = winners ? this[ winners === 'W' ? 'white' : 'black' ] : [];
-
-        foreach(winners, function (winner) {
-          if ( winner.name.toLowerCase() === name ) {
-            found = true;
-            return false;
-          }
-        });
-
-        return found;
-      };
-
-      that.isFinished = function () {
-        return this.result !== 'Unfinished';
-      };
-
-      that.isPrivate = function () {
-        return !this.sgfUrl;
-      };
-
-      return that;
+    that.getTypeInitial = function () {
+      return {
+        'Demonstration' : 'D',
+        'Free'          : 'F',
+        'Ranked'        : 'R',
+        'Rengo'         : '2',
+        'Simultaneous'  : 'S',
+        'Teaching'      : 'T',
+        'Tournament'    : '*'
+      }[this.type];
     };
 
-  }());
+    that.isDraw = function () {
+      return this.result === 'Draw';
+    };
+
+    that.wonBy = function (arg) {
+      var name = arg.toLowerCase();
+      var found = false;
+
+      var winners = ( this.result.match(/^([WB])\+/) || [] )[1];
+          winners = winners ? this[ winners === 'W' ? 'white' : 'black' ] : [];
+
+      foreach(winners, function (winner) {
+        if ( winner.name.toLowerCase() === name ) {
+          found = true;
+          return false;
+        }
+      });
+
+      return found;
+    };
+
+    that.isFinished = function () {
+      return this.result !== 'Unfinished';
+    };
+
+    that.isPrivate = function () {
+      return !this.sgfUrl;
+    };
+
+    return that;
+  };
 
   // ported from Data::Page on CPAN
 
