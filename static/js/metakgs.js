@@ -109,6 +109,10 @@ if ( typeof window.console === "undefined" ) {
     return string.replace( /([.*+?\^=!:${}()|\[\]\/\\])/g, "\\$1" );
   };
 
+  MetaKGS.Util.commify = function (string) {
+    return string.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  };
+
   $(document).ready(function() {
     $("ul[data-toggle='navbar']").each(function() {
       var $this = $( this );
