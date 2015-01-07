@@ -41,10 +41,13 @@
     that.year = spec.year || that.$context.data('year');
     that.month = spec.month || that.$context.data('month');
 
+    that.apiEndpoint = spec.apiEndpoint || '/api';
+    that.http = archives.http();
+
     that.gameList = archives.gameList({
       classNamePrefix: that.classNameFor('gamelist') + '-',
       eventNamespace: that.eventNamespace + 'GameList',
-      $context: that.find('gamelist')
+      $context: that.find( 'gamelist' )
     });
 
     that.calendar = archives.calendar({
@@ -53,30 +56,74 @@
       $context: that.find( 'calendar' )
     });
 
-    that.start = function (args) {
+    that.error = archives.error({
+      classNamePrefix: that.classNameFor('error') + '-',
+      eventNamespace: that.eventNamespace + 'Error',
+      $context: that.find( 'error' )
+    });
+
+    that.start = function () {
+      var user = this.user;
+      var year = this.year;
+      var month = this.month;
+      var url = this.uriFor( 'archives/'+user+'/'+year+'/'+month );
+
+      this.get( url );
+    };
+
+    that.uriFor = function (path) {
+      return this.apiEndpoint + '/' + path.replace(/^\//, '');
+    };
+
+    that.get = function (url) {
       var that = this;
-      var query = args || {};
-      var user = query.user || this.user;
-      var year = query.year || this.year;
-      var month = query.month || this.month;
-      var url = 'http://metakgs.org/api/archives/'+user+'/'+year+'/'+month;
 
-      $.getJSON(url, function (response) {
-        var games = [];
+      this.render({ loading: true });
 
-        foreach(response.content.games, function (game) {
-          games.push( archives.game(game) );
-        });
-
-        that.render({
-          games: games,
-          user: user,
-          year: year,
-          month: month
-        });
-
-        that.bind();
+      this.http.get(url, function (response) {
+        if ( response.code === 200 ) {
+          that.onSuccess( response );
+        }
+        else {
+          that.onFail( response );
+        }
       });
+
+      return;
+    };
+
+    that.onSuccess = function (response) {
+      var query = this.guessQuery( response );
+      var content = response.body.content;
+      var games = [];
+
+      foreach(content.games, function (game) {
+        games.push( archives.game(game) );
+      });
+
+      this.render({
+        user  : query.user,
+        year  : query.year,
+        month : query.month,
+        games : games
+      });
+
+      this.bind({
+        link : response.body.link
+      });
+
+      return;
+    };
+
+    that.guessQuery = function (response) {
+      var uri = response.request.uri;
+      var query = uri.match(/\/([a-zA-Z][a-zA-Z0-9]{0,9})\/(\d{4})\/(\d\d?)$/);
+
+      return query && {
+        user  : query[1],
+        year  : parseInt( query[2], 10 ),
+        month : parseInt( query[3], 10 )
+      };
     };
 
     that.render = function (args) {
@@ -86,6 +133,16 @@
       var month = args.month;
       var day = args.games;
       var games = args.games;
+      var link = args.link;
+      var error = args.error;
+
+      if ( args.loading ) {
+        this.find('if-isloading').show();
+        return;
+      }
+      else {
+        this.find('if-isloading').hide();
+      }
 
       this.calendar.render({
         user  : user,
@@ -100,6 +157,8 @@
         games: games
       });
 
+      this.error.render( error );
+
       this.user = user;
       this.year = year;
       this.month = month;
@@ -108,12 +167,14 @@
       return;
     };
 
-    that.bind = function () {
+    that.bind = function (args) {
       var that = this;
+      var link = args.link;
+      var calendar = this.calendar;
       var click = this.eventNameFor( 'click' );
 
       this.calendar.eachDate(function (date) {
-        date.find('show-games').on(click, function () {
+        date.find('show-games').off(click).on(click, function () {
           that.gameList.render({
             year: date.year,
             month: date.month,
@@ -123,7 +184,7 @@
         });
       });
 
-      this.calendar.find('show-allgames').on(click, function () {
+      calendar.find('show-allgames').off(click).on(click, function () {
         that.gameList.render({
           year: that.year,
           month: that.month,
@@ -131,19 +192,17 @@
         });
       });
 
-      /*
-      this.find('show-allgames').on(click, function () {
-        that.calendar.find('date',that.calendar.$dateList).removeClass('active');
-        that.gameList.render({
-          year: that.year,
-          month: that.month,
-          games: that.games
-        });
+      calendar.find('show-prevmonth').off(click).on(click, function () {
+        that.get( link.prev );
       });
-      */
+
+      calendar.find('show-nextmonth').off(click).on(click, function () {
+        that.get( link.next );
+      });
 
       this.calendar.bind();
       this.gameList.bind();
+      this.error.bind();
 
       return;
     };
@@ -391,6 +450,17 @@
     var spec = args || {};
     var that = archives.component( spec );
 
+    that.year = spec.year;
+    that.month = spec.month;
+    that.day = null;
+    that.games = spec.games;
+    that.items = null;
+
+    that.page = archives.page({
+      entriesPerPage: that.$context.data('perpage'),
+      totalEntries: (that.games || []).length
+    });
+
     that.$itemTemplate = (function () {
       var $template = that.find( 'item-template' );
       var $clone = $template.clone();
@@ -425,13 +495,6 @@
 
       return items;
     };
-
-    that.items = that.buildItems( spec.games );
-
-    that.page = archives.page({
-      entriesPerPage: that.$context.data('perpage'),
-      totalEntries: that.items.length
-    });
 
     that.eachItem = function (callback) {
       foreach( this.items, callback );
@@ -767,6 +830,28 @@
     return that;
   };
 
+  archives.error = function (args) {
+    var spec = args || {};
+    var that = archives.component( spec );
+
+    that.render = function (args) {
+      if ( args ) {
+        this.find('name').text( args.name );
+        this.find('message').text( args.message );
+        this.$context.show();
+      }
+      else {
+        this.$context.hide();
+      }
+    };
+
+    that.bind = function () {
+      // nothing to bind
+    };
+
+    return that;
+  };
+
   archives.component = function (args) {
     var spec = args || {};
  
@@ -934,12 +1019,94 @@
     return that;
   };
 
+  archives.http = function (args) {
+    var spec = args || {};
+    var that = {};
+
+    that.get = function (url, callback) {
+      var request = archives.http.request({
+        method: 'GET',
+        uri: url
+      });
+
+      request.send( callback );
+
+      return;
+    };
+
+    return that;
+  };
+
+  archives.http.request = function (args) {
+    var spec = args || {};
+
+    var that = {
+      method: spec.method,
+      uri: spec.uri,
+      body: null
+    };
+
+    that.send = function (callback) {
+      var that = this;
+      var xhr = new XMLHttpRequest();
+
+      xhr.onreadystatechange = function () {
+        if ( this.readyState === 4 ) {
+          callback(archives.http.response({
+            request: that,
+            xhr: this
+          }));
+        }
+      };
+
+      xhr.open( this.method, this.uri );
+      xhr.send( this.body );
+
+      return;
+    };
+
+    return that;
+  };
+
+  archives.http.response = function (args) {
+    var spec = args || {};
+    var xhr = spec.xhr;
+
+    var that = {
+      code: xhr.status,
+      header: {
+        get: function (field) { return xhr.getResponseHeader(field); },
+        toString: function () { return xhr.getAllResponseHeaders(); }
+      },
+      request: spec.request
+    };
+
+    that.body = (function () {
+      var body = xhr.responseText;
+
+      var type = that.header.get('Content-Type') || '';
+          type = type.split(/;\s*/)[0].replace(/\s+/, '');
+          type = type.toLowerCase();
+
+      switch (type) {
+        case 'application/json':
+          body = JSON.parse( body );
+          break;
+      }
+
+      return body;
+    }());
+
+    return that;
+  };
+
   MetaKGS.App.archives = archives;
 
   $(document).ready(function () {
     var archives = MetaKGS.App.archives({
-      $context: $('.js-archives'),
       classNamePrefix: 'js-archives-',
+      $context: $('.js-archives'),
+      apiEndpoint: 'http://metakgs.org/api'
     });
 
     archives.start();

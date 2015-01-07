@@ -318,6 +318,9 @@ input[type="checkbox"] {
   cursor: not-allowed;
 }
 
+.archives {
+  position:relative;
+}
 
 .archives h2 {
     margin-bottom: 0.5em;
@@ -326,3 +329,38 @@ input[type="checkbox"] {
 .archives .table caption {
     text-align: center;
 }
+
+.archives .calendar,
+.archives .gamelist {
+  position: relative;
+}
+
+.loading {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  padding-top: 190px;
+  background: rgba(255,255,255,0.8);
+  z-index: 9999;
+  text-align: center;
+  color: #777;
+}
+
+.alert {
+  padding: 1em;
+  border: 1px solid transparent;
+  border-radius: 4px;
+}
+
+.alert-danger {
+  color: #a94442;
+  background-color: #f2dede;
+  border-color: #ebccd1;
+}
+
+.archives-error {
+  display: none;
+}
+
