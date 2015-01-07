@@ -1,6 +1,38 @@
 (function() {
   'use strict';
 
+  /*
+   * Object Relations:
+   *
+   *   archives
+   *     isa archives.component
+   *     has archives.calendar
+   *     has archives.gameList
+   *     has archives.error
+   *
+   *   archives.calendar
+   *     isa archives.component
+   *     has archives.calendar.date
+   *              
+   *   archives.calendar.date
+   *     isa archives.component
+   *
+   *   archives.gameList
+   *     isa archives.component
+   *     has archives.gameList.item
+   *
+   *   archives.gameList.item
+   *     isa archives.component
+   *     has archives.gameList.player
+   *
+   *   archives.gameList.player
+   *     isa archives.component
+   *
+   *   archives.error
+   *     isa archives.component
+   *
+   */
+
   var foreach = MetaKGS.Util.foreach;
  
   var MON_LIST = [
@@ -33,54 +65,96 @@
     'December'
   ];
 
-  var archives = function (args) {
+  var Archives = function (args) {
     var spec = args || {};
-    var that = archives.component( spec );
+    var that = Archives.Component( spec );
 
     that.user = spec.user || that.$context.data('user');
     that.year = spec.year || that.$context.data('year');
     that.month = spec.month || that.$context.data('month');
 
     that.apiEndpoint = spec.apiEndpoint || '/api';
-    that.http = archives.http();
+    that.http = Archives.HTTP();
 
-    that.gameList = archives.gameList({
+    that.gameList = Archives.GameList({
       classNamePrefix: that.classNameFor('gamelist') + '-',
       eventNamespace: that.eventNamespace + 'GameList',
       $context: that.find( 'gamelist' )
     });
 
-    that.calendar = archives.calendar({
+    that.calendar = Archives.Calendar({
       classNamePrefix: that.classNameFor('calendar') + '-',
       eventNamespace: that.eventNamespace + 'Calendar',
       $context: that.find( 'calendar' )
     });
 
-    that.error = archives.error({
+    that.error = Archives.Error({
       classNamePrefix: that.classNameFor('error') + '-',
       eventNamespace: that.eventNamespace + 'Error',
       $context: that.find( 'error' )
     });
 
-    that.start = function () {
+    that.uriFor = function (args) {
+      var path = [ 'archives', args.user, args.year, args.month ];
+      return this.apiEndpoint + '/' + path.join('/');
+    };
+
+    that.buildQueries = function (args) {
+      var first = args.first;
       var user = this.user;
-      var year = this.year;
-      var month = this.month;
-      var url = this.uriFor( 'archives/'+user+'/'+year+'/'+month );
+      var queries = [];
 
-      this.get( url );
+      var now = new Date();
+      var year = now.getUTCFullYear();
+      var month = now.getUTCMonth() + 1;
+
+      var uri;
+
+      eachYear:
+      for (; year >= 2000; year-- ) {
+        for ( month = month || 12; month > 0; month-- ) {
+          uri = this.uriFor({
+            user: user,
+            year: year,
+            month: month
+          });
+
+          queries.push({
+            year: year,
+            month: month,
+            uri: uri
+          });
+
+          if ( uri === first ) {
+            break eachYear;
+          }
+        }
+      }
+
+      queries.reverse();
+
+      return queries;
     };
 
-    that.uriFor = function (path) {
-      return this.apiEndpoint + '/' + path.replace(/^\//, '');
+    that.start = function () {
+      this.call();
     };
 
-    that.get = function (url) {
+    that.call = function (args) {
       var that = this;
+      var uri = args && args.uri;
+
+      if ( !uri ) {
+        uri = this.uriFor({
+          user: this.user,
+          year: this.year,
+          month: this.month
+        });
+      }
 
       this.render({ loading: true });
 
-      this.http.get(url, function (response) {
+      this.http.get(uri, function (response) {
         if ( response.code === 200 ) {
           that.onSuccess( response );
         }
@@ -93,56 +167,111 @@
     };
 
     that.onSuccess = function (response) {
-      var query = this.guessQuery( response );
+      var that = this;
       var content = response.body.content;
+      var queries = this.queries;
       var games = [];
 
+      if ( !queries ) {
+        queries = this.buildQueries({ first: response.body.link.first });
+        this.queries = queries;
+      }
+
+      foreach(queries, function(query) {
+        if ( query.uri === response.request.uri ) {
+          that.year = query.year;
+          that.month = query.month;
+          return false;
+        }
+      });
+
       foreach(content.games, function (game) {
-        games.push( archives.game(game) );
+        games.push( Archives.Game(game) );
       });
 
       this.render({
-        user  : query.user,
-        year  : query.year,
-        month : query.month,
-        games : games
+        games: games
       });
 
-      this.bind({
-        link : response.body.link
-      });
+      this.bind();
 
       return;
     };
 
-    that.guessQuery = function (response) {
-      var uri = response.request.uri;
-      var query = uri.match(/\/([a-zA-Z][a-zA-Z0-9]{0,9})\/(\d{4})\/(\d\d?)$/);
+    that.onFail = function (response) {
+      var code = response.code;
 
-      return query && {
-        user  : query[1],
-        year  : parseInt( query[2], 10 ),
-        month : parseInt( query[3], 10 )
+      if ( code === 202 ) {
+        this.render({
+          error: {
+            name: 'Accepted',
+            message: 'Your request has been accepted for processing, '
+                   + 'but the processing has not been completed yet. '
+                   + 'Retry after one hour.'
+          }
+        });
+      }
+      else if ( code === 404 ) {
+        this.render({
+          error: {
+            name: 'Not Found',
+            message: 'The requested user "'+this.user+'" was not found.'
+          }
+        });
+      }
+
+      return;
+    };
+
+    that.getLink = function () {
+      var year = this.year;
+      var month = this.month;
+      var queries = this.queries;
+      var last = queries.length - 1;
+      var i = 0;
+
+      foreach(queries, function (query) {
+        if ( query.year === year && query.month === month ) {
+          return false;
+        }
+        i += 1;
+      });
+
+      return {
+        first : i !== 0    && queries[0],
+        prev  : i > 0      && queries[i-1],
+        self  :               queries[i],
+        next  : i < last   && queries[i+1],
+        last  : i !== last && queries[last-1]
       };
     };
 
     that.render = function (args) {
       var that = this;
-      var user = args.user;
-      var year = args.year;
-      var month = args.month;
-      var day = args.games;
+      var user = this.user;
+      var year = this.year;
+      var month = this.month;
       var games = args.games;
-      var link = args.link;
       var error = args.error;
+      var calendar = this.calendar;
 
       if ( args.loading ) {
         this.find('if-isloading').show();
         return;
       }
-      else {
+
+      this.error.render( error );
+
+      if ( error ) {
+        if ( error.name === 'Not Found' ) {
+          this.find('calendar').hide();
+          this.find('gamelist').hide();
+        }
         this.find('if-isloading').hide();
+        return;
       }
+
+      var link = this.getLink();
 
       this.calendar.render({
         user  : user,
@@ -151,17 +280,23 @@
         games : games
       });
 
+      foreach(['first', 'prev', 'next', 'last'], function (rel) {
+        if ( link[rel] ) {
+          calendar.find('show-'+rel+'month').removeClass('disabled');
+        }
+        else {
+          calendar.find('show-'+rel+'month').addClass('disabled');
+        }
+      });
+
       this.gameList.render({
         year: year,
         month: month,
         games: games
       });
 
-      this.error.render( error );
+      this.find('if-isloading').hide();
 
-      this.user = user;
-      this.year = year;
-      this.month = month;
       this.games = games;
 
       return;
@@ -169,39 +304,48 @@
 
     that.bind = function (args) {
       var that = this;
-      var link = args.link;
+      var link = this.getLink();
       var calendar = this.calendar;
+      var gameList = this.gameList;
       var click = this.eventNameFor( 'click' );
 
-      this.calendar.eachDate(function (date) {
+      calendar.eachDate(function (date) {
         date.find('show-games').off(click).on(click, function () {
-          that.gameList.render({
-            year: date.year,
-            month: date.month,
-            day: date.day,
-            games: date.games
+          gameList.render({
+            year  : date.year,
+            month : date.month,
+            day   : date.day,
+            games : date.games
           });
         });
       });
 
       calendar.find('show-allgames').off(click).on(click, function () {
         that.gameList.render({
-          year: that.year,
-          month: that.month,
-          games: that.games
+          year  : that.year,
+          month : that.month,
+          games : that.games
         });
       });
 
+      calendar.find('show-firstmonth').off(click).on(click, function () {
+        that.call({ uri: link.first.uri });
+      });
+
       calendar.find('show-prevmonth').off(click).on(click, function () {
-        that.get( link.prev );
+        that.call({ uri: link.prev.uri });
       });
 
       calendar.find('show-nextmonth').off(click).on(click, function () {
-        that.get( link.next );
+        that.call({ uri: link.next.uri });
+      });
+
+      calendar.find('show-lastmonth').off(click).on(click, function () {
+        that.call({ uri: link.last.uri });
       });
 
       this.calendar.bind();
-      this.gameList.bind();
+      //this.gameList.bind();
       this.error.bind();
 
       return;
@@ -210,9 +354,9 @@
     return that;
   };
 
-  archives.calendar = function (args) {
+  Archives.Calendar = function (args) {
     var spec = args || {};
-    var that = archives.component( spec );
+    var that = Archives.Component( spec );
 
     that.year = spec.year;
     that.month = spec.month;
@@ -296,7 +440,7 @@
       });
 
       foreach(dates, function (date) {
-        dateObjects.push(archives.calendar.date({
+        dateObjects.push(Archives.Calendar.Date({
           $context        : $template.clone(),
           classNamePrefix : classNamePrefix,
           eventNamespace  : eventNamespace,
@@ -378,9 +522,9 @@
     return that;
   };
 
-  archives.calendar.date = function (args) {
+  Archives.Calendar.Date = function (args) {
     var spec = args || {};
-    var that = archives.component( spec );
+    var that = Archives.Component( spec );
 
     that.year = spec.year;
     that.month = spec.month;
@@ -446,9 +590,9 @@
     return that;
   };
 
-  archives.gameList = function (args) {
+  Archives.GameList = function (args) {
     var spec = args || {};
-    var that = archives.component( spec );
+    var that = Archives.Component( spec );
 
     that.year = spec.year;
     that.month = spec.month;
@@ -456,7 +600,7 @@
     that.games = spec.games;
     that.items = null;
 
-    that.page = archives.page({
+    that.page = Archives.Page({
       entriesPerPage: that.$context.data('perpage'),
       totalEntries: (that.games || []).length
     });
@@ -485,7 +629,7 @@
       var items = [];
 
       foreach(games, function (game) {
-        items.push(archives.gameList.item({
+        items.push(Archives.GameList.Item({
           classNamePrefix: classNamePrefix,
           eventNamespace: eventNamespace,
           $context: $template.clone(),
@@ -497,7 +641,9 @@
     };
 
     that.eachItem = function (callback) {
-      foreach( this.items, callback );
+      if ( this.items ) {
+        foreach( this.items, callback );
+      }
     };
 
     that.sortByWhite = function (args) {
@@ -557,7 +703,7 @@
     };
 
     that.sort = function (args, callback) {
-      var toggle = args && args.toggle === true || false;
+      var toggle = (args && args.toggle === true) || false;
       var games = this.games.slice(0).sort(callback.asc);
       var isSorted = true;
       var i;
@@ -591,7 +737,7 @@
       var day = (args && args.games) ? args.day : this.day;
       var $list = this.$list;
 
-      var pageObject = archives.page({
+      var pageObject = Archives.Page({
         entriesPerPage: this.page.entriesPerPage,
         totalEntries: games.length,
         currentPage: (args && args.games) ? 1 : (page || this.page.currentPage)
@@ -603,10 +749,9 @@
           dateRange += day ? ' ' + day + ', ' : ' ';
           dateRange += year;
 
-      var pageRange = pageObject.getFirst() + '-' + pageObject.getLast();
+      var pageRange = pageObject.toString();
 
-      var totalGames = MetaKGS.Util.commify( ''+games.length );
-
+      this.unbind();
       this.find( 'item', $list ).remove();
 
       if ( pageObject.getPreviousPage() ) {
@@ -623,7 +768,6 @@
         this.find('show-nextpage').addClass('disabled');
       }
 
-      this.find('totalgames').text( totalGames );
       this.find('daterange').text( dateRange );
       this.find('page-range').text( pageRange );
 
@@ -636,15 +780,8 @@
       }
 
       foreach(items, function (item) {
-        var $item = item.$context;
-
         item.render();
-
-        if ( item.game.isPrivate() ) {
-          $item.addClass( item.classNameFor('private') );
-        }
-
-        $list.append( $item );
+        $list.append( item.$context );
       });
 
       this.page = pageObject;
@@ -654,6 +791,8 @@
       this.day = day;
       this.games = games;
 
+      this.bind();
+
       return;
     };
 
@@ -661,42 +800,45 @@
       var that = this;
       var click = this.eventNameFor( 'click' );
 
-      var $sortByDate   = this.find( 'sortby-date' );
-      var $sortBySetup  = this.find( 'sortby-setup' );
-      var $sortByResult = this.find( 'sortby-result' );
-      var $showPrevPage = this.find( 'show-prevpage' );
-      var $showNextPage = this.find( 'show-nextpage' );
-
       this.eachItem(function (item) {
         item.bind();
       });
 
-      $sortByDate.off( click );
-      $sortBySetup.off( click );
-      $sortByResult.off( click );
-
-      $showPrevPage.off( click );
-      $showNextPage.off( click );
-
-      $sortByDate.on(click, function () {
+      this.find('sort-bydate').on(click, function () {
         that.sortByDate({ toggle: true }).render({ page: 1 });
       });
 
-      $sortBySetup.on(click, function () {
+      this.find('sort-bysetup').on(click, function () {
         that.sortBySetup({ toggle: true }).render({ page: 1 });
       });
 
-      $sortByResult.on(click, function () {
+      this.find('sort-byresult').on(click, function () {
         that.sortByResult({ toggle: true }).render({ page: 1 });
       });
 
-      $showPrevPage.on(click, function () {
+      this.find('show-prevpage').on(click, function () {
         that.render({ page: that.page.getPreviousPage() });
       });
 
-      $showNextPage.on(click, function () {
+      this.find('show-nextpage').on(click, function () {
         that.render({ page: that.page.getNextPage() });
       });
+
+      return;
+    };
+
+    that.unbind = function () {
+      var click = this.eventNameFor( 'click' );
+
+      this.eachItem(function (item) {
+        item.unbind();
+      });
+
+      this.find('sort-bydate').off( click );
+      this.find('sort-bysetup').off( click );
+      this.find('sort-byresult').off( click );
+      this.find('show-prevpage').off( click );
+      this.find('show-nextpage').off( click );
 
       return;
     };
@@ -704,9 +846,9 @@
     return that;
   };
 
-  archives.gameList.item = function (args) {
+  Archives.GameList.Item = function (args) {
     var spec = args || {};
-    var that = archives.component( spec );
+    var that = Archives.Component( spec );
 
     that.game = spec.game;
 
@@ -719,7 +861,7 @@
         var user = users[i];
         var className = role + (i + 1);
 
-        players.push(archives.gameList.player({
+        players.push(Archives.GameList.Player({
           classNamePrefix: that.classNameFor(className) + '-',
           eventNamespace: that.eventNamespace + 'Player',
           $context: that.find( className ),
@@ -733,13 +875,20 @@
     that.white = spec.game && that.buildPlayers('white', spec.game.white);
     that.black = spec.game && that.buildPlayers('black', spec.game.black);
 
+    that.eachPlayer = function (callback) {
+      if ( this.white && this.black ) {
+        foreach( [].concat(this.white, this.black), callback );
+      }
+    };
+
     that.render = function (args) {
-      var that = this;
-      var game = args || this.game;
+      var game = (args && args.game) || this.game;
+      var white = this.buildPlayers( 'white', game.white );
+      var black = this.buildPlayers( 'black', game.black );
 
-      var type = game.getTypeInitial();
+      var typeInitial = game.getTypeInitial();
 
-      var setup = game.boardSize + 'x' + game.boardSize;
+      var setup = game.boardSize + '\u00D7' + game.boardSize;
           setup += game.handicap ? ' H'+game.handicap : '';
 
       var result = game.result;
@@ -750,64 +899,60 @@
           date += ' at ' + ('0'+game.date.getUTCHours()).slice(-2);
           date += ':' + ('0'+game.date.getUTCMinutes()).slice(-2);
 
-      this.find('type').text( type );
+      this.unbind();
+
+      if ( game.isPrivate() ) {
+        this.$context.addClass( this.classNameFor('private') );
+      }
+      else {
+        this.$context.removeClass( this.classNameFor('private') );
+      }
+
+      this.find('typeinitial').text( typeInitial );
       this.find('setup').text( setup );
       this.find('result').text( result );
       this.find('date').text( date );
 
-      this.renderWhite( game.white );
-      this.renderBlack( game.black );
-
-      this.$context.show();
-
-      this.game = game;
-
-      return;
-    };
-
-    that.renderWhite = function (args) {
-      this.renderPlayers( 'white', args );
-    };
-
-    that.renderBlack = function (args) {
-      this.renderPlayers( 'black', args );
-    };
-
-    that.renderPlayers = function (role, args) {
-      var players = args ? this.buildPlayers(role, args) : this[role];
-
-      foreach(players, function (player) {
+      foreach([].concat(white, black), function (player) {
         player.render();
       });
 
-      this[role] = players;
- 
+      this.game = game;
+      this.white = white;
+      this.black = black;
+
+      this.bind();
+
       return;
     };
 
     that.bind = function () {
-      var players = [].concat( this.white, this.black );
-
-      foreach(players, function (player) {
+      this.eachPlayer(function (player) {
         player.bind();
       });
+    };
 
-      return;
+    that.unbind = function () {
+      this.eachPlayer(function (player) {
+        player.unbind();
+      });
     };
 
     return that;
   };
 
-  archives.gameList.player = function (args) {
+  Archives.GameList.Player = function (args) {
     var spec = args || {};
-    var that = archives.component( spec );
+    var that = Archives.Component( spec );
 
     that.user = spec.user;
 
-    that.render = function (arg) {
-      var user = arg || this.user;
+    that.render = function (args) {
+      var user = (args && args.user) || this.user;
       var $name = this.find( 'name' );
       var $rank = this.find( 'rank' );
+
+      this.unbind();
 
       if ( user ) {
         $name.text( user.name );
@@ -820,6 +965,8 @@
 
       this.user = user;
 
+      this.bind();
+
       return;
     };
 
@@ -827,12 +974,16 @@
       // nothing to bind
     };
 
+    that.unbind = function () {
+      // nothing to unbind
+    };
+
     return that;
   };
 
-  archives.error = function (args) {
+  Archives.Error = function (args) {
     var spec = args || {};
-    var that = archives.component( spec );
+    var that = Archives.Component( spec );
 
     that.render = function (args) {
       if ( args ) {
@@ -852,7 +1003,7 @@
     return that;
   };
 
-  archives.component = function (args) {
+  Archives.Component = function (args) {
     var spec = args || {};
  
     var that = {
@@ -885,7 +1036,7 @@
     return that;
   };
 
-  archives.user = function (args) {
+  Archives.User = function (args) {
     var that = {
       name: args.name,
       rank: args.rank
@@ -902,7 +1053,7 @@
     return that;
   };
 
-  archives.game = function (args) {
+  Archives.Game = function (args) {
     var that = {
       sgfUrl: args.sgf_url,
       boardSize: args.board_size,
@@ -921,7 +1072,7 @@
       var players = [];
 
       foreach(args[role] || [], function (arg) {
-        players.push( archives.user(arg) );
+        players.push( Archives.User(arg) );
       });
 
       that[role] = players;
@@ -973,7 +1124,7 @@
 
   // ported from Data::Page on CPAN
 
-  archives.page = function (args) {
+  Archives.Page = function (args) {
     var spec = args || {};
 
     var that = {
@@ -1016,15 +1167,22 @@
       return array.slice( this.getFirst()-1, end );
     };
 
+    that.toString = function () {
+      var first = MetaKGS.Util.commify( ''+this.getFirst() );
+      var last = MetaKGS.Util.commify( ''+this.getLast() );
+      var total = MetaKGS.Util.commify( ''+this.totalEntries );
+      return first + '-' + last + ' of ' + total;
+    };
+
     return that;
   };
 
-  archives.http = function (args) {
+  Archives.HTTP = function (args) {
     var spec = args || {};
     var that = {};
 
     that.get = function (url, callback) {
-      var request = archives.http.request({
+      var request = Archives.HTTP.Request({
         method: 'GET',
         uri: url
       });
@@ -1037,7 +1195,7 @@
     return that;
   };
 
-  archives.http.request = function (args) {
+  Archives.HTTP.Request = function (args) {
     var spec = args || {};
 
     var that = {
@@ -1052,7 +1210,7 @@
 
       xhr.onreadystatechange = function () {
         if ( this.readyState === 4 ) {
-          callback(archives.http.response({
+          callback(Archives.HTTP.Response({
             request: that,
             xhr: this
           }));
@@ -1068,7 +1226,7 @@
     return that;
   };
 
-  archives.http.response = function (args) {
+  Archives.HTTP.Response = function (args) {
     var spec = args || {};
     var xhr = spec.xhr;
 
@@ -1097,13 +1255,33 @@
       return body;
     }());
 
+    that.date = (function () {
+      var date = that.header.get('Date');
+      return date && new Date(date);
+    }());
+
+    that.retryAfter = (function () {
+      var retryAfter = that.header.get('Retry-After');
+      var date;
+
+      if ( retryAfter && retryAfter.match(/^\d+$/) ) {
+        date = that.date ? new Date(that.date.getTime()) : new Date();
+        date.setSeconds( date.getSeconds()+parseInt(retryAfter, 10) );
+      }
+      else if ( retryAfter ) {
+        date = new Date( retryAfter );
+      }
+
+      return date;
+    }());
+
     return that;
   };
 
-  MetaKGS.App.archives = archives;
+  MetaKGS.App.Archives = Archives;
 
   $(document).ready(function () {
-    var archives = MetaKGS.App.archives({
+    var archives = MetaKGS.App.Archives({
       classNamePrefix: 'js-archives-',
       $context: $('.js-archives'),
       apiEndpoint: 'http://metakgs.org/api'

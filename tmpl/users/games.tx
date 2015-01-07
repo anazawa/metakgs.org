@@ -15,11 +15,16 @@
           <span class="js-archives-error-message"></span>
         </div>
 
-        <div class="calendar js-archives-calendar" id="calendar">
+        <div class="calendar archives-calendar js-archives-calendar" id="calendar">
           <ul class="calendar-nav">
             <li>
+              <a class="js-archives-calendar-show-firstmonth" href="#calendar">
+                <i class="fa fa-angle-double-left"></i>
+              </a>
+            </li>
+            <li>
               <a class="js-archives-calendar-show-prevmonth" href="#calendar">
-                <i class="fa fa-caret-left"></i>
+                <i class="fa fa-angle-left"></i>
               </a>
             </li>
             <li>
@@ -30,7 +35,12 @@
             </li>
             <li>
               <a class="js-archives-calendar-show-nextmonth" href="#calendar">
-                <i class="fa fa-caret-right"></i>
+                <i class="fa fa-angle-right"></i>
+              </a>
+            </li>
+            <li>
+              <a class="js-archives-calendar-show-lastmonth" href="#calendar">
+                <i class="fa fa-angle-double-right"></i>
               </a>
             </li>
           </ul>
@@ -72,16 +82,16 @@
           </ol><!-- /.calendar-body -->
         </div><!-- /.calendar -->
 
-        <div class="gamelist clearfix js-archives-gamelist" id="gamelist"
+        <div class="archives-gamelist clearfix js-archives-gamelist" id="gamelist"
           data-perpage="15">
 
           <h2 class="text-center">Games</h2>
 
-          <table class="table table-hover">
+          <table class="table table-hover archives-gamelist-table">
             <caption>
-              Games of KGS player <: $user :>, <span class="js-archives-gamelist-daterange">October 31 2014</span><br>
+              Games of KGS player <: $user :>, <span class="js-archives-gamelist-daterange"></span><br>
               <div class="js-archives-gamelist-if-hasgames">
-                Showing <span class="js-archives-gamelist-page-range"></span> of <span class="js-archives-gamelist-totalgames"></span> games
+                Showing <span class="js-archives-gamelist-page-range"></span> games
               </div>
             </caption>
             <thead>
@@ -95,22 +105,28 @@
                   <i class="fa fa-circle"></i>
                   Black
                 </th>
-                <th class="js-archives-gamelist-sortby-setup">
-                  <i class="fa fa-arrows"></i>
-                  Setup
+                <th>
+                  <a class="js-archives-gamelist-sort-bysetup" href="#gamelist">
+                    <i class="fa fa-arrows"></i>
+                    Setup
+                  </a>
                 </th>
-                <th class="js-archives-gamelist-sortby-result">
-                  Result
+                <th>
+                  <a class="js-archives-gamelist-sort-byresult" href="#gamelist">
+                    Result
+                  </a>
                 </th>
-                <th class="js-archives-gamelist-sortby-date">
-                  <i class="fa fa-clock-o"></i>
-                  Start Time
+                <th>
+                  <a class="js-archives-gamelist-sort-bydate" href="#gamelist">
+                    <i class="fa fa-clock-o"></i>
+                    Start Time
+                  </a>
                 </th>
               </tr>
             </thead>
             <tbody class="js-archives-gamelist-item-template">
               <tr>
-                <td class="js-archives-gamelist-item-type"></td>
+                <td class="js-archives-gamelist-item-typeinitial"></td>
                 <td>
                   <ol class="list-unstyled">
                     <li class="js-archives-gamelist-item-white1">
@@ -146,6 +162,8 @@
             <li class="previous js-archives-gamelist-show-prevpage"><a href="#gamelist">&larr; Prev</a></li>
             <li class="next js-archives-gamelist-show-nextpage"><a href="#gamelist">Next &rarr;</a></li>
           </ul>
+
+          <!--
 
           <h3>Filters</h3>
 
@@ -183,10 +201,12 @@
 
           <a class="btn" href="#gamelist">Apply</a>
 
+          -->
+
           <h3>Notes</h3>
 
           <ul>
-            <li>All times are shown in GMT.</li>
+            <li>All times are shown in <abbr title="Greenwich Mean Time">GMT</abbr>.</li>
           </ul>
 
         </div><!-- /.gamelist -->

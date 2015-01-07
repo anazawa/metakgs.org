@@ -1,3 +1,22 @@
+/*
+ * Alert
+ */
+
+.alert {
+  padding: 1em;
+  border: 1px solid transparent;
+  border-radius: 4px;
+}
+
+.alert-danger {
+  color: #a94442;
+  background-color: #f2dede;
+  border-color: #ebccd1;
+}
+
+/*
+ * Nav
+ */
 
 .nav-tabs {
   padding-left: 0px;
@@ -39,6 +58,10 @@
   border-color: #ddd #ddd transparent;
 }
 
+/*
+ * Table
+ */
+
 .table {
   width: 100%;
   max-width: 100%;
@@ -63,10 +86,6 @@
   vertical-align: center;
 }
 
-.table tbody tr td ol {
-  margin: 0;
-}
-
 .table caption {
   padding: 8px;
   color: #777;
@@ -75,28 +94,6 @@
 
 .table-hover > tbody > tr:hover {
   background-color: #f5f5f5;
-}
-
-.js-archives-gamelist-sortby-date,
-.js-archives-gamelist-sortby-result,
-.js-archives-gamelist-sortby-setup {
-  cursor: pointer;
-}
-
-.js-archives-gamelist-item {
-  cursor: pointer;
-}
-
-.js-archives-gamelist-item-private {
-  cursor: default;
-}
-
-.js-archives-gamelist-item-private > tr > td {
-  background-color: #fcf8e3;
-}
-
-.js-archives-gamelist-item-private > tr:hover > td {
-  background-color: #faf2cc;
 }
 
 /*
@@ -114,42 +111,43 @@
  */
 
 .pager {
-    padding-left: 0;
-    margin: 1.5em 0;
-    text-align: center;
-    list-style: none;
+  padding-left: 0;
+  margin: 1.5em 0;
+  text-align: center;
+  list-style: none;
 }
 
 .pager li {
-    display: inline;
+  display: inline;
 }
 
 .pager li a {
-    display: inline-block;
-    padding: 5px 14px;
-    background-color: #fff;
-    border: 1px solid #ddd;
-    border-radius: 15px;
+  display: inline-block;
+  padding: 5px 14px;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 15px;
 }
 
 .pager li > a:hover,
 .pager li > a:focus {
-    text-decoration: none;
-    background-color: #eee;
+  text-decoration: none;
+  background-color: #eee;
 }
 
 .pager .next > a {
-    float: right;
+  float: right;
 }
 
 .pager .previous > a {
-    float: left;
+  float: left;
 }
 
 .pager .disabled > a,
 .pager .disabled > a:hover {
-    color: #777;
-    cursor: not-allowed;
+  color: #777;
+  cursor: not-allowed;
+  background-color: inherit;
 }
 
 
@@ -188,6 +186,10 @@
 .calendar-nav > li > a:hover {
   text-decoration: none;
   color: inherit;
+}
+
+.calendar-nav > li > a.disabled {
+  display: none;
 }
 
 .calendar-header,
@@ -318,22 +320,9 @@ input[type="checkbox"] {
   cursor: not-allowed;
 }
 
-.archives {
-  position:relative;
-}
-
-.archives h2 {
-    margin-bottom: 0.5em;
-}
-
-.archives .table caption {
-    text-align: center;
-}
-
-.archives .calendar,
-.archives .gamelist {
-  position: relative;
-}
+/*
+ * Loading
+ */
 
 .loading {
   position: absolute;
@@ -348,19 +337,55 @@ input[type="checkbox"] {
   color: #777;
 }
 
-.alert {
-  padding: 1em;
-  border: 1px solid transparent;
-  border-radius: 4px;
+/*
+ * MetaKGS Archives
+ */
+
+.archives {
+  position: relative;
 }
 
-.alert-danger {
-  color: #a94442;
-  background-color: #f2dede;
-  border-color: #ebccd1;
+.archives h2 {
+  margin-bottom: 0.5em;
+}
+
+.archives-error,
+.archives-calendar,
+.archives-gamelist {
+  position: relative;
 }
 
 .archives-error {
   display: none;
+}
+
+.archives-gamelist-table caption {
+  text-align: center;
+}
+
+.archives-gamelist-table thead tr th a {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+}
+
+.archives-gamelist-table tbody tr td ol {
+  margin: 0;
+}
+
+.js-archives-gamelist-item {
+  cursor: pointer;
+}
+
+.js-archives-gamelist-item-private {
+  cursor: default;
+}
+
+.js-archives-gamelist-item-private > tr > td {
+  background-color: #fcf8e3;
+}
+
+.js-archives-gamelist-item-private > tr:hover > td {
+  background-color: #faf2cc;
 }
 
