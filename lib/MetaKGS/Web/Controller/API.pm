@@ -66,6 +66,7 @@ sub do_show {
 
     $response->header( 'Access-Control-Allow-Origin' => '*' );
     $response->header( 'Access-Control-Allow-Methods' => 'GET' );
+    $response->header( 'Access-Control-Expose-Headers' => ['Retry-After'] );
 
     # for cache validation
     $response->headers->last_modified( $resource->{response_date}->epoch );
@@ -171,6 +172,7 @@ sub accepted {
     $response->retry_after( $job->{grabbed_until} ) if $is_grabbed;
     $response->header( 'Access-Control-Allow-Origin' => '*' );
     $response->header( 'Access-Control-Allow-Methods' => 'GET' );
+    $response->header( 'Access-Control-Expose-Headers' => ['Retry-After'] );
 
     $response;
 }
@@ -183,6 +185,7 @@ sub internal_server_error {
     $response->status( HTTP_INTERNAL_SERVER_ERROR );
     $response->header( 'Access-Control-Allow-Origin' => '*' );
     $response->header( 'Access-Control-Allow-Methods' => 'GET' );
+    $response->header( 'Access-Control-Expose-Headers' => ['Retry-After'] );
 
     $response;
 }
@@ -195,6 +198,7 @@ sub gateway_timeout {
     $response->status( HTTP_GATEWAY_TIMEOUT );
     $response->header( 'Access-Control-Allow-Origin' => '*' );
     $response->header( 'Access-Control-Allow-Methods' => 'GET' );
+    $response->header( 'Access-Control-Expose-Headers' => ['Retry-After'] );
 
     $response;
 }
@@ -207,6 +211,7 @@ sub bad_gateway {
     $response->status( HTTP_BAD_GATEWAY );
     $response->header( 'Access-Control-Allow-Origin' => '*' );
     $response->header( 'Access-Control-Allow-Methods' => 'GET' );
+    $response->header( 'Access-Control-Expose-Headers' => ['Retry-After'] );
 
     $response;
 }
@@ -219,6 +224,7 @@ sub not_found {
     $response->status( HTTP_NOT_FOUND );
     $response->header( 'Access-Control-Allow-Origin' => '*' );
     $response->header( 'Access-Control-Allow-Methods' => 'GET' );
+    $response->header( 'Access-Control-Expose-Headers' => ['Retry-After'] );
 
     $response;
 }
