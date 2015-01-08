@@ -2,34 +2,34 @@
   'use strict';
 
   /*
-   * Object Relations:
+   * Relations between objects:
    *
-   *   archives
-   *     isa archives.component
-   *     has archives.calendar
-   *     has archives.gameList
-   *     has archives.error
+   *   Archives
+   *     isa Archives.Component
+   *     has Archives.Calendar
+   *     has Archives.GameList
+   *     has Archives.Error
    *
-   *   archives.calendar
-   *     isa archives.component
-   *     has archives.calendar.date
+   *   Archives.Calendar
+   *     isa Archives.Component
+   *     has Archives.Calendar.Date
    *              
-   *   archives.calendar.date
-   *     isa archives.component
+   *   Archives.Calendar.Date
+   *     isa Archives.Component
    *
-   *   archives.gameList
-   *     isa archives.component
-   *     has archives.gameList.item
+   *   Archives.GameList
+   *     isa Archives.Component
+   *     has Archives.GameList.Item
    *
-   *   archives.gameList.item
-   *     isa archives.component
-   *     has archives.gameList.player
+   *   Archives.GameList.Item
+   *     isa Archives.Component
+   *     has Archives.GameList.Player
    *
-   *   archives.gameList.player
-   *     isa archives.component
+   *   Archives.GameList.Player
+   *     isa Archives.Component
    *
-   *   archives.error
-   *     isa archives.component
+   *   Archives.Error
+   *     isa Archives.Component
    *
    */
 
@@ -75,6 +75,10 @@
 
     that.apiEndpoint = spec.apiEndpoint || '/api';
     that.http = Archives.HTTP();
+
+    that.model = Archives.Model({
+      apiEndpoint: spec.apiEndpoint
+    });
 
     that.gameList = Archives.GameList({
       classNamePrefix: that.classNameFor('gamelist') + '-',
@@ -289,10 +293,20 @@
         }
       });
 
+      /*
       this.gameList.render({
         year: year,
         month: month,
         games: games
+      });
+      */
+
+      this.gameList.render({
+        games: games,
+        query: {
+          year: year,
+          month: month
+        }
       });
 
       this.find('if-isloading').hide();
@@ -311,11 +325,21 @@
 
       calendar.eachDate(function (date) {
         date.find('show-games').off(click).on(click, function () {
+          /*
           gameList.render({
             year  : date.year,
             month : date.month,
             day   : date.day,
             games : date.games
+          });
+          */
+          gameList.render({
+            games: date.games,
+            query: {
+              year: date.year,
+              month: date.month,
+              day: date.day
+            }
           });
         });
       });
@@ -594,9 +618,10 @@
     var spec = args || {};
     var that = Archives.Component( spec );
 
-    that.year = spec.year;
-    that.month = spec.month;
-    that.day = null;
+    //that.year = spec.year;
+    //that.month = spec.month;
+    //that.day = null;
+    that.query = spec.query;
     that.games = spec.games;
     that.items = null;
 
@@ -732,9 +757,10 @@
       var that = this;
       var games = (args && args.games) || this.games;
       var page = args && args.page;
-      var year = (args && args.games) ? args.year : this.year;
-      var month = (args && args.games) ? args.month : this.month;
-      var day = (args && args.games) ? args.day : this.day;
+      var query = (args && args.query) ? args.query : this.query;
+      //var year = (args && args.games) ? args.year : this.year;
+      //var month = (args && args.games) ? args.month : this.month;
+      //var day = (args && args.games) ? args.day : this.day;
       var $list = this.$list;
 
       var pageObject = Archives.Page({
@@ -745,9 +771,9 @@
 
       var items = this.buildItems( pageObject.slice(games) );
 
-      var dateRange = FULLMON_LIST[month-1];
-          dateRange += day ? ' ' + day + ', ' : ' ';
-          dateRange += year;
+      var dateRange = FULLMON_LIST[query.month-1];
+          dateRange += query.day ? ' '+query.day+', ' : ' ';
+          dateRange += query.year;
 
       var pageRange = pageObject.toString();
 
@@ -786,9 +812,10 @@
 
       this.page = pageObject;
       this.items = items;
-      this.year = year;
-      this.month = month;
-      this.day = day;
+      //this.year = year;
+      //this.month = month;
+      //this.day = day;
+      this.query = query;
       this.games = games;
 
       this.bind();
@@ -1031,6 +1058,79 @@
 
     that.bind = function () {
       throw new Error("call to abstract method 'bind'");
+    };
+
+    return that;
+  };
+
+  Archives.Model = function (args) {
+    var spec = args || {};
+
+    var that = {
+      apiEndpoint: spec.apiEndpoint || '/api',
+      http: Archives.HTTP()
+    };
+
+    that.buildQueries = function (args) {
+      var first = args.first;
+      var user = this.user;
+      var queries = [];
+
+      var now = new Date();
+      var year = now.getUTCFullYear();
+      var month = now.getUTCMonth() + 1;
+
+      var uri;
+
+      eachYear:
+      for (; year >= 2000; year-- ) {
+        for ( month = month || 12; month > 0; month-- ) {
+          uri = this.uriFor({
+            user: user,
+            year: year,
+            month: month
+          });
+
+          queries.push({
+            year: year,
+            month: month,
+            uri: uri
+          });
+
+          if ( uri === first ) {
+            break eachYear;
+          }
+        }
+      }
+
+      queries.reverse();
+
+      return queries;
+    };
+
+    that.get = function (query, callback) {
+      var that = this;
+      var uri = this.uriFor('archives/'+query.user+'/'+query.year+'/'+query.month);
+
+      this.http.get(uri, function (response) {
+        var games;
+
+        if ( !that.queries ) {
+          that.queries = that.buildQueries({ first: response.body.link.first });
+        }
+
+        if ( response.code === 200 ){
+          games = [];
+          foreach(response.body.content.games, function (game) {
+            games.push( Archives.Game(game) );
+          });
+        }
+
+        callback({
+          link: that.getLink(),
+          games: games
+        });
+      });
     };
 
     return that;
