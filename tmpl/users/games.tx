@@ -10,6 +10,7 @@
       <div class="archives js-archives" data-user="<: $user :>"
         data-year="<: $year :>" data-month="<: $month :>">
 
+
         <div class="archives-error alert alert-danger js-archives-error">
           <strong class="js-archives-error-name"></strong>
           <span class="js-archives-error-message"></span>
@@ -18,12 +19,12 @@
         <div class="calendar archives-calendar js-archives-calendar" id="calendar">
           <ul class="calendar-nav">
             <li>
-              <a class="js-archives-calendar-show-firstmonth" href="#calendar">
+              <a class="js-archives-calendar-firstmonth" href="#calendar">
                 <i class="fa fa-angle-double-left"></i>
               </a>
             </li>
             <li>
-              <a class="js-archives-calendar-show-prevmonth" href="#calendar">
+              <a class="js-archives-calendar-prevmonth" href="#calendar">
                 <i class="fa fa-angle-left"></i>
               </a>
             </li>
@@ -34,12 +35,12 @@
               </a>
             </li>
             <li>
-              <a class="js-archives-calendar-show-nextmonth" href="#calendar">
+              <a class="js-archives-calendar-nextmonth" href="#calendar">
                 <i class="fa fa-angle-right"></i>
               </a>
             </li>
             <li>
-              <a class="js-archives-calendar-show-lastmonth" href="#calendar">
+              <a class="js-archives-calendar-lastmonth" href="#calendar">
                 <i class="fa fa-angle-double-right"></i>
               </a>
             </li>
@@ -203,13 +204,31 @@
 
           -->
 
-          <h3>Notes</h3>
+
+        </div><!-- /.gamelist -->
+
+        <h2>Month Index</h2>
+
+        <ol class="archives-yearlist clearfix js-archives-yearlist">
+          <li class="archives-yearlist-item clearfix js-archives-yearlist-item-template">
+            <div class="archives-yearlist-item-year js-archives-yearlist-item-year"></div>
+            <ol class="archives-yearlist-item-monthlist js-archives-yearlist-item-monthlist">
+: for ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Dec'] -> $month {
+              <li class="archives-yearlist-item-monthlist-item"><a class="js-archives-yearlist-item-monthlist-item" href="#"><: $month :></a></li>
+: }
+            </ol>
+          </li>
+        </ol>
+
+          <h2>Notes</h2>
 
           <ul>
             <li>All times are shown in <abbr title="Greenwich Mean Time">GMT</abbr>.</li>
           </ul>
 
-        </div><!-- /.gamelist -->
+        <h2>Source</h2>
+
+        <p><a href="">http://www.gogks.com/gameArchives.jsp</a></p>
 
         <div class="loading js-archives-if-isloading">
           <i class="fa fa-spinner fa-3x fa-spin"></i>

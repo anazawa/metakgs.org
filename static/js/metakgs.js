@@ -92,14 +92,6 @@ if ( typeof window.console === "undefined" ) {
     }
   };
 
-  MetaKGS.Util.foreach = function(array, callback) {
-    var i, last;
-    var length = array.length;
-    for ( i = 0; i < length && !last; i++ ) {
-      last = callback(array[i]) === false;
-    }
-  };
-
   /*
    *  Copied and rearranged from:
    *  https://developer.mozilla.org/docs/Web/JavaScript/Guide/Regular_Expressions

@@ -389,3 +389,47 @@ input[type="checkbox"] {
   background-color: #faf2cc;
 }
 
+.archives-yearlist {
+  list-style-type:none;
+  padding: 0;
+  margin-top: 1em;
+}
+
+.archives-yearlist-item {
+}
+
+.archives-yearlist-item-year {
+  float: left;
+  font-weight: bold;
+  padding: 0.3em;
+  border-top: 1px solid #ddd;
+  width: 3em;
+  text-align: center;
+}
+
+.archives-yearlist > li:first-child .archives-yearlist-item-year,
+.archives-yearlist > li:first-child .archives-yearlist-item-monthlist-item {
+  border-top: none;
+}
+
+.archives-yearlist-item-monthlist {
+  list-style-type: none;
+}
+
+.archives-yearlist-item-monthlist-item {
+  float: left;
+  padding: 0.3em 0.6em 0.3em 0.3em;
+  border-top: 1px solid #ddd;
+}
+
+.archives-yearlist-item-monthlist-item .active {
+  color: inherit;
+  text-decoration: none;
+  cursor: default;
+}
+
+.archives-yearlist-item-monthlist-item .disabled {
+  color: #777;
+  text-decoration: none;
+  cursor: default;
+}
