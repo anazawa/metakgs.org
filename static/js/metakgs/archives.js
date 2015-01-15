@@ -76,7 +76,7 @@
     that.apiEndpoint = spec.apiEndpoint || '/api';
     that.http = Archives.HTTP();
 
-    that.model = Archives.Model({
+    that.client = Archives.Client({
       apiEndpoint: spec.apiEndpoint
     });
 
@@ -98,53 +98,79 @@
       $context: that.find( 'error' )
     });
 
+    /*
     that.uriFor = function (args) {
       var path = [ 'archives', args.user, args.year, args.month ];
       return this.apiEndpoint + '/' + path.join('/');
     };
 
     that.buildQueries = function (args) {
-      var first = args.first;
-      var user = this.user;
-      var queries = [];
-
+      var range = args || {};
       var now = new Date();
-      var year = now.getUTCFullYear();
-      var month = now.getUTCMonth() + 1;
 
-      var uri;
+      var start = range.start || {
+        year  : 2000,
+        month : 1
+      };
 
-      eachYear:
-      for (; year >= 2000; year-- ) {
-        for ( month = month || 12; month > 0; month-- ) {
-          uri = this.uriFor({
-            user: user,
-            year: year,
-            month: month
-          });
+      var end = range.end || {
+        year  : now.getUTCFullYear(),
+        month : now.getUTCMonth() + 1
+      };
 
+      var queries = [];
+      var user = this.user;
+      var year, month;
+
+      for (
+        year = start.year;
+        year <= end.year;
+        year += 1
+      ) {
+        for (
+          month = year === start.year ? start.month : 1;
+          month <= (year === end.year ? end.month : 12);
+          month += 1
+        ) {
           queries.push({
             year: year,
             month: month,
-            uri: uri
+            uri: this.uriFor({
+              user  : user,
+              year  : year,
+              month : month
+            })
           });
-
-          if ( uri === first ) {
-            break eachYear;
-          }
         }
       }
 
-      queries.reverse();
-
       return queries;
     };
+    */
 
     that.start = function () {
-      this.call();
+      this.call({
+        user: this.user,
+        year: this.year,
+        month: this.month
+      });
     };
 
     that.call = function (args) {
+      var that = this;
+      this.render({ loading: true });
+      this.client.get(args, function (response) {
+        if ( response.httpResponse.code === 200 ) {
+          that.onSuccess( response );
+        }
+        else {
+          that.onError( response );
+        }
+      });
+    };
+
+    /*
+    that.callOld = function (args) {
       var that = this;
       var uri = args && args.uri;
 
@@ -163,47 +189,30 @@
           that.onSuccess( response );
         }
         else {
-          that.onFail( response );
+          that.onError( response );
         }
       });
 
       return;
     };
+    */
 
     that.onSuccess = function (response) {
-      var that = this;
-      var content = response.body.content;
-      var queries = this.queries;
-      var games = [];
-
-      if ( !queries ) {
-        queries = this.buildQueries({ first: response.body.link.first });
-        this.queries = queries;
-      }
-
-      foreach(queries, function(query) {
-        if ( query.uri === response.request.uri ) {
-          that.year = query.year;
-          that.month = query.month;
-          return false;
-        }
-      });
-
-      foreach(content.games, function (game) {
-        games.push( Archives.Game(game) );
-      });
+      //this.year = response.query.year;
+      //this.month = response.query.month;
 
       this.render({
-        games: games
+        query: response.query,
+        link: response.link,
+        games: response.games
       });
-
-      this.bind();
+      //this.bind( response );
 
       return;
     };
 
-    that.onFail = function (response) {
-      var code = response.code;
+    that.onError = function (response) {
+      var code = response.httpResponse.code;
 
       if ( code === 202 ) {
         this.render({
@@ -227,6 +236,7 @@
       return;
     };
 
+    /*
     that.getLink = function () {
       var year = this.year;
       var month = this.month;
@@ -249,14 +259,17 @@
         last  : i !== last && queries[last-1]
       };
     };
+    */
 
     that.render = function (args) {
       var that = this;
       var user = this.user;
-      var year = this.year;
-      var month = this.month;
+      //var year = this.year;
+      //var month = this.month;
       var games = args.games;
       var error = args.error;
+      var query = args.query;
+      var link = args.link;
       var calendar = this.calendar;
 
       if ( args.loading ) {
@@ -275,12 +288,17 @@
         return;
       }
 
-      var link = this.getLink();
+      //var link = this.getLink();
+      //console.log(args);
 
-      this.calendar.render({
+      this.unbind();
+
+
+      calendar.render({
         user  : user,
-        year  : year,
-        month : month,
+        year  : query.year,
+        month : query.month,
+          query: query,
         games : games
       });
 
@@ -303,28 +321,40 @@
 
       this.gameList.render({
         games: games,
-        query: {
-          year: year,
-          month: month
-        }
+        //query: {
+        //  year: query.year,
+        //  month: query.month
+        //}
+        query: query
       });
 
       this.find('if-isloading').hide();
 
+      this.year = query.year;
+      this.month = query.month;
       this.games = games;
+
+      this.bind({
+        link: link,
+        games: games,
+        query: query
+      });
 
       return;
     };
 
     that.bind = function (args) {
       var that = this;
-      var link = this.getLink();
+      //var link = this.getLink();
+      var link = args.link;
+      var query = args.query;
       var calendar = this.calendar;
       var gameList = this.gameList;
       var click = this.eventNameFor( 'click' );
 
       calendar.eachDate(function (date) {
-        date.find('show-games').off(click).on(click, function () {
+        //date.find('show-games').off(click).on(click, function () {
+        date.find('show-games').on(click, function () {
           /*
           gameList.render({
             year  : date.year,
@@ -344,35 +374,58 @@
         });
       });
 
-      calendar.find('show-allgames').off(click).on(click, function () {
+      //calendar.find('show-allgames').off(click).on(click, function () {
+      calendar.find('show-allgames').on(click, function () {
         that.gameList.render({
-          year  : that.year,
-          month : that.month,
-          games : that.games
+          year  : query.year,
+          month : query.month,
+          games : args.games
         });
       });
 
-      calendar.find('show-firstmonth').off(click).on(click, function () {
-        that.call({ uri: link.first.uri });
+      //calendar.find('show-firstmonth').off(click).on(click, function () {
+      calendar.find('show-firstmonth').on(click, function () {
+        //that.call({ uri: link.first.uri });
+        that.call( link.first );
       });
 
-      calendar.find('show-prevmonth').off(click).on(click, function () {
-        that.call({ uri: link.prev.uri });
+      //calendar.find('show-prevmonth').off(click).on(click, function () {
+      calendar.find('show-prevmonth').on(click, function () {
+        //that.call({ uri: link.prev.uri });
+        that.call( link.prev );
       });
 
-      calendar.find('show-nextmonth').off(click).on(click, function () {
-        that.call({ uri: link.next.uri });
+      //calendar.find('show-nextmonth').off(click).on(click, function () {
+      calendar.find('show-nextmonth').on(click, function () {
+        //that.call({ uri: link.next.uri });
+        that.call( link.next );
       });
 
-      calendar.find('show-lastmonth').off(click).on(click, function () {
-        that.call({ uri: link.last.uri });
+      //calendar.find('show-lastmonth').off(click).on(click, function () {
+      calendar.find('show-lastmonth').on(click, function () {
+        //that.call({ uri: link.last.uri });
+        that.call( link.last );
       });
 
-      this.calendar.bind();
+      //this.calendar.bind();
       //this.gameList.bind();
-      this.error.bind();
+      //this.error.bind();
 
       return;
+    };
+
+    that.unbind = function () {
+      var calendar = this.calendar;
+      var click = this.eventNameFor( 'click' );
+
+      calendar.eachDate(function (date) {
+        date.find('show-games').off( click );
+      });
+      calendar.find('show-allgames').off(click);
+      calendar.find('show-firstmonth').off(click);
+      calendar.find('show-prevmonth').off(click);
+      calendar.find('show-nextmonth').off(click);
+      calendar.find('show-lastmonth').off(click);
     };
 
     return that;
@@ -402,15 +455,18 @@
     }());
 
     that.eachDate = function (callback) {
-      foreach( this.dates, callback );
+      foreach( this.dates || [], callback );
     };
 
     that.buildDates = function (args) {
       var that = this;
-      var user = args.user;
       var games = args.games || [];
-      var year = args.year;
-      var month = args.month;
+      //var user = args.user;
+      //var year = args.year;
+      //var month = args.month;
+      var user = args.query.user;
+      var year = args.query.year;
+      var month = args.query.month;
       var classNamePrefix = this.classNameFor('date') + '-';
       var eventNamespace = this.eventNamespace + 'Date';
       var $template = this.$dateTemplate;
@@ -485,15 +541,18 @@
       var games = args && args.games;
       var year = args && args.year || this.year;
       var month = args && args.month || this.month;
+      var query = (args && args.query) || this.query;
       var $dateList = this.$dateList;
 
       var dates = this.buildDates({
         user  : user,
         year  : year,
         month : month,
+          query: query,
         games : games
       });
 
+      this.unbind();
       this.find( 'date', $dateList ).remove();
 
       this.find('year').text( year );
@@ -513,13 +572,19 @@
 
       this.year = year;
       this.month = month;
+      this.query = query;
       this.dates = dates;
+
+      this.bind({
+        query: query
+      });
       
       return;
     };
 
-    that.bind = function () {
+    that.bind = function (args) {
       var that = this;
+      var query = (args && args.query) || this.query;
       var click = this.eventNameFor('click');
       var $dates = this.find( 'date', this.$dateList );
 
@@ -530,17 +595,28 @@
       this.eachDate(function (date) {
         var $date = date.$context;
 
-        if ( date.year === that.year && date.month === that.month ) {
+        //if ( date.year === that.year && date.month === that.month ) {
+        if ( date.year === query.year && date.month === query.month ) {
           $date.on(click, function () {
             $dates.removeClass( 'active' );
             $( this ).addClass( 'active' );
           });
         }
 
-        date.bind();
+        //date.bind();
       });
 
       return;
+    };
+
+    that.unbind = function () {
+      var click = this.eventNameFor('click');
+
+      this.find('show-allgames').off( click );
+
+      this.eachDate(function (date) {
+        date.$context.off( click );
+      });
     };
 
     return that;
@@ -604,6 +680,8 @@
       this.user = user;
       this.games = games;
 
+      this.bind();
+
       return;
     };
 
@@ -621,8 +699,10 @@
     //that.year = spec.year;
     //that.month = spec.month;
     //that.day = null;
-    that.query = spec.query;
-    that.games = spec.games;
+    //that.query = spec.query;
+    //that.games = spec.games;
+    that.query = null;
+    that.games = null;
     that.items = null;
 
     that.page = Archives.Page({
@@ -857,9 +937,9 @@
     that.unbind = function () {
       var click = this.eventNameFor( 'click' );
 
-      this.eachItem(function (item) {
-        item.unbind();
-      });
+      //this.eachItem(function (item) {
+      //  item.unbind();
+      //});
 
       this.find('sort-bydate').off( click );
       this.find('sort-bysetup').off( click );
@@ -954,15 +1034,15 @@
     };
 
     that.bind = function () {
-      this.eachPlayer(function (player) {
-        player.bind();
-      });
+      //this.eachPlayer(function (player) {
+      //  player.bind();
+      //});
     };
 
     that.unbind = function () {
-      this.eachPlayer(function (player) {
-        player.unbind();
-      });
+      //this.eachPlayer(function (player) {
+      //  player.unbind();
+      //});
     };
 
     return that;
@@ -1013,6 +1093,7 @@
     var that = Archives.Component( spec );
 
     that.render = function (args) {
+      this.unbind();
       if ( args ) {
         this.find('name').text( args.name );
         this.find('message').text( args.message );
@@ -1021,10 +1102,15 @@
       else {
         this.$context.hide();
       }
+      this.bind();
     };
 
     that.bind = function () {
       // nothing to bind
+    };
+
+    that.unbind = function () {
+      // nothing to unbind
     };
 
     return that;
@@ -1052,91 +1138,131 @@
       return name + '.' + this.eventNamespace;
     };
 
-    that.render = function () {
+    that.render = function (args) {
       throw new Error("call to abstract method 'render'");
     };
 
-    that.bind = function () {
-      throw new Error("call to abstract method 'bind'");
-    };
+    //that.bind = function () {
+    //  throw new Error("call to abstract method 'bind'");
+    //};
 
     return that;
   };
 
-  Archives.Model = function (args) {
+  Archives.Client = function (args) {
     var spec = args || {};
 
     var that = {
       apiEndpoint: spec.apiEndpoint || '/api',
-      http: Archives.HTTP()
-    };
-
-    that.buildQueries = function (args) {
-      var first = args.first;
-      var user = this.user;
-      var queries = [];
-
-      var now = new Date();
-      var year = now.getUTCFullYear();
-      var month = now.getUTCMonth() + 1;
-
-      var uri;
-
-      eachYear:
-      for (; year >= 2000; year-- ) {
-        for ( month = month || 12; month > 0; month-- ) {
-          uri = this.uriFor({
-            user: user,
-            year: year,
-            month: month
-          });
-
-          queries.push({
-            year: year,
-            month: month,
-            uri: uri
-          });
-
-          if ( uri === first ) {
-            break eachYear;
-          }
-        }
-      }
-
-      queries.reverse();
-
-      return queries;
+      http: spec.http || Archives.HTTP()
     };
 
     that.get = function (query, callback) {
-      var that = this;
-      var uri = this.uriFor('archives/'+query.user+'/'+query.year+'/'+query.month);
+      var uri = this.apiEndpoint + '/archives/';
+          uri += query.user + '/' + query.year + '/' + query.month;
 
       this.http.get(uri, function (response) {
-        var games;
-
-        if ( !that.queries ) {
-          that.queries = that.buildQueries({ first: response.body.link.first });
-        }
-
-        if ( response.code === 200 ){
-          games = [];
-          foreach(response.body.content.games, function (game) {
-            games.push( Archives.Game(game) );
-          });
-        }
-
-        callback({
-          link: that.getLink(),
-          games: games
-        });
+        callback(Archives.Client.Response({
+          httpResponse: response,
+          query: query
+        }));
       });
     };
 
     return that;
   };
 
-  Archives.User = function (args) {
+  Archives.Client.Response = function (args) {
+    var that = {
+      httpResponse: args.httpResponse,
+      query: args.query
+    };
+
+    that.queries = (function () {
+      var body = that.httpResponse.body;
+      var start = ((body && body.queries) || [])[0];
+      var now = new Date();
+
+      var end = {
+        year  : now.getUTCFullYear(),
+        month : now.getUTCMonth() + 1
+      };
+
+      var queries = [];
+      var user = that.query.user;
+      var year, month;
+
+      if ( !start ) {
+        return null;
+      }
+
+      for (
+        year = start.year;
+        year <= end.year;
+        year += 1
+      ) {
+        for (
+          month = year === start.year ? start.month : 1;
+          month <= (year === end.year ? end.month : 12);
+          month += 1
+        ) {
+          queries.push({
+            user  : user,
+            year  : year,
+            month : month
+          });
+        }
+      }
+
+      return queries;
+    }());
+
+    that.link = (function () {
+      var year = that.query.year;
+      var month = that.query.month;
+      var queries = that.queries;
+      var last = queries && queries.length && (queries.length - 1);
+      var i = 0;
+
+      if ( !queries ) {
+        return null;
+      }
+
+      foreach(queries, function (query) {
+        if ( query.year === year && query.month === month ) {
+          return false;
+        }
+        i += 1;
+      });
+
+      return {
+        first : i !== 0    ? queries[0]      : null,
+        prev  : i > 0      ? queries[i-1]    : null,
+        next  : i < last   ? queries[i+1]    : null,
+        last  : i !== last ? queries[last-1] : null
+      };
+    }());
+ 
+    that.games = (function () {
+      var body = that.httpResponse.body;
+      var games = body && body.content && body.content.games;
+      var gameObjects = [];
+
+      if ( !games ) {
+        return null;
+      }
+
+      foreach(games, function (game) {
+        gameObjects.push( Archives.Client.Game(game) );
+      });
+
+      return gameObjects;
+    }());
+ 
+    return that;
+  };
+
+  Archives.Client.User = function (args) {
     var that = {
       name: args.name,
       rank: args.rank
@@ -1153,7 +1279,7 @@
     return that;
   };
 
-  Archives.Game = function (args) {
+  Archives.Client.Game = function (args) {
     var that = {
       sgfUrl: args.sgf_url,
       boardSize: args.board_size,
@@ -1172,7 +1298,7 @@
       var players = [];
 
       foreach(args[role] || [], function (arg) {
-        players.push( Archives.User(arg) );
+        players.push( Archives.Client.User(arg) );
       });
 
       that[role] = players;
