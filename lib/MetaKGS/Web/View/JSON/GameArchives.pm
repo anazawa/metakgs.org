@@ -38,6 +38,7 @@ sub show {
         responded_at => $resource->{response_date}->datetime . 'Z',
         content      => \%content,
         link         => $class->_link( $resource ),
+        queries      => $class->_queries( $resource ),
     );
 
     \%body;
@@ -93,6 +94,23 @@ sub _link {
     }
 
     \%link;
+}
+
+sub _queries {
+    my ( $class, $resource ) = @_;
+    my $calendar = $resource->{content}->{calendar};
+    my %query = $resource->{request_uri}->query_form;
+
+    my @queries;
+    for my $q ( @$calendar ) {
+        push @queries, {
+            year  => $q->{year} + 0,
+            month => $q->{month} + 0,
+            url   => $class->uri_for( "/api/archives/$query{user}/$q->{year}/$q->{month}" ),
+        };
+    }
+
+    \@queries;
 }
 
 1;
