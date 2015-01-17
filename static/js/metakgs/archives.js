@@ -37,19 +37,23 @@
    *   Archives.Result.GameList.Item
    *     isa Archives.Component
    *
-   *   Archives.YearList
+   *   Archives.MonthIndex
    *     isa Archives.Component
-   *     has Archives.YearList.Item
+   *     has Archives.MonthIndex.YearList
    *
-   *   Archives.YearList.Item
+   *   Archives.MonthIndex.YearList
    *     isa Archives.Component
-   *     has Archives.YearList.Item.MonthList
+   *     has Archives.MonthIndex.YearList.Item
    *
-   *   Archives.YearList.Item.MonthList
+   *   Archives.MonthIndex.YearList.Item
    *     isa Archives.Component
-   *     has Archives.YearList.Item.MonthList.Item
+   *     has Archives.MonthIndex.YearList.Item.MonthList
    *
-   *   Archives.YearList.Item.MonthList.Item
+   *   Archives.MonthIndex.YearList.Item.MonthList
+   *     isa Archives.Component
+   *     has Archives.MonthIndex.YearList.Item.MonthList.Item
+   *
+   *   Archives.MonthIndex.YearList.Item.MonthList.Item
    *     isa Archives.Component
    *
    *   Archives.Source
@@ -98,6 +102,18 @@
     return string.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
   }
 
+  function isNumber (value) {
+    return typeof value === 'number' && isFinite(value);
+  }
+
+  function isInteger (value) {
+    return isNumber(value) && Math.floor(value) === value;
+  }
+
+  function isString (value) {
+    return typeof value === 'string';
+  }
+
   var Archives = function (args) {
     var spec = args || {};
     var that = Archives.Component( spec );
@@ -106,10 +122,13 @@
     that.games = null;
 
     that.client = Archives.Client({
-      baseUrl: spec.baseUrl
+      baseUrl: spec.baseUrl,
+      onError: function (error) {
+        that.handleError( error );
+      }
     });
 
-    that.query = that.client.buildQuery(spec.query || {
+    that.query = spec.query && that.client.buildQuery({
       user  : that.$context.data('user'),
       year  : that.$context.data('year'),
       month : that.$context.data('month')
@@ -133,10 +152,10 @@
       $context: that.find( 'result' )
     });
 
-    that.yearList = Archives.YearList({
-      classNamePrefix: that.classNameFor('yearlist') + '-',
-      eventNamespace: that.eventNamespace + 'YearList',
-      $context: that.find( 'yearlist' )
+    that.monthIndex = Archives.MonthIndex({
+      classNamePrefix: that.classNameFor('monthindex') + '-',
+      eventNamespace: that.eventNamespace + 'MonthIndex',
+      $context: that.find( 'monthindex' )
     });
 
     that.source = Archives.Source({
@@ -145,51 +164,68 @@
       $context: that.find( 'source' )
     });
 
-    that.start = function () {
-      this.call({ query: this.query });
+    that.call = function (args) {
+      try {
+        var that = this;
+        var query = (args && args.query) || this.query;
+
+        if ( !query ) {
+          query = this.client.buildQuery({
+            user  : this.$context.data('user'),
+            year  : this.$context.data('year'),
+            month : this.$context.data('month')
+          });
+        }
+
+        this.render({ loading: true });
+
+        this.client.get(query, function (response) {
+          var code = response.httpResponse.code;
+
+          if ( code === 200 ) {
+            that.render({
+              query: response.query,
+              queries: response.queries,
+              link: response.link,
+              games: response.games,
+              body: response.httpResponse.body
+            });
+          }
+          else if ( code === 202 ) {
+            that.render({
+              error: {
+                name: 'Accepted',
+                message: 'Your request has been accepted for processing, '
+                       + 'but the processing has not been completed yet. '
+                       + 'Retry after one hour.'
+              }
+            });
+          }
+          else if ( code === 404 ) {
+            that.render({
+              error: {
+                name: 'Not Found',
+                message: 'The requested user "'+query.user+'" was not found.'
+              }
+            });
+          }
+          else {
+            throw new Error("Don't know how to handle '"+code+"'");
+          }
+        });
+      }
+      catch (error) {
+        this.handleError( error );
+      }
     };
 
-    that.call = function (args) {
-      var that = this;
-      var query = args.query;
-
-      this.render({ loading: true });
-
-      this.client.get(query, function (response) {
-        var code = response.httpResponse.code;
-
-        if ( code === 200 ) {
-          that.render({
-            query: response.query,
-            queries: response.queries,
-            link: response.link,
-            games: response.games,
-            body: response.httpResponse.body
-          });
-        }
-        else if ( code === 202 ) {
-          that.render({
-            error: {
-              name: 'Accepted',
-              message: 'Your request has been accepted for processing, '
-                     + 'but the processing has not been completed yet. '
-                     + 'Retry after one hour.'
-            }
-          });
-        }
-        else if ( code === 404 ) {
-          that.render({
-            error: {
-              name: 'Not Found',
-              message: 'The requested user "'+query.user+'" was not found.'
-            }
-          });
-        }
-        else {
+    that.handleError = function (error) {
+      this.render({
+        error: {
+          message: 'Oops! Something went wrong.'
         }
       });
-
-      return;
+      console.log( error );
     };
 
     that.render = function (args) {
@@ -199,8 +235,7 @@
       var link = args.link;
       var calendar = this.calendar;
 
-      if ( args.loading ) {
-        //this.find('if-isloading').show();
+      if ( args.loading === true ) {
         this.find('if-isloading').removeClass( 'disabled' );
         return;
       }
@@ -208,11 +243,10 @@
       this.error.render( error );
 
       if ( error ) {
-        if ( error.name === 'Not Found' ) {
-          this.find('calendar').hide();
-          this.find('result').hide();
-        }
-        //this.find('if-isloading').hide();
+        this.calendar.$context.hide();
+        this.result.$context.hide();
+        this.monthIndex.$context.hide();
+        this.source.$context.hide();
         this.find('if-isloading').addClass( 'disabled' );
         return;
       }
@@ -243,7 +277,7 @@
         }
       });
 
-      this.yearList.render({
+      this.monthIndex.render({
         queries: args.queries,
         query: query
       });
@@ -253,7 +287,6 @@
         date: new Date( args.body.requested_at ),
       });
 
-      //this.find('if-isloading').hide();
       this.find('if-isloading').addClass( 'disabled' );
 
       this.link = link;
@@ -300,16 +333,6 @@
           });
         }
       });
-
-      /*
-      foreach(['first', 'prev', 'next', 'last'], function (rel) {
-        if ( link[rel] ) {
-          calendar.find('show-'+rel+'month').on(click, function () {
-            that.call({ query: link[rel] });
-          });
-        }
-      });
-      */
 
       return;
     };
@@ -981,6 +1004,7 @@
       var game = (args && args.game) || this.game;
       var white = this.buildPlayers( 'white', game.white );
       var black = this.buildPlayers( 'black', game.black );
+      var dateFormat = this.find('date').data('format') || '%c';
 
       var type = game.type;
       var shortType = game.getShortType();
@@ -991,11 +1015,9 @@
 
       var result = game.result;
 
-      var date = MON_LIST[ game.date.getUTCMonth() ];
-          date += ' ' + game.date.getUTCDate();
-          //date += " '" + (''+game.date.getUTCFullYear()).slice(-2);
-          date += ' at ' + ('0'+game.date.getUTCHours()).slice(-2);
-          date += ':' + ('0'+game.date.getUTCMinutes()).slice(-2);
+      var date = game.date;
+          date = new Date( date.getTime()+date.getTimezoneOffset()*60*1000 );
+          date = date.strftime( dateFormat );
 
       this.unbind();
 
@@ -1089,7 +1111,7 @@
 
       this.unbind();
 
-      if ( name ) {
+      if ( message ) {
         this.find('name').text( name );
         this.find('message').text( message );
         this.$context.show();
@@ -1117,14 +1139,31 @@
     return that;
   };
 
-  Archives.YearList = function (args) {
+  Archives.MonthIndex = function (args) {
+    var spec = args || {};
+    var that = Archives.Component( spec );
+
+    that.yearList = Archives.MonthIndex.YearList({
+      classNamePrefix: that.classNameFor('yearlist') + '-',
+      eventNamespace: that.eventNamespace + 'YearList',
+      $context: that.find( 'yearlist' )
+    });
+
+    that.render = function (args) {
+      this.yearList.render(args);
+    };
+
+    return that;
+  };
+
+  Archives.MonthIndex.YearList = function (args) {
     var spec = args || {};
     var that = Archives.List( spec );
 
     that.query = null;
 
     that.buildItem = function (args) {
-      return Archives.YearList.Item( args );
+      return Archives.MonthIndex.YearList.Item( args );
     };
 
     that.buildItems = function (args) {
@@ -1199,14 +1238,14 @@
     return that;
   };
 
-  Archives.YearList.Item = function (args) {
+  Archives.MonthIndex.YearList.Item = function (args) {
     var spec = args || {};
     var that = Archives.Component( spec );
 
     that.year = spec.year;
     that.queries = spec.queries;
 
-    that.monthList = Archives.YearList.Item.MonthList({
+    that.monthList = Archives.MonthIndex.YearList.Item.MonthList({
       classNamePrefix: that.classNameFor('monthlist') + '-',
       eventNamespace: that.eventNamespace + 'MonthList',
       $context: that.find( 'monthlist' ),
@@ -1245,14 +1284,14 @@
     return that;
   };
 
-  Archives.YearList.Item.MonthList = function (args) {
+  Archives.MonthIndex.YearList.Item.MonthList = function (args) {
     var spec = args || {};
     var that = Archives.List( spec );
 
     that.queries = spec.queries;
 
     that.buildItem = function (args) {
-      return Archives.YearList.Item.MonthList.Item( args );
+      return Archives.MonthIndex.YearList.Item.MonthList.Item( args );
     };
 
     that.buildItems = function (args) {
@@ -1305,7 +1344,7 @@
     return that;
   };
 
-  Archives.YearList.Item.MonthList.Item = function (args) {
+  Archives.MonthIndex.YearList.Item.MonthList.Item = function (args) {
     var spec = args || {};
     var that = Archives.Component( spec );
 
@@ -1409,7 +1448,7 @@
     };
 
     that.render = function (args) {
-      throw new Error("call to abstract method 'render'");
+      throw Archives.NotImplementedError("call to abstract method 'render'");
     };
 
     return that;
@@ -1435,7 +1474,7 @@
     }());
 
     that.buildItem = function (args) {
-      throw new Error("call to abstract method 'buildItem'");
+      throw Archives.NotImplementedError("call to abstract method 'buildItem'");
     };
 
     that.buildItemWithDefaults = function (args) {
@@ -1521,7 +1560,9 @@
 
     var that = {
       baseUrl: spec.baseUrl || '',
-      http: spec.http || Archives.HTTP()
+      http: Archives.HTTP({
+        onError: spec.onError
+      })
     };
 
     that.buildQuery = function (args) {
@@ -1645,11 +1686,31 @@
   };
 
   Archives.Client.Query = function (args) {
+    var spec = args || {};
+
+    foreach(['user', 'year', 'month'], function (key) {
+      if ( !spec.hasOwnProperty(key) ) {
+        throw Archives.ValidationError("'"+key+"' is required");
+      }
+    });
+
+    if ( !isString(spec.user) || !spec.user.match(/^[a-z][a-z0-9]{0,9}$/i) ) {
+      throw Archives.ValidationError("'user' is invalid");
+    }
+
+    if ( !isInteger(spec.year) || spec.year < 2000 ) {
+      throw Archives.ValidationError("'year' is invalid");
+    }
+
+    if ( !isInteger(spec.month) || spec.month < 1 || spec.month > 12 ) {
+      throw Archives.ValidationError("'month' is invalid");
+    }
+
     var that = {
-      user: args.user,
-      year: args.year,
-      month: args.month,
-      baseUrl: args.baseUrl || ''
+      user: spec.user,
+      year: spec.year,
+      month: spec.month,
+      baseUrl: spec.baseUrl || ''
     };
 
     that.getUrl = function () {
@@ -1769,7 +1830,10 @@
 
   Archives.HTTP = function (args) {
     var spec = args || {};
-    var that = {};
+
+    var that = {
+      onError: spec.onError || function (error) { throw error }
+    };
 
     that.get = function (uri, callback) {
       var request = Archives.HTTP.Request({
@@ -1777,7 +1841,35 @@
         uri: uri
       });
 
-      request.send( callback );
+      this.send( request, callback );
+
+      return;
+    };
+
+    that.send = function (request, callback) {
+      var onError = this.onError;
+      var xhr = new XMLHttpRequest();
+
+      xhr.open( request.method, request.uri );
+
+      xhr.onload = function () {
+        try {
+          callback(Archives.HTTP.Response({
+            request: request,
+            xhr: this
+          }));
+        }
+        catch (error) {
+          onError( error );
+        }
+      };
+
+      xhr.onerror = function () {
+        var message = 'Failed to ' + request.method + ' ' + request.uri;
+        onError( Archives.ConnectionFailed(message) );
+      };
+
+      xhr.send( request.body );
 
       return;
     };
@@ -1792,26 +1884,6 @@
       method: spec.method,
       uri: spec.uri,
       body: null
-    };
-
-    that.send = function (callback) {
-      var that = this;
-      var xhr = new XMLHttpRequest();
-
-      xhr.open( this.method, this.uri );
-
-      xhr.onreadystatechange = function () {
-        if ( this.readyState === 4 ) {
-          callback(Archives.HTTP.Response({
-            request: that,
-            xhr: this
-          }));
-        }
-      };
-
-      xhr.send( this.body );
-
-      return;
     };
 
     return that;
@@ -1837,10 +1909,15 @@
           type = type.split(/;\s*/)[0].replace(/\s+/, '');
           type = type.toLowerCase();
 
-      switch (type) {
-        case 'application/json':
-          body = JSON.parse( body );
-          break;
+      try {
+        switch (type) {
+          case 'application/json':
+            body = JSON.parse( body );
+            break;
+        }
+      }
+      catch (error) {
+        throw Archives.ParsingError( error );
       }
 
       return body;
@@ -1869,17 +1946,40 @@
     return that;
   };
 
+  Archives.ValidationError = function (message) {
+    var that = new Error( message );
+    that.name = 'ValidationError';
+    return that;
+  };
+
+  Archives.NotImplementedError = function (message) {
+    var that = new Error( message );
+    that.name = 'NotImplementedError';
+    return that;
+  };
+
+  Archives.ParsingError = function (message) {
+    var that = new Error( message );
+    that.name = 'ParsingError';
+    return that;
+  };
+
+  Archives.ConnectionFailed = function (message) {
+    var that = new Error( message );
+    that.name = 'ConnectionFailed';
+    return that;
+  };
+
   MetaKGS.App.Archives = Archives;
 
   $(document).ready(function () {
     var archives = MetaKGS.App.Archives({
       classNamePrefix: 'js-archives-',
       $context: $('.js-archives'),
-      //baseUrl: 'http://metakgs.org'
+      //baseUrl: 'http://metakgs.org/foo'
     });
 
-    archives.start();
-    console.log(archives);
+    archives.call();
   });
 
 }());

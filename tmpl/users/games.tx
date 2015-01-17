@@ -162,7 +162,7 @@
                 </td>
                 <td class="js-archives-result-gamelist-item-setup"></td>
                 <td class="js-archives-result-gamelist-item-result"></td>
-                <td class="js-archives-result-gamelist-item-date" data-format="%b %e '%y at %R"></td>
+                <td class="js-archives-result-gamelist-item-date" data-format="%b %e at %R"></td>
               </tr>
             </tbody>
           </table>
@@ -178,22 +178,22 @@
 
         </div><!-- /.result -->
 
-        <h2>Month Index</h2>
-
-        <ol class="archives-yearlist clearfix js-archives-yearlist">
-          <li class="archives-yearlist-item clearfix js-archives-yearlist-item-template">
-            <div class="archives-yearlist-item-year js-archives-yearlist-item-year"></div>
-            <ol class="archives-yearlist-item-monthlist js-archives-yearlist-item-monthlist">
-              <li class="archives-yearlist-item-monthlist-item js-archives-yearlist-item-monthlist-item-template">
-                <a class="js-archives-yearlist-item-monthlist-item-link js-archives-yearlist-item-monthlist-item-monname" href="#"></a>
-              </li>
-            </ol>
-          </li>
-        </ol>
-
-        <h2>Source</h2>
+        <div class="js-archives-monthindex">
+          <h2>Month Index</h2>
+          <ol class="archives-yearlist clearfix js-archives-monthindex-yearlist">
+            <li class="archives-yearlist-item clearfix js-archives-monthindex-yearlist-item-template">
+              <div class="archives-yearlist-item-year js-archives-monthindex-yearlist-item-year"></div>
+              <ol class="archives-yearlist-item-monthlist js-archives-monthindex-yearlist-item-monthlist">
+                <li class="archives-yearlist-item-monthlist-item js-archives-monthindex-yearlist-item-monthlist-item-template">
+                  <a class="js-archives-monthindex-yearlist-item-monthlist-item-link js-archives-monthindex-yearlist-item-monthlist-item-monname" href="#"></a>
+                </li>
+              </ol>
+            </li>
+          </ol>
+        </div>
 
         <div class="js-archives-source">
+          <h2>Source</h2>
           <p>
             This document was generated from:<br>
             <a class="js-archives-source-link js-archives-source-uri" href="#"></a>
