@@ -3,13 +3,13 @@
 : }
 
 : after javascripts -> {
+    <script src="<: static_file('/static/js/strftime.js') :>"></script>
     <script src="<: static_file('/static/js/metakgs/archives.js') :>"></script>
 : }
 
 : override tab_content -> {
       <div class="archives js-archives" data-user="<: $user :>"
         data-year="<: $year :>" data-month="<: $month :>">
-
 
         <div class="archives-error alert alert-danger js-archives-error">
           <strong class="js-archives-error-name"></strong>
@@ -18,29 +18,29 @@
 
         <div class="calendar archives-calendar js-archives-calendar" id="calendar">
           <ul class="calendar-nav">
-            <li>
-              <a class="js-archives-calendar-firstmonth" href="#calendar">
+            <li class="js-archives-calendar-first">
+              <a class="js-archives-calendar-first-link" href="#calendar" title="First">
                 <i class="fa fa-angle-double-left"></i>
               </a>
             </li>
-            <li>
-              <a class="js-archives-calendar-prevmonth" href="#calendar">
+            <li class="js-archives-calendar-prev">
+              <a class="js-archives-calendar-prev-link" href="#calendar" title="Previous">
                 <i class="fa fa-angle-left"></i>
               </a>
             </li>
             <li>
-              <a class="js-archives-calendar-show-allgames" href="#gamelist">
+              <a class="js-archives-calendar-show-allgames" href="#result">
                 <span class="js-archives-calendar-month"><: num2fullmon($month) :></span>
                 <span class="js-archives-calendar-year"><: $year :></span>
               </a>
             </li>
-            <li>
-              <a class="js-archives-calendar-nextmonth" href="#calendar">
+            <li class="js-archives-calendar-next">
+              <a class="js-archives-calendar-next-link" href="#calendar" title="Next">
                 <i class="fa fa-angle-right"></i>
               </a>
             </li>
-            <li>
-              <a class="js-archives-calendar-lastmonth" href="#calendar">
+            <li class="js-archives-calendar-last">
+              <a class="js-archives-calendar-last-link" href="#calendar" title="Last">
                 <i class="fa fa-angle-double-right"></i>
               </a>
             </li>
@@ -54,27 +54,27 @@
             <li>Friday</li>
             <li>Saturday</li>
           </ol>
-          <ol class="calendar-body clearfix">
-            <li class="calendar-date js-archives-calendar-date-template">
-              <a class="js-archives-calendar-date-show-games" href="#gamelist">
-                <div class="text-right js-archives-calendar-date-day"></div>
+          <ol class="calendar-body clearfix js-archives-calendar-datelist">
+            <li class="calendar-date js-archives-calendar-datelist-item-template">
+              <a class="js-archives-calendar-datelist-item-show-games" href="#result">
+                <div class="text-right js-archives-calendar-datelist-item-day"></div>
                 <div class="calendar-date-content">
                   <ul class="list-unstyled">
-                    <li class="text-info js-archives-calendar-date-games">
+                    <li class="text-info js-archives-calendar-datelist-item-games">
                       <i class="fa fa-plus"></i>
-                      <span class="js-archives-calendar-date-games-count">0</span> games
+                      <span class="js-archives-calendar-datelist-item-games-count">0</span> games
                     </li>
-                    <li class="text-success js-archives-calendar-date-wins">
+                    <li class="text-success js-archives-calendar-datelist-item-wins">
                       <i class="fa fa-circle-o"></i>
-                      <span class="js-archives-calendar-date-wins-count">0</span> wins
+                      <span class="js-archives-calendar-datelist-item-wins-count">0</span> wins
                     </li>
-                    <li class="text-danger js-archives-calendar-date-losses">
+                    <li class="text-danger js-archives-calendar-datelist-item-losses">
                       <i class="fa fa-circle"></i>
-                      <span class="js-archives-calendar-date-losses-count">0</span> losses
+                      <span class="js-archives-calendar-datelist-item-losses-count">0</span> losses
                     </li>
-                    <li class="text-warning js-archives-calendar-date-draws">
+                    <li class="text-warning js-archives-calendar-datelist-item-draws">
                       <i class="fa fa-circle"></i>
-                      <span class="js-archives-calendar-date-draws-count">0</span> draws
+                      <span class="js-archives-calendar-datelist-item-draws-count">0</span> draws
                     </li>
                   </ul>
                 </div>
@@ -83,129 +83,100 @@
           </ol><!-- /.calendar-body -->
         </div><!-- /.calendar -->
 
-        <div class="archives-gamelist clearfix js-archives-gamelist" id="gamelist"
+        <div class="archives-result clearfix js-archives-result" id="result"
           data-perpage="15">
 
           <h2 class="text-center">Games</h2>
 
-          <table class="table table-hover archives-gamelist-table">
+          <table class="table archives-result-gamelist js-archives-result-gamelist">
             <caption>
-              Games of KGS player <: $user :>, <span class="js-archives-gamelist-daterange"></span><br>
-              <div class="js-archives-gamelist-if-hasgames">
-                Showing <span class="js-archives-gamelist-page-range"></span> games
+              Games of KGS player <: $user :>, <span class="js-archives-result-daterange"></span><br>
+              <div class="js-archives-result-if-hasgames">
+                Showing <span class="js-archives-result-page-range"></span> games
               </div>
             </caption>
             <thead>
               <tr>
                 <th></th>
                 <th>
-                  <i class="fa fa-circle-thin"></i>
-                  White
+                  <a class="js-archives-result-sort-bytype" href="#result">
+                    Type
+                  </a>
                 </th>
                 <th>
-                  <i class="fa fa-circle"></i>
-                  Black
+                  <a class="js-archives-result-sort-bywhite" href="#result">
+                    White
+                  </a>
                 </th>
                 <th>
-                  <a class="js-archives-gamelist-sort-bysetup" href="#gamelist">
-                    <i class="fa fa-arrows"></i>
+                  <a class="js-archives-result-sort-byblack" href="#result">
+                    Black
+                  </a>
+                </th>
+                <th>
+                  <a class="js-archives-result-sort-bysetup" href="#result">
                     Setup
                   </a>
                 </th>
                 <th>
-                  <a class="js-archives-gamelist-sort-byresult" href="#gamelist">
+                  <a class="js-archives-result-sort-byresult" href="#result">
                     Result
                   </a>
                 </th>
                 <th>
-                  <a class="js-archives-gamelist-sort-bydate" href="#gamelist">
-                    <i class="fa fa-clock-o"></i>
-                    Start Time
+                  <a class="js-archives-result-sort-bydate" href="#result">
+                    Date (<abbr title="Greenwich Mean Time">GMT</abbr>)
                   </a>
                 </th>
               </tr>
             </thead>
-            <tbody class="js-archives-gamelist-item-template">
+            <tbody class="js-archives-result-gamelist-item-template">
               <tr>
-                <td class="js-archives-gamelist-item-typeinitial"></td>
+                <td>
+                  <a class="archives-result-gamelist-item-link js-archives-result-gamelist-item-link js-archives-result-gamelist-item-unless-isprivate" href="#" title="Play"><i class="fa fa-play-circle"></i></a>
+                </td>
+                <td class="js-archives-result-gamelist-item-shorttype"></td>
                 <td>
                   <ol class="list-unstyled">
-                    <li class="js-archives-gamelist-item-white1">
-                      <a href="#" class="js-archives-gamelist-item-white1-name"></a>
-                      <span class="js-archives-gamelist-item-white1-rank"></span>
+                    <li class="js-archives-result-gamelist-item-white1">
+                      <a href="#" class="js-archives-result-gamelist-item-white1-link js-archives-result-gamelist-item-white1-name"></a>
+                      <span class="js-archives-result-gamelist-item-white1-rank"></span>
                     </li>
-                    <li class="js-archives-gamelist-item-white2">
-                      <a href="#" class="js-archives-gamelist-item-white2-name"></a>
-                      <span class="js-archives-gamelist-item-white2-rank"></span>
+                    <li class="js-archives-result-gamelist-item-white2">
+                      <a href="#" class="js-archives-result-gamelist-item-white2-link js-archives-result-gamelist-item-white2-name"></a>
+                      <span class="js-archives-result-gamelist-item-white2-rank"></span>
                     </li>
                   </ol>
                 </td>
                 <td>
                   <ol class="list-unstyled">
-                    <li class="js-archives-gamelist-item-black1">
-                      <a href="#" class="js-archives-gamelist-item-black1-name"></a>
-                      <span class="js-archives-gamelist-item-black1-rank"></span>
+                    <li class="js-archives-result-gamelist-item-black1">
+                      <a href="#" class="js-archives-result-gamelist-item-black1-link js-archives-result-gamelist-item-black1-name"></a>
+                      <span class="js-archives-result-gamelist-item-black1-rank"></span>
                     </li>
-                    <li class="js-archives-gamelist-item-black2">
-                      <a href="#" class="js-archives-gamelist-item-black2-name"></a>
-                      <span class="js-archives-gamelist-item-black2-rank"></span>
+                    <li class="js-archives-result-gamelist-item-black2">
+                      <a href="#" class="js-archives-result-gamelist-black2-link js-archives-result-gamelist-item-black2-name"></a>
+                      <span class="js-archives-result-gamelist-item-black2-rank"></span>
                     </li>
                   </ol>
                 </td>
-                <td class="js-archives-gamelist-item-setup"></td>
-                <td class="js-archives-gamelist-item-result"></td>
-                <td class="js-archives-gamelist-item-date" data-format="%b %e '%y at %R"></td>
+                <td class="js-archives-result-gamelist-item-setup"></td>
+                <td class="js-archives-result-gamelist-item-result"></td>
+                <td class="js-archives-result-gamelist-item-date" data-format="%b %e '%y at %R"></td>
               </tr>
             </tbody>
           </table>
 
           <ul class="pager clearfix">
-            <li class="previous js-archives-gamelist-show-prevpage"><a href="#gamelist">&larr; Prev</a></li>
-            <li class="next js-archives-gamelist-show-nextpage"><a href="#gamelist">Next &rarr;</a></li>
+            <li class="previous js-archives-result-show-prevpage">
+              <a href="#result">&larr; Prev</a>
+            </li>
+            <li class="next js-archives-result-show-nextpage">
+              <a href="#result">Next &rarr;</a>
+            </li>
           </ul>
 
-          <!--
-
-          <h3>Filters</h3>
-
-          <div class="form-group">
- 
-          <label class="checkbox-inline disabled">
-            <input type="checkbox" id="" value="" disabled> Demonstration
-          </label>
-
-          <label class="checkbox-inline disabled">
-            <input type="checkbox" id="" value="" disabled> Free
-          </label>
-
-          <label class="checkbox-inline">
-            <input type="checkbox" id="" value=""> Ranked
-          </label>
-
-          <label class="checkbox-inline disabled">
-            <input type="checkbox" id="" value="" disabled> Rengo
-          </label><br>
-
-          <label class="checkbox-inline disabled">
-            <input type="checkbox" id="" value="" disabled> Simultaneous
-          </label>
-
-          <label class="checkbox-inline disabled">
-            <input type="checkbox" id="" value="" disabled> Teaching
-          </label>
-
-          <label class="checkbox-inline disabled">
-            <input type="checkbox" id="" value="" disabled> Tournament
-          </label>
-
-          </div>
-
-          <a class="btn" href="#gamelist">Apply</a>
-
-          -->
-
-
-        </div><!-- /.gamelist -->
+        </div><!-- /.result -->
 
         <h2>Month Index</h2>
 
@@ -213,24 +184,26 @@
           <li class="archives-yearlist-item clearfix js-archives-yearlist-item-template">
             <div class="archives-yearlist-item-year js-archives-yearlist-item-year"></div>
             <ol class="archives-yearlist-item-monthlist js-archives-yearlist-item-monthlist">
-: for ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Dec'] -> $month {
-              <li class="archives-yearlist-item-monthlist-item"><a class="js-archives-yearlist-item-monthlist-item" href="#"><: $month :></a></li>
-: }
+              <li class="archives-yearlist-item-monthlist-item js-archives-yearlist-item-monthlist-item-template">
+                <a class="js-archives-yearlist-item-monthlist-item-link js-archives-yearlist-item-monthlist-item-monname" href="#"></a>
+              </li>
             </ol>
           </li>
         </ol>
 
-          <h2>Notes</h2>
-
-          <ul>
-            <li>All times are shown in <abbr title="Greenwich Mean Time">GMT</abbr>.</li>
-          </ul>
-
         <h2>Source</h2>
 
-        <p><a href="">http://www.gogks.com/gameArchives.jsp</a></p>
+        <div class="js-archives-source">
+          <p>
+            This document was generated from:<br>
+            <a class="js-archives-source-link js-archives-source-uri" href="#"></a>
+          </p>
+          <p>
+            Updated on <span class="js-archives-source-date" data-format="%B %e, %Y at %R"></span>.
+          </p>
+        </div>
 
-        <div class="loading js-archives-if-isloading">
+        <div class="loading archives-loading js-archives-if-isloading">
           <i class="fa fa-spinner fa-3x fa-spin"></i>
           <p>Loading...</p>
         </div>

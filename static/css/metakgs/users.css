@@ -188,7 +188,7 @@
   color: inherit;
 }
 
-.calendar-nav > li > a.disabled {
+.calendar-nav > li.disabled {
   display: none;
 }
 
@@ -351,7 +351,9 @@ input[type="checkbox"] {
 
 .archives-error,
 .archives-calendar,
-.archives-gamelist {
+.archives-result,
+.archives-yearlist,
+.archives-source {
   position: relative;
 }
 
@@ -359,34 +361,29 @@ input[type="checkbox"] {
   display: none;
 }
 
-.archives-gamelist-table caption {
+.archives-result-gamelist caption {
   text-align: center;
 }
 
-.archives-gamelist-table thead tr th a {
+.archives-result-gamelist thead tr th a {
   display: block;
   color: inherit;
   text-decoration: none;
 }
 
-.archives-gamelist-table tbody tr td ol {
+.archives-result-gamelist tbody tr td ol {
   margin: 0;
 }
 
-.js-archives-gamelist-item {
-  cursor: pointer;
+.archives-result-gamelist-item-link,
+.archives-result-gamelist-item-link:hover {
+  color: inherit;
+  text-decoration: none;
 }
 
-.js-archives-gamelist-item-private {
-  cursor: default;
-}
-
-.js-archives-gamelist-item-private > tr > td {
-  background-color: #fcf8e3;
-}
-
-.js-archives-gamelist-item-private > tr:hover > td {
-  background-color: #faf2cc;
+.archives-result-gamelist-item-link.disabled {
+  color: #777;
+  cursor: not-allowed;
 }
 
 .archives-yearlist {
@@ -422,14 +419,19 @@ input[type="checkbox"] {
   border-top: 1px solid #ddd;
 }
 
-.archives-yearlist-item-monthlist-item .active {
+.archives-yearlist-item-monthlist-item.active a {
   color: inherit;
   text-decoration: none;
   cursor: default;
 }
 
-.archives-yearlist-item-monthlist-item .disabled {
+.archives-yearlist-item-monthlist-item.disabled a {
   color: #777;
   text-decoration: none;
   cursor: default;
 }
+
+.archives-loading.disabled {
+  display: none;
+}
+
