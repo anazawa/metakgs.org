@@ -357,7 +357,7 @@ input[type="checkbox"] {
   position: relative;
 }
 
-.archives-error {
+.archives .hide {
   display: none;
 }
 

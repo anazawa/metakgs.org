@@ -61,6 +61,10 @@
    *
    */
 
+  var ACTIVE_CLASS   = 'active';
+  var DISABLED_CLASS = 'disabled';
+  var HIDE_CLASS     = 'hide';
+
   var MON_LIST = [
     'Jan',
     'Feb',
@@ -118,7 +122,7 @@
     var spec = args || {};
     var that = Archives.Component( spec );
 
-    that.link = null;
+    that.query = null;
     that.games = null;
 
     that.client = Archives.Client({
@@ -128,11 +132,7 @@
       }
     });
 
-    that.query = spec.query && that.client.buildQuery({
-      user  : that.$context.data('user'),
-      year  : that.$context.data('year'),
-      month : that.$context.data('month')
-    });
+    that.query = spec.query && that.client.buildQuery(spec.query);
 
     that.error = Archives.Error({
       classNamePrefix: that.classNameFor('error') + '-',
@@ -233,39 +233,29 @@
       var error = args.error;
       var query = args.query;
       var link = args.link;
-      var calendar = this.calendar;
 
       if ( args.loading === true ) {
-        this.find('if-isloading').removeClass( 'disabled' );
+        this.find('if-isloading').removeClass( HIDE_CLASS );
         return;
       }
 
       this.error.render( error );
 
       if ( error ) {
-        this.calendar.$context.hide();
-        this.result.$context.hide();
-        this.monthIndex.$context.hide();
-        this.source.$context.hide();
-        this.find('if-isloading').addClass( 'disabled' );
+        this.calendar.$context.addClass( HIDE_CLASS );
+        this.result.$context.addClass( HIDE_CLASS );
+        this.monthIndex.$context.addClass( HIDE_CLASS );
+        this.source.$context.addClass( HIDE_CLASS );
+        this.find('if-isloading').addClass( HIDE_CLASS );
         return;
       }
 
       this.unbind();
 
-      calendar.render({
+      this.calendar.render({
         query: query,
-        games: games
-      });
-
-      foreach(['first', 'prev', 'next', 'last'], function (rel) {
-        if ( link[rel] ) {
-          calendar.find( rel ).removeClass( 'disabled' );
-          calendar.find( rel+'-link' ).attr( 'href', link[rel].getHtmlUrl() );
-        }
-        else {
-          calendar.find( rel ).addClass( 'disabled' );
-        }
+        games: games,
+        link: link
       });
 
       this.result.render({
@@ -287,9 +277,8 @@
         date: new Date( args.body.requested_at ),
       });
 
-      this.find('if-isloading').addClass( 'disabled' );
+      this.find('if-isloading').addClass( HIDE_CLASS );
 
-      this.link = link;
       this.query = query;
       this.games = games;
 
@@ -298,9 +287,8 @@
       return;
     };
 
-    that.bind = function (args) {
+    that.bind = function () {
       var that = this;
-      var link = this.link;
       var query = this.query;
       var games = this.games;
       var calendar = this.calendar;
@@ -338,12 +326,8 @@
     };
 
     that.unbind = function () {
-      var calendar = this.calendar;
       var click = this.eventNameFor( 'click' );
-
-      foreach(['first', 'prev', 'next', 'last'], function (rel) {
-        calendar.find('show-'+rel+'month').off( click );
-      });
+      var calendar = this.calendar;
 
       calendar.find('show-allgames').off( click );
 
@@ -363,7 +347,7 @@
 
     that.query = null;
     that.games = null;
-    that.dates = null;
+    that.link = null;
 
     that.dateList = Archives.Calendar.DateList({
       classNamePrefix: that.classNameFor('datelist') + '-',
@@ -372,6 +356,8 @@
     });
 
     that.render = function (args) {
+      var that = this;
+      var link = args ? args.link : this.link;
       var query = args ? args.query : this.query;
       var games = args ? args.games : this.games;
 
@@ -380,6 +366,16 @@
       this.find('year').text( query.year );
       this.find('month').text( FULLMON_LIST[query.month-1] );
 
+      foreach(['first', 'prev', 'next', 'last'], function (rel) {
+        if ( link[rel] ) {
+          that.find( rel ).removeClass( DISABLED_CLASS );
+          that.find( rel+'-link' ).attr( 'href', link[rel].getHtmlUrl() );
+        }
+        else {
+          that.find( rel ).addClass( DISABLED_CLASS );
+        }
+      });
+ 
       this.dateList.render({
         query: query,
         games: games
@@ -387,6 +383,7 @@
 
       this.query = query;
       this.games = games;
+      this.link = link;
 
       this.bind();
 
@@ -399,7 +396,7 @@
 
       this.find('show-allgames').on(click, function () {
         that.dateList.eachItem(function (item) {
-          item.$context.removeClass( 'active' );
+          item.$context.removeClass( ACTIVE_CLASS );
         });
       });
 
@@ -529,8 +526,8 @@
       this.eachItem(function (item) {
         if ( item.month === query.month ) {
           item.$context.on(click, function () {
-            $(this).siblings().removeClass( 'active' );
-            $(this).addClass( 'active' );
+            $(this).siblings().removeClass( ACTIVE_CLASS );
+            $(this).addClass( ACTIVE_CLASS );
           });
         }
       });
@@ -594,10 +591,10 @@
       this.unbind();
 
       if ( month === query.month ) {
-        this.$context.removeClass( 'disabled' );
+        this.$context.removeClass( DISABLED_CLASS );
       }
       else {
-        this.$context.addClass( 'disabled' );
+        this.$context.addClass( DISABLED_CLASS );
       }
 
       this.find('day').text( day );
@@ -608,10 +605,10 @@
 
         if ( gamesCount[key] ) {
           $itemCount.text( gamesCount[key] );
-          $item.show();
+          $item.removeClass( HIDE_CLASS );
         }
         else {
-          $item.hide();
+          $item.addClass( HIDE_CLASS );
         }
       });
 
@@ -813,27 +810,27 @@
       });
 
       if ( pageObject.getPreviousPage() ) {
-        this.find('show-prevpage').removeClass('disabled');
+        this.find('show-prevpage').removeClass( DISABLED_CLASS );
       }
       else {
-        this.find('show-prevpage').addClass('disabled');
+        this.find('show-prevpage').addClass( DISABLED_CLASS );
       }
 
       if ( pageObject.getNextPage() ) {
-        this.find('show-nextpage').removeClass('disabled');
+        this.find('show-nextpage').removeClass( DISABLED_CLASS );
       }
       else {
-        this.find('show-nextpage').addClass('disabled');
+        this.find('show-nextpage').addClass( DISABLED_CLASS );
       }
 
       this.find('daterange').text( dateRange );
       this.find('page-range').text( pageObject.toString() );
 
       if ( games.length ) {
-        this.find('if-hasgames').show();
+        this.find('if-hasgames').removeClass( HIDE_CLASS );
       }
       else {
-        this.find('if-hasgames').hide();
+        this.find('if-hasgames').addClass( HIDE_CLASS );
       }
 
       this.range = range;
@@ -1022,11 +1019,11 @@
       this.unbind();
 
       if ( game.isPrivate() ) {
-        this.find('unless-isprivate').addClass( 'disabled' );
+        this.find('link').addClass( DISABLED_CLASS );
       }
       else {
         this.find('link').attr( 'href', game.getHtmlUrl() );
-        this.find('unless-isprivate').removeClass( 'disabled' );
+        this.find('link').removeClass( DISABLED_CLASS );
       }
 
       this.find('type').text( type );
@@ -1075,9 +1072,10 @@
         this.find('name').text( user.name );
         this.find('link').attr( 'href', user.getHtmlUrl() );
         this.find('rank').text( user.hasRank() ? user.rank : '' );
+        this.$context.removeClass( HIDE_CLASS );
       }
       else {
-        this.$context.hide();
+        this.$context.addClass( HIDE_CLASS );
       }
 
       this.user = user;
@@ -1114,10 +1112,10 @@
       if ( message ) {
         this.find('name').text( name );
         this.find('message').text( message );
-        this.$context.show();
+        this.$context.removeClass( HIDE_CLASS );
       }
       else {
-        this.$context.hide();
+        this.$context.addClass( HIDE_CLASS );
       }
 
       this.name = name;
@@ -1210,7 +1208,7 @@
         if ( year.year === query.year ) {
           year.monthList.eachItem(function (month) {
             if ( month.month === query.month ) {
-              month.$context.addClass( 'active' );
+              month.$context.addClass( ACTIVE_CLASS );
               return false;
             }
           });
@@ -1361,9 +1359,10 @@
 
       if ( query ) {
         this.find('link').attr( 'href', query.getHtmlUrl() );
+        this.$context.removeClass( DISABLED_CLASS );
       }
       else {
-        this.$context.addClass( 'disabled' );
+        this.$context.addClass( DISABLED_CLASS );
       }
 
       this.query = query;

@@ -11,7 +11,7 @@
       <div class="archives js-archives" data-user="<: $user :>"
         data-year="<: $year :>" data-month="<: $month :>">
 
-        <div class="archives-error alert alert-danger js-archives-error">
+        <div class="archives-error alert alert-danger hide js-archives-error">
           <strong class="js-archives-error-name"></strong>
           <span class="js-archives-error-message"></span>
         </div>
@@ -58,7 +58,7 @@
             <li class="calendar-date js-archives-calendar-datelist-item-template">
               <a class="js-archives-calendar-datelist-item-show-games" href="#result">
                 <div class="text-right js-archives-calendar-datelist-item-day"></div>
-                <div class="calendar-date-content">
+                <div class="calendar-date-content archives-calendar-date-content">
                   <ul class="list-unstyled">
                     <li class="text-info js-archives-calendar-datelist-item-games">
                       <i class="fa fa-plus"></i>
@@ -133,7 +133,7 @@
             <tbody class="js-archives-result-gamelist-item-template">
               <tr>
                 <td>
-                  <a class="archives-result-gamelist-item-link js-archives-result-gamelist-item-link js-archives-result-gamelist-item-unless-isprivate" href="#" title="Play"><i class="fa fa-play-circle"></i></a>
+                  <a class="archives-result-gamelist-item-link js-archives-result-gamelist-item-link" href="#" title="Play"><i class="fa fa-play-circle"></i></a>
                 </td>
                 <td class="js-archives-result-gamelist-item-shorttype"></td>
                 <td>
@@ -178,7 +178,7 @@
 
         </div><!-- /.result -->
 
-        <div class="js-archives-monthindex">
+        <div class="archives-monthindex js-archives-monthindex">
           <h2>Month Index</h2>
           <ol class="archives-yearlist clearfix js-archives-monthindex-yearlist">
             <li class="archives-yearlist-item clearfix js-archives-monthindex-yearlist-item-template">
@@ -192,7 +192,7 @@
           </ol>
         </div>
 
-        <div class="js-archives-source">
+        <div class="archives-source js-archives-source">
           <h2>Source</h2>
           <p>
             This document was generated from:<br>
