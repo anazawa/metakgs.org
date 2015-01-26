@@ -179,7 +179,8 @@
         this.render({ loading: true });
 
         this.client.get(query, function (response) {
-          var code = response.httpResponse.code;
+          //var code = response.httpResponse.code;
+          var code = response.getStatus();
 
           if ( code === 200 ) {
             that.render({
@@ -187,7 +188,8 @@
               queries: response.queries,
               link: response.link,
               games: response.games,
-              body: response.httpResponse.body
+              //body: response.httpResponse.body
+              body: response.body
             });
           }
           else if ( code === 202 ) {
@@ -219,12 +221,29 @@
     };
 
     that.handleError = function (error) {
-      this.render({
-        error: {
-          message: 'Oops! Something went wrong.'
-        }
-      });
-      console.log( error );
+      var name = error.name;
+
+      if ( name === 'TimeoutError' ) {
+        this.render({
+          error: {
+            name: 'Timeout',
+            message: 'Request timed out.'
+          }
+        });
+      }
+      else {
+        this.render({
+          error: {
+            message: 'Oops! Something went wrong.'
+          }
+        });
+      }
+
+      if ( console && console.log ) {
+        console.log( error );
+      }
+
+      return;
     };
 
     that.render = function (args) {
@@ -1623,9 +1642,7 @@
 
     var that = {
       baseUrl: spec.baseUrl || '',
-      http: Archives.HTTP({
-        onError: spec.onError
-      })
+      onError: spec.onError || function (error) { throw error; }
     };
 
     that.buildQuery = function (args) {
@@ -1640,30 +1657,109 @@
     that.get = function (args, callback) {
       var that = this;
       var query = this.buildQuery( args );
+      var onError = this.onError;
 
-      this.http.get(query.getUrl(), function (response) {
-        callback(Archives.Client.Response({
-          httpResponse: response,
-          query: query,
-          client: that
-        }));
+      $.ajax({
+        type: 'GET',
+        url: query.getUrl()
+      }).
+      done(function (data, textStatus, jqXHR) {
+        try {
+          callback(Archives.Client.Response({
+            query: query,
+            body: data,
+            xhr: jqXHR,
+            client: that
+          }));
+        }
+        catch (error) {
+          onError( error );
+        }
+      }).
+      fail(function (jqXHR, textStatus, errorThrown) {
+        try {
+          if ( jqXHR.status === 0 ) {
+            if ( textStatus === 'timeout' ) {
+              throw Archives.TimoutError('Request timed out');
+            }
+            else if ( textStatus === 'abort' ) {
+              throw Archives.ConnectionFailed('Request aborted');
+            }
+            else {
+              throw Archives.ConnectionFailed('Failed to GET '+this.url);
+            }
+          }
+          else {
+            callback(Archives.Client.Response({
+              query: query,
+              xhr: jqXHR,
+              client: that
+            }));
+          }
+        }
+        catch (error) {
+          onError( error );
+        }
       });
+
+      return;
+    };
+
+    return that;
+  };
+
+  Archives.Client.Query = function (args) {
+    var spec = args || {};
+
+    foreach(['user', 'year', 'month'], function (key) {
+      if ( !spec.hasOwnProperty(key) ) {
+        throw Archives.ArgumentError("'"+key+"' is required");
+      }
+    });
+
+    if ( !isString(spec.user) || !spec.user.match(/^[a-z][a-z0-9]{0,9}$/i) ) {
+      throw Archives.ArgumentError("'user' is invalid");
+    }
+
+    if ( !isInteger(spec.year) || spec.year < 2000 ) {
+      throw Archives.ArgumentError("'year' is invalid");
+    }
+
+    if ( !isInteger(spec.month) || spec.month < 1 || spec.month > 12 ) {
+      throw Archives.ArgumentError("'month' is invalid");
+    }
+
+    var that = {
+      user: spec.user,
+      year: spec.year,
+      month: spec.month,
+      baseUrl: spec.baseUrl || ''
+    };
+
+    that.getUrl = function () {
+      return this.baseUrl+'/api/archives/'+this.user+'/'+this.year+'/'+this.month;
+    };
+
+    that.getHtmlUrl = function () {
+      return this.baseUrl+'/users/'+this.user+'/games/'+this.year+'/'+this.month;
     };
 
     return that;
   };
 
   Archives.Client.Response = function (args) {
+    var spec = args || {};
+
     var that = {
-      httpResponse: args.httpResponse,
-      query: args.query,
-      client: args.client
+      xhr: spec.xhr,
+      body: spec.body,
+      client: spec.client,
+      query: spec.query
     };
 
     that.queries = (function () {
       var client = that.client;
-      var body = that.httpResponse.body;
-      var start = ((body && body.queries) || [])[0];
+      var start = ((that.body && that.body.queries) || [])[0];
       var now = new Date();
 
       var end = {
@@ -1727,8 +1823,7 @@
     }());
  
     that.games = (function () {
-      var body = that.httpResponse.body;
-      var games = body && body.content && body.content.games;
+      var games = that.body && that.body.content.games;
       var gameObjects = [];
 
       if ( !games ) {
@@ -1744,44 +1839,37 @@
 
       return gameObjects;
     }());
+
+    that.getStatus = function () {
+      return this.xhr.status;
+    };
  
-    return that;
-  };
+    that.headerGet = function (field) {
+      return this.xhr.getResponseHeader( field );
+    };
 
-  Archives.Client.Query = function (args) {
-    var spec = args || {};
+    that.headerToString = function () {
+      return this.xhr.getAllResponseHeaders();
+    };
 
-    foreach(['user', 'year', 'month'], function (key) {
-      if ( !spec.hasOwnProperty(key) ) {
-        throw Archives.ValidationError("'"+key+"' is required");
+    that.getDate = function () {
+      var date = this.headerGet('Date');
+      return date && new Date(date);
+    };
+
+    that.getRetryAfter = function () {
+      var retryAfter = that.headerGet('Retry-After');
+      var date;
+
+      if ( retryAfter && retryAfter.match(/^\d+$/) ) {
+        date = this.getDate() || new Date();
+        date.setSeconds( date.getSeconds()+parseInt(retryAfter, 10) );
       }
-    });
+      else if ( retryAfter ) {
+        date = new Date( retryAfter );
+      }
 
-    if ( !isString(spec.user) || !spec.user.match(/^[a-z][a-z0-9]{0,9}$/i) ) {
-      throw Archives.ValidationError("'user' is invalid");
-    }
-
-    if ( !isInteger(spec.year) || spec.year < 2000 ) {
-      throw Archives.ValidationError("'year' is invalid");
-    }
-
-    if ( !isInteger(spec.month) || spec.month < 1 || spec.month > 12 ) {
-      throw Archives.ValidationError("'month' is invalid");
-    }
-
-    var that = {
-      user: spec.user,
-      year: spec.year,
-      month: spec.month,
-      baseUrl: spec.baseUrl || ''
-    };
-
-    that.getUrl = function () {
-      return this.baseUrl+'/api/archives/'+this.user+'/'+this.year+'/'+this.month;
-    };
-
-    that.getHtmlUrl = function () {
-      return this.baseUrl+'/users/'+this.user+'/games/'+this.year+'/'+this.month;
+      return date;
     };
 
     return that;
@@ -1807,12 +1895,12 @@
 
   Archives.Client.Game = function (args) {
     var that = {
-      sgfUrl: args.game.sgf_url,
-      boardSize: args.game.board_size,
-      handicap: args.game.handicap || 0,
-      date: new Date( args.game.started_at ),
-      result: args.game.result,
-      baseUrl: args.baseUrl
+      sgfUrl    : args.game.sgf_url,
+      boardSize : args.game.board_size,
+      handicap  : args.game.handicap || 0,
+      date      : new Date( args.game.started_at ),
+      result    : args.game.result,
+      baseUrl   : args.baseUrl
     };
     
     that.type = {
@@ -1891,127 +1979,9 @@
     return that;
   };
 
-  Archives.HTTP = function (args) {
-    var spec = args || {};
-
-    var that = {
-      onError: spec.onError || function (error) { throw error }
-    };
-
-    that.get = function (uri, callback) {
-      var request = Archives.HTTP.Request({
-        method: 'GET',
-        uri: uri
-      });
-
-      this.send( request, callback );
-
-      return;
-    };
-
-    that.send = function (request, callback) {
-      var onError = this.onError;
-      var xhr = new XMLHttpRequest();
-
-      xhr.open( request.method, request.uri );
-
-      xhr.onload = function () {
-        try {
-          callback(Archives.HTTP.Response({
-            request: request,
-            xhr: this
-          }));
-        }
-        catch (error) {
-          onError( error );
-        }
-      };
-
-      xhr.onerror = function () {
-        var message = 'Failed to ' + request.method + ' ' + request.uri;
-        onError( Archives.ConnectionFailed(message) );
-      };
-
-      xhr.send( request.body );
-
-      return;
-    };
-
-    return that;
-  };
-
-  Archives.HTTP.Request = function (args) {
-    var spec = args || {};
-
-    var that = {
-      method: spec.method,
-      uri: spec.uri,
-      body: null
-    };
-
-    return that;
-  };
-
-  Archives.HTTP.Response = function (args) {
-    var spec = args || {};
-    var xhr = spec.xhr;
-
-    var that = {
-      code: xhr.status,
-      header: {
-        get: function (field) { return xhr.getResponseHeader(field); },
-        toString: function () { return xhr.getAllResponseHeaders(); }
-      },
-      request: spec.request
-    };
-
-    that.body = (function () {
-      var body = xhr.responseText;
-
-      var type = that.header.get('Content-Type') || '';
-          type = type.split(/;\s*/)[0].replace(/\s+/, '');
-          type = type.toLowerCase();
-
-      try {
-        switch (type) {
-          case 'application/json':
-            body = JSON.parse( body );
-            break;
-        }
-      }
-      catch (error) {
-        throw Archives.ParsingError( error );
-      }
-
-      return body;
-    }());
-
-    that.date = (function () {
-      var date = that.header.get('Date');
-      return date && new Date(date);
-    }());
-
-    that.retryAfter = (function () {
-      var retryAfter = that.header.get('Retry-After');
-      var date;
-
-      if ( retryAfter && retryAfter.match(/^\d+$/) ) {
-        date = that.date ? new Date(that.date.getTime()) : new Date();
-        date.setSeconds( date.getSeconds()+parseInt(retryAfter, 10) );
-      }
-      else if ( retryAfter ) {
-        date = new Date( retryAfter );
-      }
-
-      return date;
-    }());
-
-    return that;
-  };
-
-  Archives.ValidationError = function (message) {
+  Archives.ArgumentError = function (message) {
     var that = new Error( message );
-    that.name = 'ValidationError';
+    that.name = 'ArgumentError';
     return that;
   };
 
@@ -2030,6 +2000,12 @@
   Archives.ConnectionFailed = function (message) {
     var that = new Error( message );
     that.name = 'ConnectionFailed';
+    return that;
+  };
+
+  Archives.TimoutError = function (message) {
+    var that = new Error( message );
+    that.name = 'TimeoutError';
     return that;
   };
 
