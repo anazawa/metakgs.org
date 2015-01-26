@@ -195,11 +195,10 @@
         <div class="archives-source js-archives-source">
           <h2>Source</h2>
           <p>
-            This document was generated from:<br>
-            <a class="js-archives-source-link js-archives-source-uri" href="#"></a>
-          </p>
-          <p>
-            Updated on <span class="js-archives-source-date" data-format="%B %e, %Y at %R"></span>.
+            This document was generated from
+            <a class="js-archives-source-link" href="#">KGS Game Archives</a>
+            <i class="fa fa-external-link"></i>
+            on <span class="js-archives-source-date" data-format="%B %e, %Y at %R"></span>.
           </p>
         </div>
 

@@ -106,6 +106,10 @@
     return string.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
   }
 
+  function ucfirst (string) {
+    return string.charAt(0).toUpperCase() + string.slice(1);
+  }
+
   function isNumber (value) {
     return typeof value === 'number' && isFinite(value);
   }
@@ -135,33 +139,28 @@
     that.query = spec.query && that.client.buildQuery(spec.query);
 
     that.error = Archives.Error({
-      classNamePrefix: that.classNameFor('error') + '-',
-      eventNamespace: that.eventNamespace + 'Error',
-      $context: that.find( 'error' )
+      context: that.find( 'error' ),
+      eventNamespace: 'error'
     });
 
     that.calendar = Archives.Calendar({
-      classNamePrefix: that.classNameFor('calendar') + '-',
-      eventNamespace: that.eventNamespace + 'Calendar',
-      $context: that.find( 'calendar' )
+      context: that.find( 'calendar' ),
+      eventNamespace: 'calendar'
     });
 
     that.result = Archives.Result({
-      classNamePrefix: that.classNameFor('result') + '-',
-      eventNamespace: that.eventNamespace + 'Result',
-      $context: that.find( 'result' )
+      context: that.find( 'result' ),
+      eventNamespace: 'result'
     });
 
     that.monthIndex = Archives.MonthIndex({
-      classNamePrefix: that.classNameFor('monthindex') + '-',
-      eventNamespace: that.eventNamespace + 'MonthIndex',
-      $context: that.find( 'monthindex' )
+      context: that.find( 'monthindex' ),
+      eventNamespace: 'monthIndex'
     });
 
     that.source = Archives.Source({
-      classNamePrefix: that.classNameFor('source') + '-',
-      eventNamespace: that.eventNamespace + 'Source',
-      $context: that.find( 'source' )
+      context: that.find( 'source' ),
+      eventNamespace: 'source'
     });
 
     that.call = function (args) {
@@ -171,9 +170,9 @@
 
         if ( !query ) {
           query = this.client.buildQuery({
-            user  : this.$context.data('user'),
-            year  : this.$context.data('year'),
-            month : this.$context.data('month')
+            user  : this.getData('user'),
+            year  : this.getData('year'),
+            month : this.getData('month')
           });
         }
 
@@ -235,18 +234,18 @@
       var link = args.link;
 
       if ( args.loading === true ) {
-        this.find('if-isloading').removeClass( HIDE_CLASS );
+        this.find('if-isloading').show();
         return;
       }
 
       this.error.render( error );
 
       if ( error ) {
-        this.calendar.$context.addClass( HIDE_CLASS );
-        this.result.$context.addClass( HIDE_CLASS );
-        this.monthIndex.$context.addClass( HIDE_CLASS );
-        this.source.$context.addClass( HIDE_CLASS );
-        this.find('if-isloading').addClass( HIDE_CLASS );
+        this.calendar.hide();
+        this.result.hide();
+        this.monthIndex.hide();
+        this.source.hide();
+        this.find('if-isloading').hide();
         return;
       }
 
@@ -277,7 +276,7 @@
         date: new Date( args.body.requested_at ),
       });
 
-      this.find('if-isloading').addClass( HIDE_CLASS );
+      this.find('if-isloading').hide();
 
       this.query = query;
       this.games = games;
@@ -293,9 +292,8 @@
       var games = this.games;
       var calendar = this.calendar;
       var result = this.result;
-      var click = this.eventNameFor( 'click' );
 
-      calendar.find('show-allgames').on(click, function () {
+      calendar.find('show-allgames').on('click', function () {
         result.render({
           query: query,
           games: games,
@@ -308,7 +306,7 @@
 
       calendar.dateList.eachItem(function (item) {
         if ( item.query.month === query.month ) {
-          item.find('show-games').on(click, function () {
+          item.find('show-games').on('click', function () {
             result.render({
               query: item.query,
               games: item.games,
@@ -326,13 +324,12 @@
     };
 
     that.unbind = function () {
-      var click = this.eventNameFor( 'click' );
       var calendar = this.calendar;
 
-      calendar.find('show-allgames').off( click );
+      calendar.find('show-allgames').off( 'click' );
 
       calendar.dateList.eachItem(function (item) {
-        item.find('show-games').off( click );
+        item.find('show-games').off( 'click' );
       });
 
       return;
@@ -350,9 +347,8 @@
     that.link = null;
 
     that.dateList = Archives.Calendar.DateList({
-      classNamePrefix: that.classNameFor('datelist') + '-',
-      eventNamespace: that.eventNamespace + 'DateList',
-      $context: that.find( 'datelist' )
+      context: that.find( 'datelist' ),
+      eventNamespace: 'dateList'
     });
 
     that.render = function (args) {
@@ -363,16 +359,16 @@
 
       this.unbind();
 
-      this.find('year').text( query.year );
-      this.find('month').text( FULLMON_LIST[query.month-1] );
+      this.find('year').setText( query.year );
+      this.find('month').setText( FULLMON_LIST[query.month-1] );
 
       foreach(['first', 'prev', 'next', 'last'], function (rel) {
         if ( link[rel] ) {
-          that.find( rel ).removeClass( DISABLED_CLASS );
-          that.find( rel+'-link' ).attr( 'href', link[rel].getHtmlUrl() );
+          that.find( rel ).setDisabled( false );
+          that.find( rel+'-link' ).setAttr( 'href', link[rel].getHtmlUrl() );
         }
         else {
-          that.find( rel ).addClass( DISABLED_CLASS );
+          that.find( rel ).setDisabled( true );
         }
       });
  
@@ -392,11 +388,10 @@
 
     that.bind = function () {
       var that = this;
-      var click = this.eventNameFor('click');
 
-      this.find('show-allgames').on(click, function () {
+      this.find('show-allgames').on('click', function () {
         that.dateList.eachItem(function (item) {
-          item.$context.removeClass( ACTIVE_CLASS );
+          item.setActive( false );
         });
       });
 
@@ -404,11 +399,7 @@
     };
 
     that.unbind = function () {
-      var click = this.eventNameFor('click');
-
-      this.find('show-allgames').off( click );
-
-      return;
+      this.find('show-allgames').off( 'click' );
     };
 
     return that;
@@ -503,11 +494,14 @@
       });
 
       this.unbind();
-      this.find('item').remove();
+      
+      this.eachItem(function (item) {
+        item.remove();
+      });
 
       foreach(items, function (item) {
         item.render();
-        that.$context.append( item.$context );
+        that.append( item );
       });
 
       this.games = games;
@@ -521,13 +515,12 @@
 
     that.bind = function () {
       var query = this.query;
-      var click = this.eventNameFor( 'click' );
  
       this.eachItem(function (item) {
         if ( item.month === query.month ) {
-          item.$context.on(click, function () {
-            $(this).siblings().removeClass( ACTIVE_CLASS );
-            $(this).addClass( ACTIVE_CLASS );
+          item.on('click', function () {
+            that.eachItem(function (i) { i.setActive(false); });
+            item.setActive( true );
           });
         }
       });
@@ -536,13 +529,9 @@
     };
 
     that.unbind = function () {
-      var click = this.eventNameFor( 'click' );
-
       this.eachItem(function (item) {
-        item.$context.off( click );
+        item.off( 'click' );
       });
-
-      return;
     };
 
     return that;
@@ -590,25 +579,19 @@
 
       this.unbind();
 
-      if ( month === query.month ) {
-        this.$context.removeClass( DISABLED_CLASS );
-      }
-      else {
-        this.$context.addClass( DISABLED_CLASS );
-      }
-
-      this.find('day').text( day );
+      this.setDisabled( month !== query.month );
+      this.find('day').setText( day );
 
       foreach(Object.keys(gamesCount), function (key) {
-        var $item = that.find( key );
-        var $itemCount = that.find( key+'-count', $item );
+        var item = that.find( key );
+        var itemCount = that.find( key+'-count', item );
 
         if ( gamesCount[key] ) {
-          $itemCount.text( gamesCount[key] );
-          $item.removeClass( HIDE_CLASS );
+          itemCount.setText( gamesCount[key] );
+          item.show();
         }
         else {
-          $item.addClass( HIDE_CLASS );
+          item.hide();
         }
       });
 
@@ -643,14 +626,13 @@
     that.query = null;
 
     that.page = Archives.Page({
-      entriesPerPage: that.$context.data('perpage'),
+      entriesPerPage: that.getData('perpage'),
       totalEntries: (that.games || []).length
     });
 
     that.gameList = Archives.Result.GameList({
-      classNamePrefix: that.classNameFor('gamelist') + '-',
-      eventNamespace: that.eventNamespace + 'GameList',
-      $context: that.find( 'gamelist' )
+      context: that.find( 'gamelist' ),
+      eventNamespace: 'gameList'
     });
 
     that.sortByWhite = function (args) {
@@ -809,28 +791,17 @@
         games: pageObject.slice(games)
       });
 
-      if ( pageObject.getPreviousPage() ) {
-        this.find('show-prevpage').removeClass( DISABLED_CLASS );
-      }
-      else {
-        this.find('show-prevpage').addClass( DISABLED_CLASS );
-      }
+      this.find('show-prevpage').setDisabled( !pageObject.getPreviousPage() );
+      this.find('show-nextpage').setDisabled( !pageObject.getNextPage() );
 
-      if ( pageObject.getNextPage() ) {
-        this.find('show-nextpage').removeClass( DISABLED_CLASS );
-      }
-      else {
-        this.find('show-nextpage').addClass( DISABLED_CLASS );
-      }
-
-      this.find('daterange').text( dateRange );
-      this.find('page-range').text( pageObject.toString() );
+      this.find('daterange').setText( dateRange );
+      this.find('page-range').setText( pageObject.toString() );
 
       if ( games.length ) {
-        this.find('if-hasgames').removeClass( HIDE_CLASS );
+        this.find('if-hasgames').show();
       }
       else {
-        this.find('if-hasgames').addClass( HIDE_CLASS );
+        this.find('if-hasgames').hide();
       }
 
       this.range = range;
@@ -845,37 +816,36 @@
 
     that.bind = function () {
       var that = this;
-      var click = this.eventNameFor( 'click' );
 
-      this.find('show-prevpage').on(click, function () {
+      this.find('show-prevpage').on('click', function () {
         that.render({ page: that.page.getPreviousPage() });
       });
 
-      this.find('show-nextpage').on(click, function () {
+      this.find('show-nextpage').on('click', function () {
         that.render({ page: that.page.getNextPage() });
       });
 
-      this.find('sort-bydate').on(click, function () {
+      this.find('sort-bydate').on('click', function () {
         that.sortByDate({ toggle: true }).render({ page: 1 });
       });
 
-      this.find('sort-bysetup').on(click, function () {
+      this.find('sort-bysetup').on('click', function () {
         that.sortBySetup({ toggle: true }).render({ page: 1 });
       });
 
-      this.find('sort-byresult').on(click, function () {
+      this.find('sort-byresult').on('click', function () {
         that.sortByResult({ toggle: true }).render({ page: 1 });
       });
 
-      this.find('sort-bytype').on(click, function () {
+      this.find('sort-bytype').on('click', function () {
         that.sortByType({ toggle: true }).render({ page: 1 });
       });
  
-      this.find('sort-bywhite').on(click, function () {
+      this.find('sort-bywhite').on('click', function () {
         that.sortByWhite({ toggle: true }).render({ page: 1 });
       });
 
-      this.find('sort-byblack').on(click, function () {
+      this.find('sort-byblack').on('click', function () {
         that.sortByBlack({ toggle: true }).render({ page: 1 });
       });
  
@@ -883,17 +853,17 @@
     };
 
     that.unbind = function () {
-      var click = this.eventNameFor( 'click' );
+      var that = this;
 
-      this.find('show-prevpage').off( click );
-      this.find('show-nextpage').off( click );
+      this.find('show-prevpage').off( 'click' );
+      this.find('show-nextpage').off( 'click' );
 
-      this.find('sort-bydate').off( click );
-      this.find('sort-bysetup').off( click );
-      this.find('sort-byresult').off( click );
-      this.find('sort-bytype').off( click );
-      this.find('sort-bywhite').off( click );
-      this.find('sort-byblack').off( click );
+      this.find('sort-bydate').off( 'click' );
+      this.find('sort-bysetup').off( 'click' );
+      this.find('sort-byresult').off( 'click' );
+      this.find('sort-bytype').off( 'click' );
+      this.find('sort-bywhite').off( 'click' );
+      this.find('sort-byblack').off( 'click' );
 
       return;
     };
@@ -931,11 +901,15 @@
       var items = this.buildItems( games );
 
       this.unbind();
-      this.find('item').remove();
+      //this.find('item').$context.remove();
+
+      this.eachItem(function (item) {
+        item.remove();
+      });
 
       foreach(items, function (item) {
         item.render();
-        that.$context.append( item.$context );
+        that.append( item );
       });
 
       this.items = items;
@@ -947,16 +921,11 @@
     };
 
     that.bind = function () {
-      var that = this;
-      var click = this.eventNameFor( 'click' );
-
-      return;
+      // nothing to bind
     };
 
     that.unbind = function () {
-      var click = this.eventNameFor( 'click' );
-
-      return;
+      // nothing to unbind
     };
 
     return that;
@@ -978,9 +947,8 @@
         var className = role + (i + 1);
 
         players.push(Archives.Result.GameList.Player({
-          classNamePrefix: that.classNameFor(className) + '-',
-          eventNamespace: that.eventNamespace + 'Player',
-          $context: that.find( className ),
+          context: that.find( className ),
+          eventNamespace: className,
           user: user
         }));
       });
@@ -1001,7 +969,7 @@
       var game = (args && args.game) || this.game;
       var white = this.buildPlayers( 'white', game.white );
       var black = this.buildPlayers( 'black', game.black );
-      var dateFormat = this.find('date').data('format') || '%c';
+      var dateFormat = this.find('date').getData('format') || '%c';
 
       var type = game.type;
       var shortType = game.getShortType();
@@ -1019,19 +987,19 @@
       this.unbind();
 
       if ( game.isPrivate() ) {
-        this.find('link').addClass( DISABLED_CLASS );
+        this.find('link').setDisabled( true );
       }
       else {
-        this.find('link').attr( 'href', game.getHtmlUrl() );
-        this.find('link').removeClass( DISABLED_CLASS );
+        this.find('link').setAttr( 'href', game.getHtmlUrl() );
+        this.find('link').setDisabled( false );
       }
 
-      this.find('type').text( type );
-      this.find('shorttype').text( shortType );
-      this.find('typeinitial').text( typeInitial );
-      this.find('setup').text( setup );
-      this.find('result').text( result );
-      this.find('date').text( date );
+      this.find('type').setText( type );
+      this.find('shorttype').setText( shortType );
+      this.find('typeinitial').setText( typeInitial );
+      this.find('setup').setText( setup );
+      this.find('result').setText( result );
+      this.find('date').setText( date );
 
       foreach([].concat(white, black), function (player) {
         player.render();
@@ -1069,13 +1037,13 @@
       this.unbind();
 
       if ( user ) {
-        this.find('name').text( user.name );
-        this.find('link').attr( 'href', user.getHtmlUrl() );
-        this.find('rank').text( user.hasRank() ? user.rank : '' );
-        this.$context.removeClass( HIDE_CLASS );
+        this.find('name').setText( user.name );
+        this.find('link').setAttr( 'href', user.getHtmlUrl() );
+        this.find('rank').setText( user.hasRank() ? user.rank : '' );
+        this.show();
       }
       else {
-        this.$context.addClass( HIDE_CLASS );
+        this.hide();
       }
 
       this.user = user;
@@ -1110,12 +1078,12 @@
       this.unbind();
 
       if ( message ) {
-        this.find('name').text( name );
-        this.find('message').text( message );
-        this.$context.removeClass( HIDE_CLASS );
+        this.find('name').setText( name );
+        this.find('message').setText( message );
+        this.show();
       }
       else {
-        this.$context.addClass( HIDE_CLASS );
+        this.hide();
       }
 
       this.name = name;
@@ -1142,9 +1110,8 @@
     var that = Archives.Component( spec );
 
     that.yearList = Archives.MonthIndex.YearList({
-      classNamePrefix: that.classNameFor('yearlist') + '-',
-      eventNamespace: that.eventNamespace + 'YearList',
-      $context: that.find( 'yearlist' )
+      context: that.find( 'yearlist' ),
+      eventNamespace: 'yearList'
     });
 
     that.render = function (args) {
@@ -1201,14 +1168,14 @@
 
       foreach(items, function (item) {
         item.render();
-        that.$context.append( item.$context );
+        that.append( item );
       });
 
       foreach(items, function (year) {
         if ( year.year === query.year ) {
           year.monthList.eachItem(function (month) {
             if ( month.month === query.month ) {
-              month.$context.addClass( ACTIVE_CLASS );
+              month.setActive( true );
               return false;
             }
           });
@@ -1244,11 +1211,10 @@
     that.queries = spec.queries;
 
     that.monthList = Archives.MonthIndex.YearList.Item.MonthList({
-      classNamePrefix: that.classNameFor('monthlist') + '-',
-      eventNamespace: that.eventNamespace + 'MonthList',
-      $context: that.find( 'monthlist' ),
-      month: spec.month,
-      queries: spec.queries
+      context: that.find( 'monthlist' ),
+      eventNamespace: 'monthList',
+      queries: spec.queries,
+      month: spec.month
     });
 
     that.render = function (args) {
@@ -1257,7 +1223,7 @@
 
       this.unbind();
 
-      this.find('year').text( year );
+      this.find('year').setText( year );
 
       this.monthList.render({
         queries: queries
@@ -1316,11 +1282,14 @@
       });
 
       this.unbind();
-      this.find('item').remove();
+
+      this.eachItem(function (item) {
+        item.remove();
+      });
 
       foreach(items, function (item) {
         item.render();
-        that.$context.append( item.$context );
+        that.append( item );
       });
 
       this.items = items;
@@ -1355,14 +1324,14 @@
 
       this.unbind();
 
-      this.find('monname').text( MON_LIST[month-1] );
+      this.find('monname').setText( MON_LIST[month-1] );
 
       if ( query ) {
-        this.find('link').attr( 'href', query.getHtmlUrl() );
-        this.$context.removeClass( DISABLED_CLASS );
+        this.find('link').setAttr( 'href', query.getHtmlUrl() );
+        this.setDisabled( false );
       }
       else {
-        this.$context.addClass( DISABLED_CLASS );
+        this.setDisabled( true );
       }
 
       this.query = query;
@@ -1390,7 +1359,7 @@
 
     that.uri = spec.uri;
     that.date = spec.date;
-    that.dateFormat = spec.dateFormat || that.find('date').data('format') || '%c';
+    that.dateFormat = spec.dateFormat || that.find('date').getData('format') || '%c';
 
     that.render = function (args) {
       var uri = (args && args.uri) || this.uri;
@@ -1399,10 +1368,9 @@
 
       this.unbind();
 
-      this.find('link').attr( 'href', uri );
-
-      this.find('uri').text( uri );
-      this.find('date').text( date.strftime(dateFormat) );
+      this.find('link').setAttr( 'href', uri );
+      this.find('uri').setText( uri );
+      this.find('date').setText( date.strftime(dateFormat) );
 
       this.uri = uri;
       this.date = date;
@@ -1426,7 +1394,31 @@
 
   Archives.Component = function (args) {
     var spec = args || {};
- 
+
+    var that = (function () {
+      var context = spec.context;
+
+      if ( !context ) {
+        return Archives.Component.Element( spec );
+      }
+
+      return Archives.Component.Element({
+        classNamePrefix: context.classNamePrefix + (spec.classNamePrefix || ''),
+        eventNamespace: context.concatEventNamespace(spec.eventNamespace || ''),
+        $context: spec.$context || context.$context
+      });
+    }());
+
+    that.render = function (args) {
+      throw Archives.NotImplementedError("call to abstract method 'render'");
+    };
+
+    return that;
+  };
+
+  Archives.Component.Element = function (args) {
+    var spec = args || {};
+
     var that = {
       $context: spec.$context || $(),
       classNamePrefix: spec.classNamePrefix || '',
@@ -1437,17 +1429,89 @@
       return this.classNamePrefix + name;
     };
 
-    that.find = function (name, $context) {
-      var $c = $context || this.$context;
-      return $c.find( '.'+this.classNameFor(name) );
-    };
-
     that.eventNameFor = function (name) {
       return name + '.' + this.eventNamespace;
     };
 
-    that.render = function (args) {
-      throw Archives.NotImplementedError("call to abstract method 'render'");
+    that.concatEventNamespace = function (eventNamespace) {
+      if ( this.eventNamespace ) {
+        return this.eventNamespace + ucfirst(eventNamespace);
+      }
+      else {
+        return eventNamespace;
+      }
+    };
+
+    that.addClass = function (className) {
+      this.$context.addClass( this.classNameFor(className) );
+    };
+
+    that.removeClass = function (className) {
+      this.$context.removeClass( this.classNameFor(className) );
+    };
+
+    that.show = function () {
+      this.$context.removeClass( HIDE_CLASS );
+    };
+
+    that.hide = function () {
+      this.$context.addClass( HIDE_CLASS );
+    };
+
+    that.setActive = function (bool) {
+      if ( bool ) {
+        this.$context.addClass( ACTIVE_CLASS );
+      }
+      else {
+        this.$context.removeClass( ACTIVE_CLASS );
+      }
+    };
+
+    that.setDisabled = function (bool) {
+      if ( bool ) {
+        this.$context.addClass( DISABLED_CLASS );
+      }
+      else {
+        this.$context.removeClass( DISABLED_CLASS );
+      }
+    };
+
+    that.setText = function (text) {
+      this.$context.text( text );
+    };
+
+    that.setAttr = function (key, value) {
+      this.$context.attr( key, value );
+    };
+
+    that.getData = function (key) {
+      return this.$context.data( key );
+    };
+
+    that.append = function (element) {
+      this.$context.append( element.$context );
+    };
+
+    that.remove = function () {
+      this.$context.remove();
+    };
+
+    that.on = function (eventName, callback) {
+      this.$context.on( this.eventNameFor(eventName), callback );
+    };
+
+    that.off = function (eventName) {
+      this.$context.off( this.eventNameFor(eventName) );
+    };
+
+    that.find = function (className, context) {
+      var $context = context ? context.$context : this.$context;
+
+      return Archives.Component.Element({
+        $context: $context.find( '.'+this.classNameFor(className) ),
+        classNamePrefix: this.classNameFor(className) + '-',
+        eventNamespace: this.eventNamespace
+      });
     };
 
     return that;
@@ -1461,7 +1525,7 @@
 
     // NOTE: destructive
     that.$itemTemplate = (function () {
-      var $template = that.find( 'item-template' );
+      var $template = that.find( 'item-template' ).$context;
       var $clone = $template.clone();
 
       $clone.removeClass( that.classNameFor('item-template') );
@@ -1480,7 +1544,7 @@
       var withDefaults = {
         $context: this.$itemTemplate.clone(),
         classNamePrefix: this.classNameFor('item') + '-',
-        eventNamespace: this.eventNamespace + 'Item'
+        eventNamespace: this.concatEventNamespace( 'item' )
       };
 
       for ( var key in args ) {
@@ -1979,6 +2043,7 @@
     });
 
     archives.call();
+    console.log(archives);
   });
 
 }());
