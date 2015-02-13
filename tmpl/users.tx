@@ -24,6 +24,7 @@
           <li class="hide js-user-if-istop100">
             <i class="fa fa-trophy text-muted"></i>
             Top 100 KGS Players
+            (Position: <span class="js-user-position"></span>)
           </li>
         </ul>
       </div>

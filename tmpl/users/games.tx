@@ -16,7 +16,7 @@
           <span class="js-archives-error-message"></span>
         </div>
 
-        <div class="calendar archives-calendar js-archives-calendar" id="calendar">
+        <div class="calendar archives-calendar hide js-archives-calendar" id="calendar">
           <ul class="calendar-nav">
             <li class="js-archives-calendar-first">
               <a class="js-archives-calendar-first-link" href="#calendar" title="First">
@@ -83,15 +83,16 @@
           </ol><!-- /.calendar-body -->
         </div><!-- /.calendar -->
 
-        <div class="archives-result clearfix js-archives-result" id="result"
+        <div class="archives-result hide clearfix js-archives-result" id="result"
           data-perpage="15">
 
           <h2 class="text-center">Games</h2>
 
           <table class="table archives-result-gamelist js-archives-result-gamelist">
             <caption>
-              Games of KGS player <: $user :>, <span class="js-archives-result-daterange"></span><br>
-              <div class="js-archives-result-if-hasgames">
+              Games of KGS player <: $user :>,
+              <span class="js-archives-result-daterange"></span><br>
+              <div class="js-archives-result-if-haspages">
                 Showing <span class="js-archives-result-page-range"></span> games
               </div>
             </caption>
@@ -163,7 +164,7 @@
             </tbody>
           </table>
 
-          <ul class="pager clearfix">
+          <ul class="pager clearfix js-archives-result-if-haspages">
             <li class="previous js-archives-result-show-prevpage">
               <a href="#result">&larr; Prev</a>
             </li>
@@ -174,13 +175,27 @@
 
         </div><!-- /.result -->
 
-        <div class="archives-monthindex js-archives-monthindex">
+        <div class="archives-resources hide js-archives-resources" id="resources">
+          <h2>Resources</h2>
+          <ul class="list-unstyled">
+            <li class="js-archives-resources-if-haszip">
+              <i class="fa fa-download text-muted"></i>
+              <a class="js-archives-resources-zip-link" href="#">Download all SGF files in zip format</a>
+            </li>
+            <li class="js-archives-resources-if-hastgz">
+              <i class="fa fa-download text-muted"></i>
+              <a class="js-archives-resources-tgz-link" href="#">Download all SGF files in tar.gz format</a>
+            </li>
+          </ul>
+        </div>
+
+        <div class="archives-monthindex hide js-archives-monthindex" id="monthindex">
           <h2>Month Index</h2>
-          <ol class="archives-yearlist clearfix js-archives-monthindex-yearlist">
-            <li class="archives-yearlist-item clearfix js-archives-monthindex-yearlist-item-template">
-              <div class="archives-yearlist-item-year js-archives-monthindex-yearlist-item-year"></div>
-              <ol class="archives-yearlist-item-monthlist js-archives-monthindex-yearlist-item-monthlist">
-                <li class="archives-yearlist-item-monthlist-item js-archives-monthindex-yearlist-item-monthlist-item-template">
+          <ol class="archives-monthindex-yearlist clearfix js-archives-monthindex-yearlist">
+            <li class="archives-monthindex-yearlist-item clearfix js-archives-monthindex-yearlist-item-template">
+              <div class="archives-monthindex-yearlist-item-year js-archives-monthindex-yearlist-item-year"></div>
+              <ol class="archives-monthindex-yearlist-item-monthlist js-archives-monthindex-yearlist-item-monthlist">
+                <li class="archives-monthindex-yearlist-item-monthlist-item js-archives-monthindex-yearlist-item-monthlist-item-template">
                   <a class="js-archives-monthindex-yearlist-item-monthlist-item-link js-archives-monthindex-yearlist-item-monthlist-item-monname" href="#"></a>
                 </li>
               </ol>
@@ -188,7 +203,7 @@
           </ol>
         </div>
 
-        <div class="archives-source js-archives-source">
+        <div class="archives-source hide js-archives-source">
           <h2>Source</h2>
           <p>
             This document was generated from

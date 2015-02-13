@@ -201,8 +201,8 @@
     var spec = args || {};
     var that = MetaKGS.App( spec );
 
-    that.query = null;
-    that.games = null;
+    //that.query = null;
+    //that.games = null;
 
     that.client = Archives.Client({
       baseUrl: spec.baseUrl,
@@ -223,6 +223,10 @@
 
     that.result = Archives.Result({
       context: that.find('result')
+    });
+
+    that.resources = Archives.Resources({
+      context: that.find('resources')
     });
 
     that.monthIndex = Archives.MonthIndex({
@@ -253,23 +257,25 @@
 
           if ( status === 200 ) {
             that.render({
-              query: response.query,
-              games: response.games,
-              result: {
-                games: response.games,
-                query: response.query,
-                range: {
-                  year: response.query.year,
-                  month: response.query.month
-                }
-              },
               calendar: {
-                query: response.query,
+                query: query,
                 games: response.games,
                 link: response.link
               },
+              result: {
+                query: query,
+                games: response.games,
+                range: {
+                  year: query.year,
+                  month: query.month
+                }
+              },
+              resources: {
+                zipUrl: response.body.content.zip_url,
+                tgzUrl: response.body.content.tgz_url
+              },
               monthIndex: {
-                query: response.query,
+                query: query,
                 queries: response.queries
               },
               source: {
@@ -333,72 +339,85 @@
     };
 
     that.render = function (args) {
-      var games = args.games;
-      var error = args.error;
-      var query = args.query;
+      var that = this;
 
-      if ( args.loading === true ) {
-        this.find('if-isloading').show();
+      var loading = args && (args.loading === true);
+
+      var error      = (args && args.error)      || null;
+      var calendar   = (args && args.calendar)   || null;
+      var result     = (args && args.result)     || null;
+      var resources  = (args && args.resources)  || null;
+      var monthIndex = (args && args.monthIndex) || null;
+      var source     = (args && args.source)     || null;
+
+      if ( args === null ) {
+        this.clear();
         return;
+      }
+
+      this.hide();
+      this.unbind();
+
+      if ( loading ) {
+        this.find('if-isloading').show();
+      }
+      else {
+        this.find('if-isloading').hide();
       }
 
       this.error.render( error );
-
-      if ( error ) {
-        this.calendar.hide();
-        this.result.hide();
-        this.monthIndex.hide();
-        this.source.hide();
-        this.find('if-isloading').hide();
-        return;
-      }
-
-      this.unbind();
-
-      this.calendar.render( args.calendar );
-      this.result.render( args.result );
-      this.monthIndex.render( args.monthIndex );
-      this.source.render( args.source );
-
-      this.find('if-isloading').hide();
-
-      this.query = query;
-      this.games = games;
+      this.calendar.render( calendar );
+      this.result.render( result );
+      this.resources.render( resources );
+      this.monthIndex.render( monthIndex );
+      this.source.render( source );
 
       this.bind();
+      this.show();
+
+      return;
+    };
+
+    that.clear = function () {
+      var that = this;
+
+      this.hide();
+      this.unbind();
+
+      this.error.clear();
+      this.calendar.clear();
+      this.result.clear();
+      this.resources.clear();
+      this.monthIndex.clear();
+      this.source.clear();
 
       return;
     };
 
     that.bind = function () {
       var that = this;
-      var query = this.query;
-      var games = this.games;
-      var calendar = this.calendar;
-      var result = this.result;
       var click = this.eventNameFor('click');
 
-      calendar.find('show-allgames').on(click, function () {
-        result.render({
-          query: query,
-          games: games,
-          range: {
-            year: query.year,
-            month: query.month
-          }
-        });
+      this.calendar.find('show-allgames').on(click, function () {
+        if ( this.calendar.query ) {
+          that.result.render({
+            query: that.calendar.query,
+            games: that.calendar.games,
+            range: {
+              year: that.calendar.query.year,
+              month: that.calendar.query.month
+            }
+          });
+        }
       });
 
-      calendar.dateList.eachItem(function (item) {
-        if ( item.query.month === query.month ) {
+      this.calendar.dateList.eachItem(function (item) {
+        if ( item.hasGames() ) {
           item.find('show-games').on(click, function () {
-            result.render({
+            that.result.render({
               query: item.query,
               games: item.games,
               range: {
-                //year: item.year,
-                //month: item.month,
-                //day: item.day
                 year: item.date.year,
                 month: item.date.month,
                 day: item.date.day
@@ -412,12 +431,11 @@
     };
 
     that.unbind = function () {
-      var calendar = this.calendar;
       var click = this.eventNameFor('click');
 
-      calendar.find('show-allgames').off( click );
+      this.calendar.find('show-allgames').off( click );
 
-      calendar.dateList.eachItem(function (item) {
+      this.calendar.dateList.eachItem(function (item) {
         item.find('show-games').off( click );
       });
 
@@ -431,9 +449,9 @@
     var spec = args || {};
     var that = MetaKGS.Component( spec );
 
-    that.query = null;
-    that.games = null;
-    that.link = null;
+    that.query = spec.query;
+    that.games = spec.games;
+    that.link = spec.link;
 
     that.dateList = Archives.Calendar.DateList({
       context: that.find('datelist')
@@ -445,7 +463,7 @@
       var query = args ? args.query : this.query;
       var games = args ? args.games : this.games;
 
-      if ( args === null ) {
+      if ( args === null || !query ) {
         this.clear();
         return;
       }
@@ -456,15 +474,17 @@
       this.find('year').setText( query.year );
       this.find('month').setText( FULLMON_LIST[query.month-1] );
 
-      foreach(['first', 'prev', 'next', 'last'], function (rel) {
-        if ( link[rel] ) {
-          that.find( rel ).setDisabled( false );
-          that.find( rel+'-link' ).setAttr( 'href', link[rel].getHtmlUrl() );
-        }
-        else {
-          that.find( rel ).setDisabled( true );
-        }
-      });
+      if ( link ) {
+        foreach(['first', 'prev', 'next', 'last'], function (rel) {
+          if ( link[rel] ) {
+            that.find( rel ).setDisabled( false );
+            that.find( rel+'-link' ).setAttr( 'href', link[rel].getHtmlUrl() );
+          }
+          else {
+            that.find( rel ).setDisabled( true );
+          }
+        });
+      }
  
       this.dateList.render({
         query: query,
@@ -498,7 +518,7 @@
 
     that.bind = function () {
       var that = this;
-      var click = this.eventNameFor( 'click' );
+      var click = this.eventNameFor('click');
 
       this.find('show-allgames').on(click, function () {
         that.dateList.eachItem(function (item) {
@@ -510,7 +530,7 @@
     };
 
     that.unbind = function () {
-      var click = this.eventNameFor( 'click' );
+      var click = this.eventNameFor('click');
 
       this.find('show-allgames').off( click );
 
@@ -650,11 +670,10 @@
 
     that.bind = function () {
       var that = this;
-      var query = this.query;
       var click = this.eventNameFor('click');
  
       this.eachItem(function (item) {
-        if ( item.date.month === query.month ) {
+        if ( item.hasGames() ) {
           item.on(click, function () {
             that.eachItem(function (i) { i.setActive(false); });
             item.setActive( true );
@@ -686,14 +705,18 @@
     that.query = spec.query;
     that.games = spec.games;
 
+    that.hasGames = function () {
+      return (this.games && this.games.length) ? true : false;
+    };
+
     that.render = function (args) {
       var that = this;
       var date = args ? args.date : this.date;
       var query = args ? args.query : this.query;
-      var games = (args ? args.games : this.games) || [];
+      var games = args ? args.games : this.games;
 
       var gamesCount = {
-        games  : games.length,
+        games  : games ? games.length : 0,
         wins   : 0,
         losses : 0,
         draws  : 0
@@ -704,7 +727,7 @@
         return;
       }
  
-      foreach(games, function (game) {
+      foreach(games || [], function (game) {
         if ( !game.isFinished() ) {
           return;
         }
@@ -775,9 +798,9 @@
     var spec = args || {};
     var that = MetaKGS.Component( spec );
 
-    that.range = null;
-    that.games = null;
-    that.query = null;
+    that.query = spec.query;
+    that.range = spec.range;
+    that.games = spec.games;
 
     that.page = Archives.Page({
       entriesPerPage: that.getData('perpage'),
@@ -788,6 +811,135 @@
       context: that.find('gamelist')
     });
 
+    that.render = function (args) {
+      var that = this;
+      var range = args ? args.range : this.range;
+      var games = args ? args.games : this.games;
+      var query = args ? args.query : this.query;
+      var dateRange;
+
+      if ( args === null || !games || !games.length ) {
+        this.clear();
+        return;
+      }
+
+      this.page.totalEntries = games ? games.length : 0;
+      this.page.currentPage  = args ? (args.page || 1) : this.page.currentPage;
+
+      dateRange = FULLMON_LIST[range.month-1];
+      dateRange += range.day ? ' '+range.day+', ' : ' ';
+      dateRange += range.year;
+
+      this.hide();
+      this.unbind();
+
+      this.gameList.render({
+        games: this.page.slice(games)
+      });
+
+      this.find('show-prevpage').setDisabled( !this.page.getPreviousPage() );
+      this.find('show-nextpage').setDisabled( !this.page.getNextPage() );
+
+      this.find('daterange').setText( dateRange );
+      this.find('page-range').setText( this.page.toString() );
+
+      if ( this.page.getLastPage() > 1 ) {
+        this.find('if-haspages').show();
+      }
+      else {
+        this.find('if-haspages').hide();
+      }
+
+      this.query = query;
+      this.range = range;
+      this.games = games;
+ 
+      this.bind();
+      this.show();
+
+      return;
+    };
+
+    that.clear = function () {
+      var that = this;
+
+      this.hide();
+      this.unbind();
+
+      this.page.totalEntries = 0;
+      this.page.currentPage  = 1;
+
+      this.gameList.clear();
+
+      this.query = null;
+      this.range = null;
+      this.games = null;
+
+      return;
+    };
+
+    that.bind = function () {
+      var that = this;
+      var click = this.eventNameFor('click');
+
+      this.find('show-prevpage').on(click, function () {
+        if ( that.page.getPreviousPage() ) {
+          that.page.currentPage -= 1;
+          that.render();
+        }
+      });
+
+      this.find('show-nextpage').on(click, function () {
+        if ( that.page.getNextPage() ) {
+          that.page.currentPage += 1;
+          that.render();
+        }
+      });
+
+      this.find('sort-bytype').on(click, function () {
+        that.sortByType({ toggle: true }).render();
+      });
+ 
+      this.find('sort-bywhite').on(click, function () {
+        that.sortByWhite({ toggle: true }).render();
+      });
+
+      this.find('sort-byblack').on(click, function () {
+        that.sortByBlack({ toggle: true }).render();
+      });
+ 
+      this.find('sort-bysetup').on(click, function () {
+        that.sortBySetup({ toggle: true }).render();
+      });
+
+      this.find('sort-byresult').on(click, function () {
+        that.sortByResult({ toggle: true }).render();
+      });
+
+      this.find('sort-bydate').on(click, function () {
+        that.sortByDate({ toggle: true }).render();
+      });
+
+      return;
+    };
+
+    that.unbind = function () {
+      var that = this;
+      var click = this.eventNameFor('click');
+
+      this.find('show-prevpage').off( click );
+      this.find('show-nextpage').off( click );
+
+      this.find('sort-bydate').off( click );
+      this.find('sort-bysetup').off( click );
+      this.find('sort-byresult').off( click );
+      this.find('sort-bytype').off( click );
+      this.find('sort-bywhite').off( click );
+      this.find('sort-byblack').off( click );
+
+      return;
+    };
+      
     that.sortByWhite = function (args) {
       return this.sortByPlayer( 'white', args );
     };
@@ -895,9 +1047,15 @@
     that.sort = function (args, callback) {
       var that = this;
       var toggle = (args && args.toggle === true) || false;
-      var games = this.games.slice(0).sort(callback.asc);
+      var games = this.games && this.games.slice(0);
       var isSorted = true;
-      var i;
+
+      if ( games ) {
+        games.sort( callback.asc );
+      }
+      else {
+        return this;
+      }
 
       if ( toggle ) {
         foreach(games, function (game, i) {
@@ -914,114 +1072,12 @@
         }
       }
 
+      this.page.currentPage = 1;
       this.games = games;
 
       return this;
     };
 
-    that.render = function (args) {
-      var range = (args && args.range) || this.range;
-      var games = (args && args.games) || this.games;
-      var query = (args && args.query) ? args.query : this.query;
-      var page = args && args.page;
-
-      var dateRange = FULLMON_LIST[range.month-1];
-          dateRange += range.day ? ' '+range.day+', ' : ' ';
-          dateRange += range.year;
-
-      var pageObject = Archives.Page({
-        entriesPerPage: this.page.entriesPerPage,
-        totalEntries: games.length,
-        currentPage: (args && args.games) ? 1 : (page || this.page.currentPage)
-      });
-
-      this.hide();
-      this.unbind();
-
-      this.gameList.render({
-        games: pageObject.slice(games)
-      });
-
-      this.find('show-prevpage').setDisabled( !pageObject.getPreviousPage() );
-      this.find('show-nextpage').setDisabled( !pageObject.getNextPage() );
-
-      this.find('daterange').setText( dateRange );
-      this.find('page-range').setText( pageObject.toString() );
-
-      if ( games.length ) {
-        this.find('if-hasgames').show();
-      }
-      else {
-        this.find('if-hasgames').hide();
-      }
-
-      this.range = range;
-      this.games = games;
-      this.query = query;
-      this.page = pageObject;
- 
-      this.bind();
-      this.show();
-
-      return;
-    };
-
-    that.bind = function () {
-      var that = this;
-      var click = this.eventNameFor('click');
-
-      this.find('show-prevpage').on(click, function () {
-        that.render({ page: that.page.getPreviousPage() });
-      });
-
-      this.find('show-nextpage').on(click, function () {
-        that.render({ page: that.page.getNextPage() });
-      });
-
-      this.find('sort-bydate').on(click, function () {
-        that.sortByDate({ toggle: true }).render({ page: 1 });
-      });
-
-      this.find('sort-bysetup').on(click, function () {
-        that.sortBySetup({ toggle: true }).render({ page: 1 });
-      });
-
-      this.find('sort-byresult').on(click, function () {
-        that.sortByResult({ toggle: true }).render({ page: 1 });
-      });
-
-      this.find('sort-bytype').on(click, function () {
-        that.sortByType({ toggle: true }).render({ page: 1 });
-      });
- 
-      this.find('sort-bywhite').on(click, function () {
-        that.sortByWhite({ toggle: true }).render({ page: 1 });
-      });
-
-      this.find('sort-byblack').on(click, function () {
-        that.sortByBlack({ toggle: true }).render({ page: 1 });
-      });
- 
-      return;
-    };
-
-    that.unbind = function () {
-      var that = this;
-      var click = this.eventNameFor( 'click' );
-
-      this.find('show-prevpage').off( click );
-      this.find('show-nextpage').off( click );
-
-      this.find('sort-bydate').off( click );
-      this.find('sort-bysetup').off( click );
-      this.find('sort-byresult').off( click );
-      this.find('sort-bytype').off( click );
-      this.find('sort-bywhite').off( click );
-      this.find('sort-byblack').off( click );
-
-      return;
-    };
-      
     return that;
   };
 
@@ -1210,6 +1266,7 @@
     that.render = function (args) {
       var user = args ? args.user : this.user;
 
+      this.hide();
       this.unbind();
 
       if ( user ) {
@@ -1225,6 +1282,7 @@
       this.user = user;
 
       this.bind();
+      this.show();
 
       return;
     };
@@ -1248,24 +1306,106 @@
     that.message = spec.message;
 
     that.render = function (args) {
+      var that = this;
       var name = args ? args.name : this.name;
       var message = args ? args.message : this.message;
 
+      if ( args === null || !message ) {
+        this.clear();
+        return;
+      }
+
+      this.hide();
       this.unbind();
 
-      if ( message ) {
-        this.find('name').setText( name );
-        this.find('message').setText( message );
-        this.show();
-      }
-      else {
-        this.hide();
-      }
+      this.find('name').setText( name || '' );
+      this.find('message').setText( message );
 
       this.name = name;
       this.message = message;
 
       this.bind();
+      this.show();
+
+      return;
+    };
+
+    that.clear = function () {
+      var that = this;
+
+      this.hide();
+      this.unbind();
+
+      this.name = null;
+      this.message = null;
+
+      return;
+    };
+
+    that.bind = function () {
+      // nothing to bind
+    };
+
+    that.unbind = function () {
+      // nothing to unbind
+    };
+
+    return that;
+  };
+
+  Archives.Resources = function (args) {
+    var spec = args || {};
+    var that = MetaKGS.Component( spec );
+
+    that.zipUrl = spec.zipUrl;
+    that.tgzUrl = spec.tgzUrl;
+
+    that.render = function (args) {
+      var that = this;
+      var zipUrl = args ? args.zipUrl : this.zipUrl;
+      var tgzUrl = args ? args.tgzUrl : this.tgzUrl;
+
+      if ( args === null || (!zipUrl && !tgzUrl) ) {
+        this.clear();
+        return;
+      }
+
+      this.hide();
+      this.unbind();
+
+      if ( zipUrl ) {
+        this.find('if-haszip').show();
+        this.find('zip-link').setAttr( 'href', zipUrl );
+      }
+      else {
+        this.find('if-haszip').hide();
+      }
+
+      if ( tgzUrl ) {
+        this.find('if-hastgz').show();
+        this.find('tgz-link').setAttr( 'href', tgzUrl );
+      }
+      else {
+        this.find('if-hastgz').hide();
+      }
+
+      this.zipUrl = zipUrl;
+      this.tgzUrl = tgzUrl;
+
+      this.bind();
+      this.show();
+
+      return;
+    };
+
+    that.clear = function () {
+      var that = this;
+
+      this.hide();
+      this.unbind();
+
+      this.zipUrl = null;
+      this.tgzUrl = null;
 
       return;
     };
@@ -1290,9 +1430,33 @@
     });
 
     that.render = function (args) {
-      this.bind();
-      this.yearList.render(args);
+      var that = this;
+
+      if ( args === null ) {
+        this.clear();
+        return;
+      }
+
+      this.hide();
       this.unbind();
+
+      this.yearList.render( args );
+
+      this.bind();
+      this.show();
+
+      return;
+    };
+
+    that.clear = function () {
+      var that = this;
+
+      this.hide();
+      this.unbind();
+
+      this.yearList.clear();
+
+      return;
     };
 
     that.bind = function () {
@@ -1345,10 +1509,16 @@
       var query = args ? args.query : this.query;
       var queries = args ? args.queries : this.queries;
 
-      var items = this.buildItems({
+      var items = queries && this.buildItems({
         queries: queries
       });
 
+      if ( args === null || !items ) {
+        this.clear();
+        return;
+      }
+
+      this.hide();
       this.unbind();
       this.clearItems();
 
@@ -1369,6 +1539,20 @@
       this.query = query;
 
       this.bind();
+      this.show();
+
+      return;
+    };
+
+    that.clear = function () {
+      var that = this;
+
+      this.hide();
+      this.unbind();
+      this.clearItems();
+
+      this.query = null;
+      this.queries = null;
 
       return;
     };
@@ -1398,9 +1582,16 @@
     });
 
     that.render = function (args) {
+      var that = this;
       var year = args ? args.year : this.year;
       var queries = args ? args.queries : this.queries;
 
+      if ( args === null ) {
+        this.clear();
+        return;
+      }
+
+      this.hide();
       this.unbind();
 
       this.find('year').setText( year );
@@ -1413,6 +1604,21 @@
       this.queries = queries;
 
       this.bind();
+      this.show();
+
+      return;
+    };
+
+    that.clear = function () {
+      var that = this;
+
+      this.hide();
+      this.unbind();
+
+      this.monthList.clear();
+
+      this.year = null;
+      this.queries = null;
 
       return;
     };
@@ -1457,10 +1663,16 @@
       var that = this;
       var queries = args ? args.queries : this.queries;
 
-      var items = this.buildItems({
+      var items = queries && this.buildItems({
         queries: queries
       });
 
+      if ( args === null || !items ) {
+        this.clear();
+        return;
+      }
+
+      this.hide();
       this.unbind();
       this.clearItems();
 
@@ -1472,7 +1684,20 @@
       this.queries = queries;
 
       this.bind();
+      this.show();
       
+      return;
+    };
+
+    that.clear = function () {
+      var that = this;
+
+      this.hide();
+      this.unbind();
+      this.clearItems();
+
+      this.queries = null;
+
       return;
     };
 
@@ -1495,9 +1720,16 @@
     that.month = spec.month;
 
     that.render = function (args) {
+      var that = this;
       var query = args ? args.query : this.query;
       var month = args ? args.month : this.month;
 
+      if ( args === null ) {
+        this.clear();
+        return;
+      }
+
+      this.hide();
       this.unbind();
 
       this.find('mon').setText( month );
@@ -1516,6 +1748,19 @@
       this.month = month;
 
       this.bind();
+      this.show();
+
+      return;
+    };
+
+    that.clear = function () {
+      var that = this;
+
+      this.hide();
+      this.unbind();
+
+      this.query = null;
+      this.month = null;
 
       return;
     };
@@ -1540,10 +1785,17 @@
     that.dateFormat = spec.dateFormat || that.find('date').getData('format') || '%c';
 
     that.render = function (args) {
+      var that = this;
       var url = args ? args.url : this.url;
       var date = args ? args.date : this.date;
       var dateFormat = (args && args.dateFormat) || this.dateFormat;
 
+      if ( args === null ) {
+        this.clear();
+        return;
+      }
+
+      this.hide();
       this.unbind();
 
       this.find('link').setAttr( 'href', url );
@@ -1555,6 +1807,19 @@
       this.dateFormat = dateFormat;
 
       this.bind();
+      this.show();
+
+      return;
+    };
+
+    that.clear = function () {
+      var that = this;
+
+      this.hide();
+      this.unbind();
+
+      this.url = null;
+      this.date = null;
 
       return;
     };
@@ -1655,7 +1920,7 @@
         try {
           callback(Archives.Client.Response({
             query: query,
-            body: data,
+            body: jqXHR.status === 200 ? data : null,
             xhr: jqXHR,
             client: that
           }));
@@ -1886,10 +2151,20 @@
       sgfUrl    : args.game.sgf_url,
       boardSize : args.game.board_size,
       handicap  : args.game.handicap || 0,
-      date      : new Date( args.game.started_at ),
       result    : args.game.result,
       baseUrl   : args.baseUrl
     };
+
+    that.date = (function () {
+      var date = new Date( args.game.started_at );
+
+      date.utcStrftime = function (format) {
+        var offset = this.getTimezoneOffset() * 60 * 1000;
+        return (new Date(this.getTime() + offset)).strftime(format);
+      };
+
+      return date;
+    }());
 
     that.type = {
       'Review'       : 'Demonstration',
@@ -1968,11 +2243,6 @@
       var setup = this.boardSize + '\u00D7' + this.boardSize;
       setup += this.handicap ? ' H'+this.handicap : '';
       return setup;
-    };
-
-    that.date.utcStrftime = function (format) {
-      var offset = this.getTimezoneOffset() * 60 * 1000;
-      return (new Date(this.getTime() + offset)).strftime(format);
     };
 
     return that;

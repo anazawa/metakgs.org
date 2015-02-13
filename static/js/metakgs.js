@@ -333,15 +333,20 @@ if ( typeof window.console === "undefined" ) {
     foreach(keys(MetaKGS.App), function (name) {
       if ( name.match(/^[A-Z][a-zA-Z0-9]+$/) ) {
         $("[data-app='"+name+"']").each(function () {
-          var $this = $(this);
+          try {
+            var $this = $(this);
 
-          var app = MetaKGS.App[name].call(null, {
-            $context: $this,
-            namespace: $this.data('namespace'),
-            eventNamespace: 'metakgs'+name
-          });
+            var app = MetaKGS.App[name].call(null, {
+              $context: $this,
+              namespace: $this.data('namespace'),
+              eventNamespace: 'metakgs'+name
+            });
 
-          app.call();
+            app.call();
+          }
+          catch (error) {
+            console.log( "Failed to run '"+name+"': "+error );
+          }
         });
       }
     });
