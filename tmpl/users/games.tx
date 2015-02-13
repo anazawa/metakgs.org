@@ -138,26 +138,22 @@
                 <td class="js-archives-result-gamelist-item-shorttype"></td>
                 <td>
                   <ol class="list-unstyled">
-                    <li class="js-archives-result-gamelist-item-white1">
-                      <a href="#" class="js-archives-result-gamelist-item-white1-link js-archives-result-gamelist-item-white1-name"></a>
-                      <span class="js-archives-result-gamelist-item-white1-rank"></span>
+: for ['white1', 'white2'] -> $role {
+                    <li class="js-archives-result-gamelist-item-<: $role :>">
+                      <a href="#" class="js-archives-result-gamelist-item-<: $role :>-link js-archives-result-gamelist-item-<: $role :>-name"></a>
+                      <span class="js-archives-result-gamelist-item-<: $role :>-rank"></span>
                     </li>
-                    <li class="js-archives-result-gamelist-item-white2">
-                      <a href="#" class="js-archives-result-gamelist-item-white2-link js-archives-result-gamelist-item-white2-name"></a>
-                      <span class="js-archives-result-gamelist-item-white2-rank"></span>
-                    </li>
+: }
                   </ol>
                 </td>
                 <td>
                   <ol class="list-unstyled">
-                    <li class="js-archives-result-gamelist-item-black1">
-                      <a href="#" class="js-archives-result-gamelist-item-black1-link js-archives-result-gamelist-item-black1-name"></a>
-                      <span class="js-archives-result-gamelist-item-black1-rank"></span>
+: for ['black1', 'black2'] -> $role {
+                    <li class="js-archives-result-gamelist-item-<: $role :>">
+                      <a href="#" class="js-archives-result-gamelist-item-<: $role :>-link js-archives-result-gamelist-item-<: $role :>-name"></a>
+                      <span class="js-archives-result-gamelist-item-<: $role :>-rank"></span>
                     </li>
-                    <li class="js-archives-result-gamelist-item-black2">
-                      <a href="#" class="js-archives-result-gamelist-black2-link js-archives-result-gamelist-item-black2-name"></a>
-                      <span class="js-archives-result-gamelist-item-black2-rank"></span>
-                    </li>
+: }
                   </ol>
                 </td>
                 <td class="js-archives-result-gamelist-item-setup"></td>

@@ -61,10 +61,6 @@
    *
    */
 
-  var ACTIVE_CLASS   = 'active';
-  var DISABLED_CLASS = 'disabled';
-  var HIDE_CLASS     = 'hide';
-
   var MON_LIST = [
     'Jan',
     'Feb',
@@ -139,28 +135,23 @@
     that.query = spec.query && that.client.buildQuery(spec.query);
 
     that.error = Archives.Error({
-      context: that.find( 'error' ),
-      eventNamespace: 'error'
+      context: that.find('error')
     });
 
     that.calendar = Archives.Calendar({
-      context: that.find( 'calendar' ),
-      eventNamespace: 'calendar'
+      context: that.find('calendar')
     });
 
     that.result = Archives.Result({
-      context: that.find( 'result' ),
-      eventNamespace: 'result'
+      context: that.find('result')
     });
 
     that.monthIndex = Archives.MonthIndex({
-      context: that.find( 'monthindex' ),
-      eventNamespace: 'monthIndex'
+      context: that.find('monthindex')
     });
 
     that.source = Archives.Source({
-      context: that.find( 'source' ),
-      eventNamespace: 'source'
+      context: that.find('source')
     });
 
     that.call = function (args) {
@@ -179,30 +170,46 @@
         this.render({ loading: true });
 
         this.client.get(query, function (response) {
-          //var code = response.httpResponse.code;
-          var code = response.getStatus();
+          var status = response.getStatus();
 
-          if ( code === 200 ) {
+          if ( status === 200 ) {
             that.render({
               query: response.query,
-              queries: response.queries,
-              link: response.link,
               games: response.games,
-              //body: response.httpResponse.body
-              body: response.body
-            });
-          }
-          else if ( code === 202 ) {
-            that.render({
-              error: {
-                name: 'Accepted',
-                message: 'Your request has been accepted for processing, '
-                       + 'but the processing has not been completed yet. '
-                       + 'Retry after one hour.'
+              result: {
+                games: response.games,
+                query: response.query,
+                range: {
+                  year: response.query.year,
+                  month: response.query.month
+                }
+              },
+              calendar: {
+                query: response.query,
+                games: response.games,
+                link: response.link
+              },
+              monthIndex: {
+                query: response.query,
+                queries: response.queries
+              },
+              source: {
+                url: response.body.request_url,
+                date: new Date( response.body.requested_at )
               }
             });
           }
-          else if ( code === 404 ) {
+          else if ( status === 202 ) {
+            that.render({
+              error: {
+                name: 'Accepted',
+                message: 'Your request has been accepted for processing, ' +
+                         'but the processing has not been completed yet. ' +
+                         'Retry after one hour.'
+              }
+            });
+          }
+          else if ( status === 404 ) {
             that.render({
               error: {
                 name: 'Not Found',
@@ -250,7 +257,6 @@
       var games = args.games;
       var error = args.error;
       var query = args.query;
-      var link = args.link;
 
       if ( args.loading === true ) {
         this.find('if-isloading').show();
@@ -270,30 +276,10 @@
 
       this.unbind();
 
-      this.calendar.render({
-        query: query,
-        games: games,
-        link: link
-      });
-
-      this.result.render({
-        games: games,
-        query: query,
-        range: {
-          year: query.year,
-          month: query.month
-        }
-      });
-
-      this.monthIndex.render({
-        queries: args.queries,
-        query: query
-      });
-
-      this.source.render({
-        uri: args.body.request_url,
-        date: new Date( args.body.requested_at ),
-      });
+      this.calendar.render( args.calendar );
+      this.result.render( args.result );
+      this.monthIndex.render( args.monthIndex );
+      this.source.render( args.source );
 
       this.find('if-isloading').hide();
 
@@ -311,8 +297,9 @@
       var games = this.games;
       var calendar = this.calendar;
       var result = this.result;
+      var click = this.eventNameFor('click');
 
-      calendar.find('show-allgames').on('click', function () {
+      calendar.find('show-allgames').on(click, function () {
         result.render({
           query: query,
           games: games,
@@ -325,14 +312,17 @@
 
       calendar.dateList.eachItem(function (item) {
         if ( item.query.month === query.month ) {
-          item.find('show-games').on('click', function () {
+          item.find('show-games').on(click, function () {
             result.render({
               query: item.query,
               games: item.games,
               range: {
-                year: item.year,
-                month: item.month,
-                day: item.day
+                //year: item.year,
+                //month: item.month,
+                //day: item.day
+                year: item.date.year,
+                month: item.date.month,
+                day: item.date.day
               }
             });
           });
@@ -344,11 +334,12 @@
 
     that.unbind = function () {
       var calendar = this.calendar;
+      var click = this.eventNameFor('click');
 
-      calendar.find('show-allgames').off( 'click' );
+      calendar.find('show-allgames').off( click );
 
       calendar.dateList.eachItem(function (item) {
-        item.find('show-games').off( 'click' );
+        item.find('show-games').off( click );
       });
 
       return;
@@ -366,8 +357,7 @@
     that.link = null;
 
     that.dateList = Archives.Calendar.DateList({
-      context: that.find( 'datelist' ),
-      eventNamespace: 'dateList'
+      context: that.find('datelist')
     });
 
     that.render = function (args) {
@@ -376,6 +366,12 @@
       var query = args ? args.query : this.query;
       var games = args ? args.games : this.games;
 
+      if ( args === null ) {
+        this.clear();
+        return;
+      }
+
+      this.hide();
       this.unbind();
 
       this.find('year').setText( query.year );
@@ -401,14 +397,31 @@
       this.link = link;
 
       this.bind();
+      this.show();
+
+      return;
+    };
+
+    that.clear = function () {
+      var that = this;
+
+      this.hide();
+      this.unbind();
+
+      this.dateList.clear();
+
+      this.query = null;
+      this.games = null;
+      this.link = null;
 
       return;
     };
 
     that.bind = function () {
       var that = this;
+      var click = this.eventNameFor( 'click' );
 
-      this.find('show-allgames').on('click', function () {
+      this.find('show-allgames').on(click, function () {
         that.dateList.eachItem(function (item) {
           item.setActive( false );
         });
@@ -418,7 +431,11 @@
     };
 
     that.unbind = function () {
-      this.find('show-allgames').off( 'click' );
+      var click = this.eventNameFor( 'click' );
+
+      this.find('show-allgames').off( click );
+
+      return;
     };
 
     return that;
@@ -436,10 +453,11 @@
     };
 
     that.buildItems = function (args) {
+      var that = this;
       var games = args.games || [];
-      var user = args.query.user;
-      var year = args.query.year;
-      var month = args.query.month;
+      var query = args.query;
+      var year = query.year;
+      var month = query.month;
 
       var prevYear = month === 1 ? year - 1 : year;
       var prevMonth = month === 1 ? 12 : month - 1;
@@ -450,9 +468,9 @@
       var first = new Date( year, month-1, 1 );
       var last = new Date( year, month, 0 );
 
-      var dates = [];
-      var gamesOf = [null];
       var items = [];
+      var gamesOf = [null];
+      var itemObjects = [];
 
       var day;
 
@@ -461,27 +479,36 @@
         day <= prevMonthLast.getDate();
         day += 1
       ) {
-        dates.push({
-          year  : prevYear,
-          month : prevMonth,
-          day   : day
+        items.push({
+          date: {
+            year: prevYear,
+            month: prevMonth,
+            day: day
+          },
+          query: query
         });
       }
 
       for ( day = 1; day <= last.getDate(); day++ ) {
-        dates.push({
-          year  : year,
-          month : month,
-          day   : day,
-          games : gamesOf[day] = []
+        items.push({
+          date: {
+            year: year,
+            month: month,
+            day: day
+          },
+          query: query,
+          games: gamesOf[day] = []
         });
       }
 
       for ( day = 1; day <= 6-last.getDay(); day++ ) {
-        dates.push({
-          year  : nextYear,
-          month : nextMonth,
-          day   : day
+        items.push({
+          date: {
+            year: nextYear,
+            month: nextMonth,
+            day: day
+          },
+          query: query
         });
       }
 
@@ -489,17 +516,11 @@
         gamesOf[ game.date.getUTCDate() ].push( game );
       });
 
-      foreach(dates, function (date) {
-        items.push(that.buildItemWithDefaults({
-          query: args.query,
-          year: date.year,
-          month: date.month,
-          day: date.day,
-          games: date.games
-        }));
+      foreach(items, function (item) {
+        itemObjects.push( that.buildItemWithDefaults(item) );
       });
 
-      return items;
+      return itemObjects;
     };
 
     that.render = function (args) {
@@ -507,37 +528,55 @@
       var query = args ? args.query : this.query;
       var games = args ? args.games : this.games;
 
-      var items = this.buildItems({
+      var items = query && this.buildItems({
         query: query,
         games: games
       });
 
+      if ( args === null || !items ) {
+        this.clear();
+        return;
+      }
+
+      this.hide();
       this.unbind();
-      
-      this.eachItem(function (item) {
-        item.remove();
-      });
+      this.clearItems();
 
       foreach(items, function (item) {
         item.render();
-        that.append( item );
+        that.addItem( item );
       });
 
-      this.games = games;
       this.query = query;
-      this.items = items;
+      this.games = games;
 
       this.bind();
+      this.show();
+
+      return;
+    };
+
+    that.clear = function () {
+      var that = this;
+
+      this.hide();
+      this.unbind();
+      this.clearItems();
+
+      this.query = null;
+      this.games = null;
 
       return;
     };
 
     that.bind = function () {
+      var that = this;
       var query = this.query;
+      var click = this.eventNameFor('click');
  
       this.eachItem(function (item) {
-        if ( item.month === query.month ) {
-          item.on('click', function () {
+        if ( item.date.month === query.month ) {
+          item.on(click, function () {
             that.eachItem(function (i) { i.setActive(false); });
             item.setActive( true );
           });
@@ -548,9 +587,13 @@
     };
 
     that.unbind = function () {
+      var click = this.eventNameFor('click');
+
       this.eachItem(function (item) {
-        item.off( 'click' );
+        item.off( click );
       });
+
+      return;
     };
 
     return that;
@@ -558,21 +601,17 @@
 
   Archives.Calendar.DateList.Item = function (args) {
     var spec = args || {};
-    var that = Archives.Component( spec );
+    var that = Archives.List.Item( spec );
 
+    that.date = spec.date;
     that.query = spec.query;
     that.games = spec.games;
-    that.year = spec.year;
-    that.month = spec.month;
-    that.day = spec.day;
 
     that.render = function (args) {
       var that = this;
-      var year = (args && args.year) || this.year;
-      var month = (args && args.month) || this.month;
-      var day = (args && args.day) || this.day;
-      var query = (args && args.query) || this.query;
-      var games = (args && args.games) || this.games || [];
+      var date = args ? args.date : this.date;
+      var query = args ? args.query : this.query;
+      var games = (args ? args.games : this.games) || [];
 
       var gamesCount = {
         games  : games.length,
@@ -580,6 +619,11 @@
         losses : 0,
         draws  : 0
       };
+
+      if ( args === null || !date || !query ) {
+        this.clear();
+        return;
+      }
  
       foreach(games, function (game) {
         if ( !game.isFinished() ) {
@@ -596,17 +640,17 @@
         }
       });
 
+      this.hide();
       this.unbind();
 
-      this.setDisabled( month !== query.month );
-      this.find('day').setText( day );
+      this.setDisabled( date.month !== query.month );
+      this.find('day').setText( date.day );
 
       foreach(Object.keys(gamesCount), function (key) {
         var item = that.find( key );
-        var itemCount = that.find( key+'-count', item );
 
         if ( gamesCount[key] ) {
-          itemCount.setText( gamesCount[key] );
+          item.find('count').setText( gamesCount[key] );
           item.show();
         }
         else {
@@ -614,13 +658,25 @@
         }
       });
 
+      this.date = date;
       this.query = query;
       this.games = games;
-      this.year = year;
-      this.month = month;
-      this.day = day;
 
       this.bind();
+      this.show();
+
+      return;
+    };
+
+    that.clear = function () {
+      var that = this;
+
+      this.hide();
+      this.unbind();
+
+      this.date = null;
+      this.query = null;
+      this.games = null;
 
       return;
     };
@@ -650,8 +706,7 @@
     });
 
     that.gameList = Archives.Result.GameList({
-      context: that.find( 'gamelist' ),
-      eventNamespace: 'gameList'
+      context: that.find('gamelist')
     });
 
     that.sortByWhite = function (args) {
@@ -698,14 +753,10 @@
     that.sortBySetup = function (args) {
       return this.sort(args, {
         asc: function (a, b) {
-          return a.boardSize - b.boardSize
-              || a.handicap  - b.handicap
-              || a.date      - b.date;
+          return (a.boardSize - b.boardSize) || (a.handicap - b.handicap) || (a.date - b.date);
         },
         desc: function (a, b) {
-          return b.boardSize - a.boardSize
-              || b.handicap  - a.handicap
-              || a.date      - b.date;
+          return (b.boardSize - a.boardSize) || (b.handicap - a.handicap) || (a.date - b.date);
         }
       });
     };
@@ -763,18 +814,19 @@
     };
 
     that.sort = function (args, callback) {
+      var that = this;
       var toggle = (args && args.toggle === true) || false;
       var games = this.games.slice(0).sort(callback.asc);
       var isSorted = true;
       var i;
 
       if ( toggle ) {
-        for ( i = 0; i < games.length; i++ ) {
-          if ( games[i].date - this.games[i].date !== 0 ) {
+        foreach(games, function (game, i) {
+          if ( game.date - that.games[i].date !== 0 ) {
             isSorted = false;
-            break;
+            return false;
           }
-        }
+        });
         if ( isSorted && callback.desc ) {
           games.sort( callback.desc );
         }
@@ -804,6 +856,7 @@
         currentPage: (args && args.games) ? 1 : (page || this.page.currentPage)
       });
 
+      this.hide();
       this.unbind();
 
       this.gameList.render({
@@ -829,42 +882,44 @@
       this.page = pageObject;
  
       this.bind();
+      this.show();
 
       return;
     };
 
     that.bind = function () {
       var that = this;
+      var click = this.eventNameFor('click');
 
-      this.find('show-prevpage').on('click', function () {
+      this.find('show-prevpage').on(click, function () {
         that.render({ page: that.page.getPreviousPage() });
       });
 
-      this.find('show-nextpage').on('click', function () {
+      this.find('show-nextpage').on(click, function () {
         that.render({ page: that.page.getNextPage() });
       });
 
-      this.find('sort-bydate').on('click', function () {
+      this.find('sort-bydate').on(click, function () {
         that.sortByDate({ toggle: true }).render({ page: 1 });
       });
 
-      this.find('sort-bysetup').on('click', function () {
+      this.find('sort-bysetup').on(click, function () {
         that.sortBySetup({ toggle: true }).render({ page: 1 });
       });
 
-      this.find('sort-byresult').on('click', function () {
+      this.find('sort-byresult').on(click, function () {
         that.sortByResult({ toggle: true }).render({ page: 1 });
       });
 
-      this.find('sort-bytype').on('click', function () {
+      this.find('sort-bytype').on(click, function () {
         that.sortByType({ toggle: true }).render({ page: 1 });
       });
  
-      this.find('sort-bywhite').on('click', function () {
+      this.find('sort-bywhite').on(click, function () {
         that.sortByWhite({ toggle: true }).render({ page: 1 });
       });
 
-      this.find('sort-byblack').on('click', function () {
+      this.find('sort-byblack').on(click, function () {
         that.sortByBlack({ toggle: true }).render({ page: 1 });
       });
  
@@ -873,16 +928,17 @@
 
     that.unbind = function () {
       var that = this;
+      var click = this.eventNameFor( 'click' );
 
-      this.find('show-prevpage').off( 'click' );
-      this.find('show-nextpage').off( 'click' );
+      this.find('show-prevpage').off( click );
+      this.find('show-nextpage').off( click );
 
-      this.find('sort-bydate').off( 'click' );
-      this.find('sort-bysetup').off( 'click' );
-      this.find('sort-byresult').off( 'click' );
-      this.find('sort-bytype').off( 'click' );
-      this.find('sort-bywhite').off( 'click' );
-      this.find('sort-byblack').off( 'click' );
+      this.find('sort-bydate').off( click );
+      this.find('sort-bysetup').off( click );
+      this.find('sort-byresult').off( click );
+      this.find('sort-bytype').off( click );
+      this.find('sort-bywhite').off( click );
+      this.find('sort-byblack').off( click );
 
       return;
     };
@@ -894,7 +950,7 @@
     var spec = args || {};
     var that = Archives.List( spec );
 
-    that.games = null;
+    that.games = spec.games;
 
     that.buildItem = function (args) {
       return Archives.Result.GameList.Item( args );
@@ -902,7 +958,7 @@
 
     that.buildItems = function (args) {
       var that = this;
-      var games = args || [];
+      var games = args.games;
       var items = [];
 
       foreach(games, function (game) {
@@ -916,25 +972,42 @@
 
     that.render = function (args) {
       var that = this;
-      var games = (args && args.games) || this.games;
-      var items = this.buildItems( games );
+      var games = args ? args.games : this.games;
 
-      this.unbind();
-      //this.find('item').$context.remove();
-
-      this.eachItem(function (item) {
-        item.remove();
+      var items = games && this.buildItems({
+        games: games
       });
+
+      if ( args === null || !items ) {
+        this.clear();
+        return;
+      }
+
+      this.hide();
+      this.unbind();
+      this.clearItems();
 
       foreach(items, function (item) {
         item.render();
-        that.append( item );
+        that.addItem( item );
       });
 
-      this.items = items;
       this.games = games;
 
       this.bind();
+      this.show();
+
+      return;
+    };
+
+    that.clear = function () {
+      var that = this;
+
+      this.hide();
+      this.unbind();
+      this.clearItems();
+
+      this.games = null;
 
       return;
     };
@@ -952,9 +1025,11 @@
 
   Archives.Result.GameList.Item = function (args) {
     var spec = args || {};
-    var that = Archives.Component( spec );
+    var that = Archives.List.Item( spec );
 
     that.game = spec.game;
+    that.white = [];
+    that.black = [];
 
     that.buildPlayers = function (role, args) {
       var that = this;
@@ -962,47 +1037,31 @@
       var players = [];
 
       foreach([0, 1], function (i) {
-        var user = users[i];
-        var className = role + (i + 1);
-
         players.push(Archives.Result.GameList.Player({
-          context: that.find( className ),
-          eventNamespace: className,
-          user: user
+          context: that.find( role+(i+1) ),
+          user: users[i]
         }));
       });
 
       return players;
     };
 
-    that.white = spec.game && that.buildPlayers('white', spec.game.white);
-    that.black = spec.game && that.buildPlayers('black', spec.game.black);
-
     that.eachPlayer = function (callback) {
-      if ( this.white && this.black ) {
-        foreach( [].concat(this.white, this.black), callback );
-      }
+      foreach( [].concat(this.white, this.black), callback );
     };
 
     that.render = function (args) {
-      var game = (args && args.game) || this.game;
-      var white = this.buildPlayers( 'white', game.white );
-      var black = this.buildPlayers( 'black', game.black );
+      var game = args ? args.game : this.game;
+      var white = game && this.buildPlayers( 'white', game.white );
+      var black = game && this.buildPlayers( 'black', game.black );
       var dateFormat = this.find('date').getData('format') || '%c';
 
-      var type = game.type;
-      var shortType = game.getShortType();
-      var typeInitial = game.getTypeInitial();
+      if ( args === null || !game ) {
+        this.clear();
+        return;
+      }
 
-      var setup = game.boardSize + '\u00D7' + game.boardSize;
-          setup += game.handicap ? ' H'+game.handicap : '';
-
-      var result = game.result;
-
-      var date = game.date;
-          date = new Date( date.getTime()+date.getTimezoneOffset()*60*1000 );
-          date = date.strftime( dateFormat );
-
+      this.hide();
       this.unbind();
 
       if ( game.isPrivate() ) {
@@ -1013,12 +1072,17 @@
         this.find('link').setDisabled( false );
       }
 
-      this.find('type').setText( type );
-      this.find('shorttype').setText( shortType );
-      this.find('typeinitial').setText( typeInitial );
-      this.find('setup').setText( setup );
-      this.find('result').setText( result );
-      this.find('date').setText( date );
+      this.find('type').setText( game.type );
+      this.find('shorttype').setText( game.getShortType() );
+      this.find('typeinitial').setText( game.getTypeInitial() );
+
+      this.find('setup').setText( game.getSetup() );
+      this.find('boardsize').setText( game.boardSize );
+      this.find('handicap').setText( game.handicap || '' );
+
+      this.find('result').setText( game.result );
+
+      this.find('date').setText( game.date.utcStrftime(dateFormat) );
 
       foreach([].concat(white, black), function (player) {
         player.render();
@@ -1029,6 +1093,20 @@
       this.black = black;
 
       this.bind();
+      this.show();
+
+      return;
+    };
+
+    that.clear = function () {
+      var that = this;
+
+      this.hide();
+      this.unbind();
+
+      this.game = null;
+      this.white = [];
+      this.black = [];
 
       return;
     };
@@ -1051,13 +1129,13 @@
     that.user = spec.user;
 
     that.render = function (args) {
-      var user = (args && args.user) || this.user;
+      var user = args ? args.user : this.user;
 
       this.unbind();
 
       if ( user ) {
-        this.find('name').setText( user.name );
         this.find('link').setAttr( 'href', user.getHtmlUrl() );
+        this.find('name').setText( user.name );
         this.find('rank').setText( user.hasRank() ? user.rank : '' );
         this.show();
       }
@@ -1129,12 +1207,21 @@
     var that = Archives.Component( spec );
 
     that.yearList = Archives.MonthIndex.YearList({
-      context: that.find( 'yearlist' ),
-      eventNamespace: 'yearList'
+      context: that.find( 'yearlist' )
     });
 
     that.render = function (args) {
+      this.bind();
       this.yearList.render(args);
+      this.unbind();
+    };
+
+    that.bind = function () {
+      // nothing to bind
+    };
+
+    that.unbind = function () {
+      // nothing to unbind
     };
 
     return that;
@@ -1144,30 +1231,28 @@
     var spec = args || {};
     var that = Archives.List( spec );
 
-    that.query = null;
+    that.query = spec.query;
+    that.queries = spec.queries;
 
     that.buildItem = function (args) {
       return Archives.MonthIndex.YearList.Item( args );
     };
 
     that.buildItems = function (args) {
-      var that = this;
       var queries = args.queries;
-
-      var first = queries[0];
-      var last = queries[queries.length-1];
-      var year;
-
-      var queriesOf = [];
+      var start = queries[0];
+      var end = queries[queries.length-1];
+      var queriesOf = {};
       var items = [];
+      var year;
 
       foreach(queries, function (query) {
         queriesOf[query.year] = queriesOf[query.year] || new Array(12);
         queriesOf[query.year][query.month-1] = query;
       });
 
-      for ( year = first.year; year <= last.year; year++ ) {
-        items.push(that.buildItemWithDefaults({
+      for ( year = start.year; year <= end.year; year++ ) {
+        items.push(this.buildItemWithDefaults({
           queries: queriesOf[year],
           year: year
         }));
@@ -1178,31 +1263,29 @@
 
     that.render = function (args) {
       var that = this;
-      var query = (args && args.query) || this.query;
-      var queries = (args && args.queries) || this.queries;
+      var query = args ? args.query : this.query;
+      var queries = args ? args.queries : this.queries;
 
       var items = this.buildItems({
         queries: queries
       });
 
-      foreach(items, function (item) {
-        item.render();
-        that.append( item );
+      this.unbind();
+      this.clearItems();
+
+      foreach(items, function (yearListItem) {
+        var isSameYear = yearListItem.year === query.year;
+
+        yearListItem.render();
+
+        yearListItem.monthList.eachItem(function (monthListItem) {
+          var isSameMonth = monthListItem.month === query.month;
+          monthListItem.setActive( isSameYear && isSameMonth );
+        });
+
+        that.addItem( yearListItem );
       });
 
-      foreach(items, function (year) {
-        if ( year.year === query.year ) {
-          year.monthList.eachItem(function (month) {
-            if ( month.month === query.month ) {
-              month.setActive( true );
-              return false;
-            }
-          });
-          return false;
-        }
-      });
-
-      this.items = items;
       this.queries = queries;
       this.query = query;
 
@@ -1224,21 +1307,20 @@
 
   Archives.MonthIndex.YearList.Item = function (args) {
     var spec = args || {};
-    var that = Archives.Component( spec );
+    var that = Archives.List.Item( spec );
 
     that.year = spec.year;
     that.queries = spec.queries;
 
     that.monthList = Archives.MonthIndex.YearList.Item.MonthList({
-      context: that.find( 'monthlist' ),
-      eventNamespace: 'monthList',
+      context: that.find('monthlist'),
       queries: spec.queries,
       month: spec.month
     });
 
     that.render = function (args) {
-      var year = (args && args.year) || this.year;
-      var queries = (args && args.queries) || this.queries;
+      var year = args ? args.year : this.year;
+      var queries = args ? args.queries : this.queries;
 
       this.unbind();
 
@@ -1294,24 +1376,20 @@
 
     that.render = function (args) {
       var that = this;
-      var queries = (args && args.queries) || this.queries;
+      var queries = args ? args.queries : this.queries;
 
       var items = this.buildItems({
         queries: queries
       });
 
       this.unbind();
-
-      this.eachItem(function (item) {
-        item.remove();
-      });
+      this.clearItems();
 
       foreach(items, function (item) {
         item.render();
-        that.append( item );
+        that.addItem( item );
       });
 
-      this.items = items;
       this.queries = queries;
 
       this.bind();
@@ -1332,18 +1410,20 @@
 
   Archives.MonthIndex.YearList.Item.MonthList.Item = function (args) {
     var spec = args || {};
-    var that = Archives.Component( spec );
+    var that = Archives.List.Item( spec );
 
     that.query = spec.query;
     that.month = spec.month;
 
     that.render = function (args) {
-      var query = (args && args.query) || this.query;
-      var month = (args && args.month) || this.month;
+      var query = args ? args.query : this.query;
+      var month = args ? args.month : this.month;
 
       this.unbind();
 
+      this.find('mon').setText( month );
       this.find('monname').setText( MON_LIST[month-1] );
+      this.find('fullmonname').setText( FULLMON_LIST[month-1] );
 
       if ( query ) {
         this.find('link').setAttr( 'href', query.getHtmlUrl() );
@@ -1376,22 +1456,22 @@
     var spec = args || {};
     var that = Archives.Component( args );
 
-    that.uri = spec.uri;
+    that.url = spec.url;
     that.date = spec.date;
     that.dateFormat = spec.dateFormat || that.find('date').getData('format') || '%c';
 
     that.render = function (args) {
-      var uri = (args && args.uri) || this.uri;
-      var date = (args && args.date) || this.date;
+      var url = args ? args.url : this.url;
+      var date = args ? args.date : this.date;
       var dateFormat = (args && args.dateFormat) || this.dateFormat;
 
       this.unbind();
 
-      this.find('link').setAttr( 'href', uri );
-      this.find('uri').setText( uri );
+      this.find('link').setAttr( 'href', url );
+      this.find('url').setText( url );
       this.find('date').setText( date.strftime(dateFormat) );
 
-      this.uri = uri;
+      this.url = url;
       this.date = date;
       this.dateFormat = dateFormat;
 
@@ -1413,52 +1493,43 @@
 
   Archives.Component = function (args) {
     var spec = args || {};
-
-    var that = (function () {
-      var context = spec.context;
-
-      if ( !context ) {
-        return Archives.Component.Element( spec );
-      }
-
-      return Archives.Component.Element({
-        classNamePrefix: context.classNamePrefix + (spec.classNamePrefix || ''),
-        eventNamespace: context.concatEventNamespace(spec.eventNamespace || ''),
-        $context: spec.$context || context.$context
-      });
-    }());
+    var that = spec.context ? Object.create(spec.context) : Archives.Element(spec);
 
     that.render = function (args) {
       throw Archives.NotImplementedError("call to abstract method 'render'");
     };
 
+    that.clear = function () {
+      throw Archives.NotImplementedError("call to abstract method 'clear'");
+    };
+
     return that;
   };
 
-  Archives.Component.Element = function (args) {
+  Archives.Element = function (args) {
     var spec = args || {};
 
     var that = {
-      $context: spec.$context || $(),
-      classNamePrefix: spec.classNamePrefix || '',
-      eventNamespace: spec.eventNamespace || 'metakgsArchives'
+      $context       : spec.$context       || $(),
+      className      : spec.className      || '',
+      eventNamespace : spec.eventNamespace || 'metakgsArchives',
+      activeClass    : spec.activeClass    || '+active',
+      disabledClass  : spec.disabledClass  || '+disabled',
+      hideClass      : spec.hideClass      || '+hide'
     };
 
     that.classNameFor = function (name) {
-      return this.classNamePrefix + name;
+      var className = name.replace(/^\+/, '');
+      var prefix = this.className ? this.className+'-' : '';
+      return className === name ? prefix+className : className;
     };
 
     that.eventNameFor = function (name) {
-      return name + '.' + this.eventNamespace;
+      return name.match(/\./) ? name : name+'.'+this.eventNamespace;
     };
 
-    that.concatEventNamespace = function (eventNamespace) {
-      if ( this.eventNamespace ) {
-        return this.eventNamespace + ucfirst(eventNamespace);
-      }
-      else {
-        return eventNamespace;
-      }
+    that.eventNamespaceFor = function (name) {
+      return this.eventNamespace ? this.eventNamespace+ucfirst(name) : name;
     };
 
     that.addClass = function (className) {
@@ -1470,28 +1541,28 @@
     };
 
     that.show = function () {
-      this.$context.removeClass( HIDE_CLASS );
+      this.removeClass( this.hideClass );
     };
 
     that.hide = function () {
-      this.$context.addClass( HIDE_CLASS );
+      this.addClass( this.hideClass );
     };
 
     that.setActive = function (bool) {
       if ( bool ) {
-        this.$context.addClass( ACTIVE_CLASS );
+        this.addClass( this.activeClass );
       }
       else {
-        this.$context.removeClass( ACTIVE_CLASS );
+        this.removeClass( this.activeClass );
       }
     };
 
     that.setDisabled = function (bool) {
       if ( bool ) {
-        this.$context.addClass( DISABLED_CLASS );
+        this.addClass( this.disabledClass );
       }
       else {
-        this.$context.removeClass( DISABLED_CLASS );
+        this.removeClass( this.disabledClass );
       }
     };
 
@@ -1507,14 +1578,6 @@
       return this.$context.data( key );
     };
 
-    that.append = function (element) {
-      this.$context.append( element.$context );
-    };
-
-    that.remove = function () {
-      this.$context.remove();
-    };
-
     that.on = function (eventName, callback) {
       this.$context.on( this.eventNameFor(eventName), callback );
     };
@@ -1523,13 +1586,24 @@
       this.$context.off( this.eventNameFor(eventName) );
     };
 
-    that.find = function (className, context) {
-      var $context = context ? context.$context : this.$context;
+    that.find = function (name) {
+      var element = Object.create( this );
 
-      return Archives.Component.Element({
-        $context: $context.find( '.'+this.classNameFor(className) ),
-        classNamePrefix: this.classNameFor(className) + '-',
-        eventNamespace: this.eventNamespace
+      element.$context = this.$context.find( '.'+this.classNameFor(name) );
+      element.className = this.classNameFor( name );
+      element.eventNamespace = this.eventNamespaceFor( name );
+
+      return element;
+    };
+
+    that.find = function (name) {
+      return Archives.Element({
+        $context       : this.$context.find( '.'+this.classNameFor(name) ),
+        className      : this.classNameFor( name ),
+        eventNamespace : this.eventNamespaceFor( name ),
+        activeClass    : this.activeClass,
+        disabledClass  : this.disabledClass,
+        hideClass      : this.hideClass
       });
     };
 
@@ -1540,11 +1614,11 @@
     var spec = args || {};
     var that = Archives.Component( spec );
 
-    that.items = null;
+    that.items = [];
 
     // NOTE: destructive
     that.$itemTemplate = (function () {
-      var $template = that.find( 'item-template' ).$context;
+      var $template = that.find('item-template').$context;
       var $clone = $template.clone();
 
       $clone.removeClass( that.classNameFor('item-template') );
@@ -1560,10 +1634,16 @@
     };
 
     that.buildItemWithDefaults = function (args) {
+      //var context = this.find('item');
+      //    context.$context = this.$itemTemplate.clone();
+
       var withDefaults = {
-        $context: this.$itemTemplate.clone(),
-        classNamePrefix: this.classNameFor('item') + '-',
-        eventNamespace: this.concatEventNamespace( 'item' )
+        $context       : this.$itemTemplate.clone(),
+        className      : this.classNameFor('item'),
+        eventNamespace : this.eventNamespaceFor('item'),
+        activeClass    : this.activeClass,
+        disabledClass  : this.disabledClass,
+        hideClass      : this.hideClass
       };
 
       for ( var key in args ) {
@@ -1576,8 +1656,25 @@
     };
 
     that.eachItem = function (callback) {
-      foreach( this.items || [], callback );
+      foreach( this.items, callback );
     };
+
+    that.clearItems = function () {
+      this.eachItem(function (item) { item.$context.remove(); });
+      this.items.length = 0;
+    };
+
+    that.addItem = function (item) {
+      this.$context.append( item.$context );
+      this.items.push( item );
+    };
+
+    return that;
+  };
+
+  Archives.List.Item = function (args) {
+    var spec = args || {};
+    var that = Archives.Component( spec );
 
     return that;
   };
@@ -1902,7 +1999,7 @@
       result    : args.game.result,
       baseUrl   : args.baseUrl
     };
-    
+
     that.type = {
       'Review'       : 'Demonstration',
       'Rengo Review' : 'Demonstration',
@@ -1976,6 +2073,17 @@
       return this.baseUrl + path;
     };
 
+    that.getSetup = function () {
+      var setup = this.boardSize + '\u00D7' + this.boardSize;
+      setup += this.handicap ? ' H'+this.handicap : '';
+      return setup;
+    };
+
+    that.date.utcStrftime = function (format) {
+      var offset = this.getTimezoneOffset() * 60 * 1000;
+      return (new Date(this.getTime() + offset)).strftime(format);
+    };
+
     return that;
   };
 
@@ -2012,14 +2120,13 @@
   MetaKGS.App.Archives = Archives;
 
   $(document).ready(function () {
-    var archives = MetaKGS.App.Archives({
-      classNamePrefix: 'js-archives-',
+    var app = MetaKGS.App.Archives({
       $context: $('.js-archives'),
-      //baseUrl: 'http://metakgs.org/foo'
+      className: 'js-archives'
     });
 
-    archives.call();
-    console.log(archives);
+    app.call();
+    console.log(app);
   });
 
 }());
