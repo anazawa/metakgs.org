@@ -2,14 +2,14 @@
 :   title => 'MetaKGS: User "' ~ $user ~ '"',
 : }
 
-: after javascripts -> {
-    <script src="<: static_file('/static/js/strftime.js') :>"></script>
-    <script src="<: static_file('/static/js/metakgs/archives.js') :>"></script>
-: }
-
 : override tab_content -> {
-      <div class="archives js-archives" data-user="<: $user :>"
-        data-year="<: $year :>" data-month="<: $month :>">
+      <div
+        class="archives"
+        data-app="Archives"
+        data-namespace="js-archives"
+        data-user="<: $user :>"
+        data-year="<: $year :>"
+        data-month="<: $month :>">
 
         <div class="archives-error alert alert-danger hide js-archives-error">
           <strong class="js-archives-error-name"></strong>

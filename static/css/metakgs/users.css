@@ -338,6 +338,17 @@ input[type="checkbox"] {
 }
 
 /*
+ * MetaKGS User
+ */
+
+.user {
+}
+
+.user .hide {
+  display: none;
+}
+
+/*
  * MetaKGS Archives
  */
 

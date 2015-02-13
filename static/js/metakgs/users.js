@@ -1,3 +1,104 @@
+(function () {
+  'use strict';
+
+  var foreach = MetaKGS.Util.foreach;
+
+  var User = function (args) {
+    var spec = args || {};
+    var that = MetaKGS.App( spec );
+
+    that.name = spec.name;
+    that.rank = spec.rank;
+    that.position = spec.position;
+
+    that.call = function () {
+      var that = this;
+      var name = this.name || this.getData('name') || '';
+
+      $.getJSON('/api/top100', function (data) {
+        var players = data.content.players;
+        var found = {};
+
+        foreach(players, function (player) {
+          if ( player.name.toLowerCase() === name.toLowerCase() ) {
+            found = player;
+            return false;
+          }
+        });
+
+        that.render({
+          name: found.name || name,
+          rank: found.rank,
+          position: found.position
+        });
+      });
+
+      return;
+    };
+
+    that.render = function (args) {
+      var that = this;
+      var name = args ? args.name : this.name;
+      var rank = args ? args.rank : this.rank;
+      var position = args ? args.position : this.position;
+
+      if ( args === null || !name ) {
+        this.clear();
+        return;
+      }
+
+      this.hide();
+      this.unbind();
+
+      if ( position && position <= 100 ) {
+        this.find('if-istop100').show();
+      }
+      else {
+        this.find('if-istop100').hide();
+      }
+
+      this.find('name').setText( name );
+      this.find('rank').setText( rank || '' );
+      this.find('position').setText( position || '' );
+      
+      this.name = name;
+      this.rank = rank;
+      this.position = position;
+
+      this.bind();
+      this.show();
+
+      return;
+    };
+
+    that.clear = function () {
+      var that = this;
+
+      this.hide();
+      this.unbind();
+
+      this.name = null;
+      this.rank = null;
+      this.position = null;
+
+      return;
+    };
+
+    that.bind = function () {
+      // nothing to bind
+    };
+
+    that.unbind = function () {
+      // nothing to unbind
+    };
+
+    return that;
+  };
+
+  MetaKGS.App.User = User;
+
+}());
+
 (function() {
   'use strict';
 
@@ -5,7 +106,7 @@
    * Relations between components:
    *
    *   Archives
-   *     isa Archives.Component
+   *     isa MetaKGS.App
    *     has Archives.Error
    *     has Archives.Calendar
    *     has Archives.Result
@@ -13,51 +114,51 @@
    *     has Archives.Source
    *
    *   Archives.Error
-   *     isa Archives.Component
+   *     isa MetaKGS.Component
    *
    *   Archives.Calendar
-   *     isa Archives.Component
+   *     isa MetaKGS.Component
    *     has Archives.Calendar.DateList
    *
    *   Archives.Calendar.DateList
-   *     isa Archives.Component
+   *     isa MetaKGS.Component.List
    *     has Archives.Calendar.DateList.Item
    *              
    *   Archives.Calendar.DateList.Item
-   *     isa Archives.Component
+   *     isa MetaKGS.Component.List.Item
    *
    *   Archives.Result
-   *     isa Archives.Component
+   *     isa MetaKGS.Component
    *     has Archives.Result.GameList
    *
    *   Archives.Result.GameList
-   *     isa Archives.Component
+   *     isa MetaKGS.Component.List
    *     has Archives.Result.GameList.Item
    *
    *   Archives.Result.GameList.Item
-   *     isa Archives.Component
+   *     isa MetaKGS.Component.List.Item
    *
    *   Archives.MonthIndex
-   *     isa Archives.Component
+   *     isa MetaKGS.Component
    *     has Archives.MonthIndex.YearList
    *
    *   Archives.MonthIndex.YearList
-   *     isa Archives.Component
+   *     isa MetaKGS.Component.List
    *     has Archives.MonthIndex.YearList.Item
    *
    *   Archives.MonthIndex.YearList.Item
-   *     isa Archives.Component
+   *     isa MetaKGS.Component.List.Item
    *     has Archives.MonthIndex.YearList.Item.MonthList
    *
    *   Archives.MonthIndex.YearList.Item.MonthList
-   *     isa Archives.Component
+   *     isa MetaKGS.Component.List
    *     has Archives.MonthIndex.YearList.Item.MonthList.Item
    *
    *   Archives.MonthIndex.YearList.Item.MonthList.Item
-   *     isa Archives.Component
+   *     isa MetaKGS.Component.List.Item
    *
    *   Archives.Source
-   *     isa Archives.Component
+   *     isa MetaKGS.Component
    *
    */
 
@@ -91,36 +192,14 @@
     'December'
   ];
 
-  function foreach (array, callback) {
-    var i, last, length = array.length;
-    for ( i = 0; i < length && !last; i++ ) {
-      last = callback(array[i], i) === false;
-    }
-  }
-
-  function commify (string) {
-    return string.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-  }
-
-  function ucfirst (string) {
-    return string.charAt(0).toUpperCase() + string.slice(1);
-  }
-
-  function isNumber (value) {
-    return typeof value === 'number' && isFinite(value);
-  }
-
-  function isInteger (value) {
-    return isNumber(value) && Math.floor(value) === value;
-  }
-
-  function isString (value) {
-    return typeof value === 'string';
-  }
+  var foreach   = MetaKGS.Util.foreach;
+  var commify   = MetaKGS.Util.commify;
+  var isInteger = MetaKGS.Util.isInteger;
+  var isString  = MetaKGS.Util.isString;
 
   var Archives = function (args) {
     var spec = args || {};
-    var that = Archives.Component( spec );
+    var that = MetaKGS.App( spec );
 
     that.query = null;
     that.games = null;
@@ -350,7 +429,7 @@
 
   Archives.Calendar = function (args) {
     var spec = args || {};
-    var that = Archives.Component( spec );
+    var that = MetaKGS.Component( spec );
 
     that.query = null;
     that.games = null;
@@ -443,7 +522,7 @@
 
   Archives.Calendar.DateList = function (args) {
     var spec = args || {};
-    var that = Archives.List( spec );
+    var that = MetaKGS.Component.List( spec );
 
     that.query = spec.query;
     that.games = spec.games;
@@ -601,7 +680,7 @@
 
   Archives.Calendar.DateList.Item = function (args) {
     var spec = args || {};
-    var that = Archives.List.Item( spec );
+    var that = MetaKGS.Component.List.Item( spec );
 
     that.date = spec.date;
     that.query = spec.query;
@@ -694,7 +773,7 @@
 
   Archives.Result = function (args) {
     var spec = args || {};
-    var that = Archives.Component( spec );
+    var that = MetaKGS.Component( spec );
 
     that.range = null;
     that.games = null;
@@ -948,7 +1027,7 @@
 
   Archives.Result.GameList = function (args) {
     var spec = args || {};
-    var that = Archives.List( spec );
+    var that = MetaKGS.Component.List( spec );
 
     that.games = spec.games;
 
@@ -1025,7 +1104,7 @@
 
   Archives.Result.GameList.Item = function (args) {
     var spec = args || {};
-    var that = Archives.List.Item( spec );
+    var that = MetaKGS.Component.List.Item( spec );
 
     that.game = spec.game;
     that.white = [];
@@ -1124,7 +1203,7 @@
 
   Archives.Result.GameList.Player = function (args) {
     var spec = args || {};
-    var that = Archives.Component( spec );
+    var that = MetaKGS.Component( spec );
 
     that.user = spec.user;
 
@@ -1163,7 +1242,7 @@
 
   Archives.Error = function (args) {
     var spec = args || {};
-    var that = Archives.Component( spec );
+    var that = MetaKGS.Component( spec );
 
     that.name = spec.name;
     that.message = spec.message;
@@ -1204,7 +1283,7 @@
 
   Archives.MonthIndex = function (args) {
     var spec = args || {};
-    var that = Archives.Component( spec );
+    var that = MetaKGS.Component( spec );
 
     that.yearList = Archives.MonthIndex.YearList({
       context: that.find( 'yearlist' )
@@ -1229,7 +1308,7 @@
 
   Archives.MonthIndex.YearList = function (args) {
     var spec = args || {};
-    var that = Archives.List( spec );
+    var that = MetaKGS.Component.List( spec );
 
     that.query = spec.query;
     that.queries = spec.queries;
@@ -1307,7 +1386,7 @@
 
   Archives.MonthIndex.YearList.Item = function (args) {
     var spec = args || {};
-    var that = Archives.List.Item( spec );
+    var that = MetaKGS.Component.List.Item( spec );
 
     that.year = spec.year;
     that.queries = spec.queries;
@@ -1351,7 +1430,7 @@
 
   Archives.MonthIndex.YearList.Item.MonthList = function (args) {
     var spec = args || {};
-    var that = Archives.List( spec );
+    var that = MetaKGS.Component.List( spec );
 
     that.queries = spec.queries;
 
@@ -1410,7 +1489,7 @@
 
   Archives.MonthIndex.YearList.Item.MonthList.Item = function (args) {
     var spec = args || {};
-    var that = Archives.List.Item( spec );
+    var that = MetaKGS.Component.List.Item( spec );
 
     that.query = spec.query;
     that.month = spec.month;
@@ -1454,7 +1533,7 @@
 
   Archives.Source = function (args) {
     var spec = args || {};
-    var that = Archives.Component( args );
+    var that = MetaKGS.Component( args );
 
     that.url = spec.url;
     that.date = spec.date;
@@ -1487,194 +1566,6 @@
     that.unbind = function () {
       // nothing to unbind
     };
-
-    return that;
-  };
-
-  Archives.Component = function (args) {
-    var spec = args || {};
-    var that = spec.context ? Object.create(spec.context) : Archives.Element(spec);
-
-    that.render = function (args) {
-      throw Archives.NotImplementedError("call to abstract method 'render'");
-    };
-
-    that.clear = function () {
-      throw Archives.NotImplementedError("call to abstract method 'clear'");
-    };
-
-    return that;
-  };
-
-  Archives.Element = function (args) {
-    var spec = args || {};
-
-    var that = {
-      $context       : spec.$context       || $(),
-      className      : spec.className      || '',
-      eventNamespace : spec.eventNamespace || 'metakgsArchives',
-      activeClass    : spec.activeClass    || '+active',
-      disabledClass  : spec.disabledClass  || '+disabled',
-      hideClass      : spec.hideClass      || '+hide'
-    };
-
-    that.classNameFor = function (name) {
-      var className = name.replace(/^\+/, '');
-      var prefix = this.className ? this.className+'-' : '';
-      return className === name ? prefix+className : className;
-    };
-
-    that.eventNameFor = function (name) {
-      return name.match(/\./) ? name : name+'.'+this.eventNamespace;
-    };
-
-    that.eventNamespaceFor = function (name) {
-      return this.eventNamespace ? this.eventNamespace+ucfirst(name) : name;
-    };
-
-    that.addClass = function (className) {
-      this.$context.addClass( this.classNameFor(className) );
-    };
-
-    that.removeClass = function (className) {
-      this.$context.removeClass( this.classNameFor(className) );
-    };
-
-    that.show = function () {
-      this.removeClass( this.hideClass );
-    };
-
-    that.hide = function () {
-      this.addClass( this.hideClass );
-    };
-
-    that.setActive = function (bool) {
-      if ( bool ) {
-        this.addClass( this.activeClass );
-      }
-      else {
-        this.removeClass( this.activeClass );
-      }
-    };
-
-    that.setDisabled = function (bool) {
-      if ( bool ) {
-        this.addClass( this.disabledClass );
-      }
-      else {
-        this.removeClass( this.disabledClass );
-      }
-    };
-
-    that.setText = function (text) {
-      this.$context.text( text );
-    };
-
-    that.setAttr = function (key, value) {
-      this.$context.attr( key, value );
-    };
-
-    that.getData = function (key) {
-      return this.$context.data( key );
-    };
-
-    that.on = function (eventName, callback) {
-      this.$context.on( this.eventNameFor(eventName), callback );
-    };
-
-    that.off = function (eventName) {
-      this.$context.off( this.eventNameFor(eventName) );
-    };
-
-    that.find = function (name) {
-      var element = Object.create( this );
-
-      element.$context = this.$context.find( '.'+this.classNameFor(name) );
-      element.className = this.classNameFor( name );
-      element.eventNamespace = this.eventNamespaceFor( name );
-
-      return element;
-    };
-
-    that.find = function (name) {
-      return Archives.Element({
-        $context       : this.$context.find( '.'+this.classNameFor(name) ),
-        className      : this.classNameFor( name ),
-        eventNamespace : this.eventNamespaceFor( name ),
-        activeClass    : this.activeClass,
-        disabledClass  : this.disabledClass,
-        hideClass      : this.hideClass
-      });
-    };
-
-    return that;
-  };
-
-  Archives.List = function (args) {
-    var spec = args || {};
-    var that = Archives.Component( spec );
-
-    that.items = [];
-
-    // NOTE: destructive
-    that.$itemTemplate = (function () {
-      var $template = that.find('item-template').$context;
-      var $clone = $template.clone();
-
-      $clone.removeClass( that.classNameFor('item-template') );
-      $clone.addClass( that.classNameFor('item') );
-
-      $template.remove();
-
-      return $clone;
-    }());
-
-    that.buildItem = function (args) {
-      throw Archives.NotImplementedError("call to abstract method 'buildItem'");
-    };
-
-    that.buildItemWithDefaults = function (args) {
-      //var context = this.find('item');
-      //    context.$context = this.$itemTemplate.clone();
-
-      var withDefaults = {
-        $context       : this.$itemTemplate.clone(),
-        className      : this.classNameFor('item'),
-        eventNamespace : this.eventNamespaceFor('item'),
-        activeClass    : this.activeClass,
-        disabledClass  : this.disabledClass,
-        hideClass      : this.hideClass
-      };
-
-      for ( var key in args ) {
-        if ( args.hasOwnProperty(key) ) {
-          withDefaults[key] = args[key];
-        }
-      }
-
-      return this.buildItem( withDefaults );
-    };
-
-    that.eachItem = function (callback) {
-      foreach( this.items, callback );
-    };
-
-    that.clearItems = function () {
-      this.eachItem(function (item) { item.$context.remove(); });
-      this.items.length = 0;
-    };
-
-    that.addItem = function (item) {
-      this.$context.append( item.$context );
-      this.items.push( item );
-    };
-
-    return that;
-  };
-
-  Archives.List.Item = function (args) {
-    var spec = args || {};
-    var that = Archives.Component( spec );
 
     return that;
   };
@@ -2119,14 +2010,5 @@
 
   MetaKGS.App.Archives = Archives;
 
-  $(document).ready(function () {
-    var app = MetaKGS.App.Archives({
-      $context: $('.js-archives'),
-      className: 'js-archives'
-    });
-
-    app.call();
-    console.log(app);
-  });
-
 }());
+
