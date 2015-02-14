@@ -3,28 +3,26 @@
 : }
 
 : override tab_content -> {
-      <div
-        class="archives"
-        data-app="Archives"
-        data-namespace="js-archives"
+      <div class="archives"
+        data-app="archives"
         data-user="<: $user :>"
         data-year="<: $year :>"
         data-month="<: $month :>">
 
-        <div class="archives-error alert alert-danger hide js-archives-error">
+        <div class="archives-error alert alert-danger js-archives-error">
           <strong class="js-archives-error-name"></strong>
           <span class="js-archives-error-message"></span>
         </div>
 
-        <div class="calendar archives-calendar hide js-archives-calendar" id="calendar">
+        <div class="calendar archives-calendar js-archives-calendar" id="calendar">
           <ul class="calendar-nav">
             <li class="js-archives-calendar-first">
-              <a class="js-archives-calendar-first-link" href="#calendar" title="First">
+              <a class="js-archives-calendar-first-link" href="#" title="First">
                 <i class="fa fa-angle-double-left"></i>
               </a>
             </li>
             <li class="js-archives-calendar-prev">
-              <a class="js-archives-calendar-prev-link" href="#calendar" title="Previous">
+              <a class="js-archives-calendar-prev-link" href="#" title="Previous">
                 <i class="fa fa-angle-left"></i>
               </a>
             </li>
@@ -35,12 +33,12 @@
               </a>
             </li>
             <li class="js-archives-calendar-next">
-              <a class="js-archives-calendar-next-link" href="#calendar" title="Next">
+              <a class="js-archives-calendar-next-link" href="#" title="Next">
                 <i class="fa fa-angle-right"></i>
               </a>
             </li>
             <li class="js-archives-calendar-last">
-              <a class="js-archives-calendar-last-link" href="#calendar" title="Last">
+              <a class="js-archives-calendar-last-link" href="#" title="Last">
                 <i class="fa fa-angle-double-right"></i>
               </a>
             </li>
@@ -83,7 +81,7 @@
           </ol><!-- /.calendar-body -->
         </div><!-- /.calendar -->
 
-        <div class="archives-result hide clearfix js-archives-result" id="result"
+        <div class="archives-result clearfix js-archives-result" id="result"
           data-perpage="15">
 
           <h2 class="text-center">Games</h2>
@@ -175,7 +173,7 @@
 
         </div><!-- /.result -->
 
-        <div class="archives-resources hide js-archives-resources" id="resources">
+        <div class="archives-resources js-archives-resources" id="resources">
           <h2>Resources</h2>
           <ul class="list-unstyled">
             <li class="js-archives-resources-if-haszip">
@@ -189,7 +187,7 @@
           </ul>
         </div>
 
-        <div class="archives-monthindex hide js-archives-monthindex" id="monthindex">
+        <div class="archives-monthindex js-archives-monthindex" id="monthindex">
           <h2>Month Index</h2>
           <ol class="archives-monthindex-yearlist clearfix js-archives-monthindex-yearlist">
             <li class="archives-monthindex-yearlist-item clearfix js-archives-monthindex-yearlist-item-template">
@@ -203,7 +201,7 @@
           </ol>
         </div>
 
-        <div class="archives-source hide js-archives-source">
+        <div class="archives-source js-archives-source">
           <h2>Source</h2>
           <p>
             This document was generated from

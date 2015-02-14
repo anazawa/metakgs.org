@@ -3,46 +3,47 @@
 
   var foreach = MetaKGS.Util.foreach;
 
-  var User = function (args) {
+  var user = function (args) {
     var spec = args || {};
-    var that = MetaKGS.App( spec );
+    var that = MetaKGS.app( spec );
 
-    that.name = spec.name;
-    that.rank = spec.rank;
-    that.position = spec.position;
+    that.user = spec.user;
+
+    that.client = MetaKGS.client.top100({
+      baseUrl: that.getData('baseUrl')
+    });
 
     that.call = function () {
       var that = this;
       var name = this.name || this.getData('name') || '';
 
-      $.getJSON('/api/top100', function (data) {
-        var players = data.content.players;
-        var found = {};
-
-        foreach(players, function (player) {
-          if ( player.name.toLowerCase() === name.toLowerCase() ) {
-            found = player;
-            return false;
+      this.client.query({}, function (response) {
+        var user = name && response.buildUser({
+          user: {
+            name: name
           }
         });
 
+        if ( response.getStatus() === 200 ) {
+          foreach(response.content.players, function (player) {
+            if ( player.name.toLowerCase() === name.toLowerCase() ) {
+              user = player;
+              return false;
+            }
+          });
+        }
+
         that.render({
-          name: found.name || name,
-          rank: found.rank,
-          position: found.position
+          user: user
         });
       });
-
-      return;
     };
 
     that.render = function (args) {
       var that = this;
-      var name = args ? args.name : this.name;
-      var rank = args ? args.rank : this.rank;
-      var position = args ? args.position : this.position;
+      var user = args ? args.user : this.user;
 
-      if ( args === null || !name ) {
+      if ( args === null || !user ) {
         this.clear();
         return;
       }
@@ -50,20 +51,18 @@
       this.hide();
       this.unbind();
 
-      if ( position && position <= 100 ) {
+      if ( user.position && user.position <= 100 ) {
         this.find('if-istop100').show();
       }
       else {
         this.find('if-istop100').hide();
       }
 
-      this.find('name').setText( name );
-      this.find('rank').setText( rank || '' );
-      this.find('position').setText( position || '' );
+      this.find('name').setText( user.name );
+      this.find('rank').setText( user.rank || '' );
+      this.find('position').setText( user.position || '' );
       
-      this.name = name;
-      this.rank = rank;
-      this.position = position;
+      this.user = user;
 
       this.bind();
       this.show();
@@ -77,9 +76,7 @@
       this.hide();
       this.unbind();
 
-      this.name = null;
-      this.rank = null;
-      this.position = null;
+      this.user = null;
 
       return;
     };
@@ -95,7 +92,7 @@
     return that;
   };
 
-  MetaKGS.App.User = User;
+  MetaKGS.app.user = user;
 
 }());
 
@@ -105,60 +102,64 @@
   /*
    * Relations between components:
    *
-   *   Archives
-   *     isa MetaKGS.App
-   *     has Archives.Error
-   *     has Archives.Calendar
-   *     has Archives.Result
-   *     has Archives.YearList
-   *     has Archives.Source
+   *   archives
+   *     isa MetaKGS.app
+   *     has archives.error
+   *     has archives.calendar
+   *     has archives.result
+   *     has archives.resources
+   *     has archives.monthIndex
+   *     has archives.source
    *
-   *   Archives.Error
-   *     isa MetaKGS.Component
+   *   archives.error
+   *     isa MetaKGS.component
    *
-   *   Archives.Calendar
-   *     isa MetaKGS.Component
-   *     has Archives.Calendar.DateList
+   *   archives.calendar
+   *     isa MetaKGS.component
+   *     has archives.calendar.dateList
    *
-   *   Archives.Calendar.DateList
-   *     isa MetaKGS.Component.List
-   *     has Archives.Calendar.DateList.Item
+   *   archives.calendar.dateList
+   *     isa MetaKGS.component.list
+   *     has archives.calendar.dateList.item
    *              
-   *   Archives.Calendar.DateList.Item
-   *     isa MetaKGS.Component.List.Item
+   *   archives.calendar.dateList.item
+   *     isa MetaKGS.component.list.item
    *
-   *   Archives.Result
-   *     isa MetaKGS.Component
-   *     has Archives.Result.GameList
+   *   archives.result
+   *     isa MetaKGS.component
+   *     has archives.result.gameList
    *
-   *   Archives.Result.GameList
-   *     isa MetaKGS.Component.List
-   *     has Archives.Result.GameList.Item
+   *   archives.result.gameList
+   *     isa MetaKGS.component.list
+   *     has archives.result.gameList.item
    *
-   *   Archives.Result.GameList.Item
-   *     isa MetaKGS.Component.List.Item
+   *   archives.result.gameList.item
+   *     isa MetaKGS.component.list.item
    *
-   *   Archives.MonthIndex
-   *     isa MetaKGS.Component
-   *     has Archives.MonthIndex.YearList
+   *   archives.resources
+   *     isa MetaKGS.component
    *
-   *   Archives.MonthIndex.YearList
-   *     isa MetaKGS.Component.List
-   *     has Archives.MonthIndex.YearList.Item
+   *   archives.monthIndex
+   *     isa MetaKGS.component
+   *     has archives.monthIndex.yearList
    *
-   *   Archives.MonthIndex.YearList.Item
-   *     isa MetaKGS.Component.List.Item
-   *     has Archives.MonthIndex.YearList.Item.MonthList
+   *   archives.monthIndex.yearList
+   *     isa MetaKGS.component.list
+   *     has archives.monthIndex.yearList.item
    *
-   *   Archives.MonthIndex.YearList.Item.MonthList
-   *     isa MetaKGS.Component.List
-   *     has Archives.MonthIndex.YearList.Item.MonthList.Item
+   *   archives.monthIndex.yearList.item
+   *     isa MetaKGS.component.list.item
+   *     has archives.monthIndex.yearList.item.monthList
    *
-   *   Archives.MonthIndex.YearList.Item.MonthList.Item
-   *     isa MetaKGS.Component.List.Item
+   *   archives.monthIndex.yearList.item.monthList
+   *     isa MetaKGS.component.list
+   *     has archives.monthIndex.yearList.item.monthList.item
    *
-   *   Archives.Source
-   *     isa MetaKGS.Component
+   *   archives.monthIndex.yearList.item.monthList.item
+   *     isa MetaKGS.component.list.item
+   *
+   *   archives.source
+   *     isa MetaKGS.component
    *
    */
 
@@ -192,95 +193,90 @@
     'December'
   ];
 
-  var foreach   = MetaKGS.Util.foreach;
-  var commify   = MetaKGS.Util.commify;
-  var isInteger = MetaKGS.Util.isInteger;
-  var isString  = MetaKGS.Util.isString;
+  var foreach = MetaKGS.Util.foreach;
+  var commify = MetaKGS.Util.commify;
 
-  var Archives = function (args) {
+  function utcStrftime (date, format) {
+    var offset = date.getTimezoneOffset() * 60 * 1000;
+    return (new Date(date.getTime() + offset)).strftime(format);
+  }
+
+  var archives = function (args) {
     var spec = args || {};
-    var that = MetaKGS.App( spec );
+    var that = MetaKGS.app( spec );
 
-    //that.query = null;
-    //that.games = null;
-
-    that.client = Archives.Client({
-      baseUrl: spec.baseUrl,
+    that.client = MetaKGS.client.archives({
+      baseUrl: spec.baseUrl || that.getData('baseUrl'),
       onError: function (error) {
         that.handleError( error );
       }
     });
 
-    that.query = spec.query && that.client.buildQuery(spec.query);
+    that.query = spec.query || {
+      user  : that.getData('user'),
+      year  : that.getData('year'),
+      month : that.getData('month')
+    };
 
-    that.error = Archives.Error({
+    that.error = archives.error({
       context: that.find('error')
     });
 
-    that.calendar = Archives.Calendar({
+    that.calendar = archives.calendar({
       context: that.find('calendar')
     });
 
-    that.result = Archives.Result({
+    that.result = archives.result({
       context: that.find('result')
     });
 
-    that.resources = Archives.Resources({
+    that.resources = archives.resources({
       context: that.find('resources')
     });
 
-    that.monthIndex = Archives.MonthIndex({
+    that.monthIndex = archives.monthIndex({
       context: that.find('monthindex')
     });
 
-    that.source = Archives.Source({
+    that.source = archives.source({
       context: that.find('source')
     });
 
-    that.call = function (args) {
+    that.call = function () {
       try {
         var that = this;
-        var query = (args && args.query) || this.query;
-
-        if ( !query ) {
-          query = this.client.buildQuery({
-            user  : this.getData('user'),
-            year  : this.getData('year'),
-            month : this.getData('month')
-          });
-        }
 
         this.render({ loading: true });
 
-        this.client.get(query, function (response) {
+        this.client.query(this.query, function (response) {
           var status = response.getStatus();
 
           if ( status === 200 ) {
             that.render({
               calendar: {
-                query: query,
-                games: response.games,
-                link: response.link
+                query: response.query,
+                link: response.link,
+                games: response.content.games
               },
               result: {
-                query: query,
-                games: response.games,
+                query: response.query,
                 range: {
-                  year: query.year,
-                  month: query.month
-                }
+                  year: response.query.year,
+                  month: response.query.month
+                },
+                games: response.content.games
               },
               resources: {
-                zipUrl: response.body.content.zip_url,
-                tgzUrl: response.body.content.tgz_url
+                zipUrl: response.content.zipUrl,
+                tgzUrl: response.content.tgzUrl
               },
               monthIndex: {
-                query: query,
+                query: response.query,
                 queries: response.queries
               },
               source: {
-                url: response.body.request_url,
-                date: new Date( response.body.requested_at )
+                url: response.source.url,
+                date: response.source.responseDate
               }
             });
           }
@@ -303,7 +299,7 @@
             });
           }
           else {
-            throw new Error("Don't know how to handle '"+code+"'");
+            throw MetaKGS.Error("Don't know how to handle '"+code+"'");
           }
         });
       }
@@ -315,7 +311,7 @@
     that.handleError = function (error) {
       var name = error.name;
 
-      if ( name === 'TimeoutError' ) {
+      if ( name === 'MetaKGSTimeoutError' ) {
         this.render({
           error: {
             name: 'Timeout',
@@ -399,7 +395,7 @@
       var click = this.eventNameFor('click');
 
       this.calendar.find('show-allgames').on(click, function () {
-        if ( this.calendar.query ) {
+        if ( that.calendar.query ) {
           that.result.render({
             query: that.calendar.query,
             games: that.calendar.games,
@@ -445,15 +441,15 @@
     return that;
   };
 
-  Archives.Calendar = function (args) {
+  archives.calendar = function (args) {
     var spec = args || {};
-    var that = MetaKGS.Component( spec );
+    var that = MetaKGS.component( spec );
 
     that.query = spec.query;
     that.games = spec.games;
     that.link = spec.link;
 
-    that.dateList = Archives.Calendar.DateList({
+    that.dateList = archives.calendar.dateList({
       context: that.find('datelist')
     });
 
@@ -478,7 +474,7 @@
         foreach(['first', 'prev', 'next', 'last'], function (rel) {
           if ( link[rel] ) {
             that.find( rel ).setDisabled( false );
-            that.find( rel+'-link' ).setAttr( 'href', link[rel].getHtmlUrl() );
+            that.find( rel+'-link' ).setAttr( 'href', link[rel].toHtmlUrl() );
           }
           else {
             that.find( rel ).setDisabled( true );
@@ -540,16 +536,13 @@
     return that;
   };
 
-  Archives.Calendar.DateList = function (args) {
+  archives.calendar.dateList = function (args) {
     var spec = args || {};
-    var that = MetaKGS.Component.List( spec );
+    var that = MetaKGS.component.list( spec );
 
+    that.itemBuilder = spec.itemBuilder || archives.calendar.dateList.item;
     that.query = spec.query;
     that.games = spec.games;
-
-    that.buildItem = function (args) {
-      return Archives.Calendar.DateList.Item( args );
-    };
 
     that.buildItems = function (args) {
       var that = this;
@@ -616,7 +609,7 @@
       });
 
       foreach(items, function (item) {
-        itemObjects.push( that.buildItemWithDefaults(item) );
+        itemObjects.push( that.buildItem(item) );
       });
 
       return itemObjects;
@@ -697,9 +690,9 @@
     return that;
   };
 
-  Archives.Calendar.DateList.Item = function (args) {
+  archives.calendar.dateList.item = function (args) {
     var spec = args || {};
-    var that = MetaKGS.Component.List.Item( spec );
+    var that = MetaKGS.component.list.item( spec );
 
     that.date = spec.date;
     that.query = spec.query;
@@ -794,20 +787,20 @@
     return that;
   };
 
-  Archives.Result = function (args) {
+  archives.result = function (args) {
     var spec = args || {};
-    var that = MetaKGS.Component( spec );
+    var that = MetaKGS.component( spec );
 
     that.query = spec.query;
     that.range = spec.range;
     that.games = spec.games;
 
-    that.page = Archives.Page({
+    that.page = archives.page({
       entriesPerPage: that.getData('perpage'),
       totalEntries: (that.games || []).length
     });
 
-    that.gameList = Archives.Result.GameList({
+    that.gameList = archives.result.gameList({
       context: that.find('gamelist')
     });
 
@@ -1081,15 +1074,12 @@
     return that;
   };
 
-  Archives.Result.GameList = function (args) {
+  archives.result.gameList = function (args) {
     var spec = args || {};
-    var that = MetaKGS.Component.List( spec );
+    var that = MetaKGS.component.list( spec );
 
     that.games = spec.games;
-
-    that.buildItem = function (args) {
-      return Archives.Result.GameList.Item( args );
-    };
+    that.itemBuilder = spec.itemBuilder || archives.result.gameList.item;
 
     that.buildItems = function (args) {
       var that = this;
@@ -1097,7 +1087,7 @@
       var items = [];
 
       foreach(games, function (game) {
-        items.push(that.buildItemWithDefaults({
+        items.push(that.buildItem({
           game: game
         }));
       });
@@ -1158,9 +1148,9 @@
     return that;
   };
 
-  Archives.Result.GameList.Item = function (args) {
+  archives.result.gameList.item = function (args) {
     var spec = args || {};
-    var that = MetaKGS.Component.List.Item( spec );
+    var that = MetaKGS.component.list.item( spec );
 
     that.game = spec.game;
     that.white = [];
@@ -1172,7 +1162,7 @@
       var players = [];
 
       foreach([0, 1], function (i) {
-        players.push(Archives.Result.GameList.Player({
+        players.push(archives.result.gameList.player({
           context: that.find( role+(i+1) ),
           user: users[i]
         }));
@@ -1217,7 +1207,7 @@
 
       this.find('result').setText( game.result );
 
-      this.find('date').setText( game.date.utcStrftime(dateFormat) );
+      this.find('date').setText( utcStrftime(game.date, dateFormat) );
 
       foreach([].concat(white, black), function (player) {
         player.render();
@@ -1257,9 +1247,9 @@
     return that;
   };
 
-  Archives.Result.GameList.Player = function (args) {
+  archives.result.gameList.player = function (args) {
     var spec = args || {};
-    var that = MetaKGS.Component( spec );
+    var that = MetaKGS.component( spec );
 
     that.user = spec.user;
 
@@ -1298,9 +1288,9 @@
     return that;
   };
 
-  Archives.Error = function (args) {
+  archives.error = function (args) {
     var spec = args || {};
-    var that = MetaKGS.Component( spec );
+    var that = MetaKGS.component( spec );
 
     that.name = spec.name;
     that.message = spec.message;
@@ -1353,9 +1343,9 @@
     return that;
   };
 
-  Archives.Resources = function (args) {
+  archives.resources = function (args) {
     var spec = args || {};
-    var that = MetaKGS.Component( spec );
+    var that = MetaKGS.component( spec );
 
     that.zipUrl = spec.zipUrl;
     that.tgzUrl = spec.tgzUrl;
@@ -1421,11 +1411,11 @@
     return that;
   };
 
-  Archives.MonthIndex = function (args) {
+  archives.monthIndex = function (args) {
     var spec = args || {};
-    var that = MetaKGS.Component( spec );
+    var that = MetaKGS.component( spec );
 
-    that.yearList = Archives.MonthIndex.YearList({
+    that.yearList = archives.monthIndex.yearList({
       context: that.find( 'yearlist' )
     });
 
@@ -1470,16 +1460,13 @@
     return that;
   };
 
-  Archives.MonthIndex.YearList = function (args) {
+  archives.monthIndex.yearList = function (args) {
     var spec = args || {};
-    var that = MetaKGS.Component.List( spec );
+    var that = MetaKGS.component.list( spec );
 
+    that.itemBuilder = spec.itemBuilder || archives.monthIndex.yearList.item;
     that.query = spec.query;
     that.queries = spec.queries;
-
-    that.buildItem = function (args) {
-      return Archives.MonthIndex.YearList.Item( args );
-    };
 
     that.buildItems = function (args) {
       var queries = args.queries;
@@ -1495,7 +1482,7 @@
       });
 
       for ( year = start.year; year <= end.year; year++ ) {
-        items.push(this.buildItemWithDefaults({
+        items.push(this.buildItem({
           queries: queriesOf[year],
           year: year
         }));
@@ -1568,14 +1555,14 @@
     return that;
   };
 
-  Archives.MonthIndex.YearList.Item = function (args) {
+  archives.monthIndex.yearList.item = function (args) {
     var spec = args || {};
-    var that = MetaKGS.Component.List.Item( spec );
+    var that = MetaKGS.component.list.item( spec );
 
     that.year = spec.year;
     that.queries = spec.queries;
 
-    that.monthList = Archives.MonthIndex.YearList.Item.MonthList({
+    that.monthList = archives.monthIndex.yearList.item.monthList({
       context: that.find('monthlist'),
       queries: spec.queries,
       month: spec.month
@@ -1634,15 +1621,12 @@
     return that;
   };
 
-  Archives.MonthIndex.YearList.Item.MonthList = function (args) {
+  archives.monthIndex.yearList.item.monthList = function (args) {
     var spec = args || {};
-    var that = MetaKGS.Component.List( spec );
+    var that = MetaKGS.component.list( spec );
 
+    that.itemBuilder = spec.itemBuilder || archives.monthIndex.yearList.item.monthList.item;
     that.queries = spec.queries;
-
-    that.buildItem = function (args) {
-      return Archives.MonthIndex.YearList.Item.MonthList.Item( args );
-    };
 
     that.buildItems = function (args) {
       var that = this;
@@ -1650,7 +1634,7 @@
       var items = [];
 
       foreach(queries, function (query, month) {
-        items.push(that.buildItemWithDefaults({
+        items.push(that.buildItem({
           month: month + 1,
           query: query
         }));
@@ -1712,9 +1696,9 @@
     return that;
   };
 
-  Archives.MonthIndex.YearList.Item.MonthList.Item = function (args) {
+  archives.monthIndex.yearList.item.monthList.item = function (args) {
     var spec = args || {};
-    var that = MetaKGS.Component.List.Item( spec );
+    var that = MetaKGS.component.list.item( spec );
 
     that.query = spec.query;
     that.month = spec.month;
@@ -1737,7 +1721,7 @@
       this.find('fullmonname').setText( FULLMON_LIST[month-1] );
 
       if ( query ) {
-        this.find('link').setAttr( 'href', query.getHtmlUrl() );
+        this.find('link').setAttr( 'href', query.toHtmlUrl() );
         this.setDisabled( false );
       }
       else {
@@ -1776,9 +1760,9 @@
     return that;
   };
 
-  Archives.Source = function (args) {
+  archives.source = function (args) {
     var spec = args || {};
-    var that = MetaKGS.Component( args );
+    var that = MetaKGS.component( args );
 
     that.url = spec.url;
     that.date = spec.date;
@@ -1837,13 +1821,13 @@
 
   // ported from Data::Page on CPAN
 
-  Archives.Page = function (args) {
+  archives.page = function (args) {
     var spec = args || {};
 
     var that = {
-      totalEntries: spec.totalEntries || 0,
-      entriesPerPage: spec.entriesPerPage || 10,
-      currentPage: spec.currentPage || 1
+      totalEntries   : spec.totalEntries   || 0,
+      entriesPerPage : spec.entriesPerPage || 10,
+      currentPage    : spec.currentPage    || 1
     };
 
     that.getFirstPage = function () {
@@ -1890,395 +1874,7 @@
     return that;
   };
 
-  Archives.Client = function (args) {
-    var spec = args || {};
-
-    var that = {
-      baseUrl: spec.baseUrl || '',
-      onError: spec.onError || function (error) { throw error; }
-    };
-
-    that.buildQuery = function (args) {
-      return Archives.Client.Query({
-        baseUrl: this.baseUrl,
-        user: args.user,
-        year: args.year,
-        month: args.month
-      });
-    };
-
-    that.get = function (args, callback) {
-      var that = this;
-      var query = this.buildQuery( args );
-      var onError = this.onError;
-
-      $.ajax({
-        type: 'GET',
-        url: query.getUrl()
-      }).
-      done(function (data, textStatus, jqXHR) {
-        try {
-          callback(Archives.Client.Response({
-            query: query,
-            body: jqXHR.status === 200 ? data : null,
-            xhr: jqXHR,
-            client: that
-          }));
-        }
-        catch (error) {
-          onError( error );
-        }
-      }).
-      fail(function (jqXHR, textStatus, errorThrown) {
-        try {
-          if ( jqXHR.status === 0 ) {
-            if ( textStatus === 'timeout' ) {
-              throw Archives.TimoutError('Request timed out');
-            }
-            else if ( textStatus === 'abort' ) {
-              throw Archives.ConnectionFailed('Request aborted');
-            }
-            else {
-              throw Archives.ConnectionFailed('Failed to GET '+this.url);
-            }
-          }
-          else {
-            callback(Archives.Client.Response({
-              query: query,
-              xhr: jqXHR,
-              client: that
-            }));
-          }
-        }
-        catch (error) {
-          onError( error );
-        }
-      });
-
-      return;
-    };
-
-    return that;
-  };
-
-  Archives.Client.Query = function (args) {
-    var spec = args || {};
-
-    foreach(['user', 'year', 'month'], function (key) {
-      if ( !spec.hasOwnProperty(key) ) {
-        throw Archives.ArgumentError("'"+key+"' is required");
-      }
-    });
-
-    if ( !isString(spec.user) || !spec.user.match(/^[a-z][a-z0-9]{0,9}$/i) ) {
-      throw Archives.ArgumentError("'user' is invalid");
-    }
-
-    if ( !isInteger(spec.year) || spec.year < 2000 ) {
-      throw Archives.ArgumentError("'year' is invalid");
-    }
-
-    if ( !isInteger(spec.month) || spec.month < 1 || spec.month > 12 ) {
-      throw Archives.ArgumentError("'month' is invalid");
-    }
-
-    var that = {
-      user: spec.user,
-      year: spec.year,
-      month: spec.month,
-      baseUrl: spec.baseUrl || ''
-    };
-
-    that.getUrl = function () {
-      return this.baseUrl+'/api/archives/'+this.user+'/'+this.year+'/'+this.month;
-    };
-
-    that.getHtmlUrl = function () {
-      return this.baseUrl+'/users/'+this.user+'/games/'+this.year+'/'+this.month;
-    };
-
-    return that;
-  };
-
-  Archives.Client.Response = function (args) {
-    var spec = args || {};
-
-    var that = {
-      xhr: spec.xhr,
-      body: spec.body,
-      client: spec.client,
-      query: spec.query
-    };
-
-    that.queries = (function () {
-      var client = that.client;
-      var start = ((that.body && that.body.queries) || [])[0];
-      var now = new Date();
-
-      var end = {
-        year  : now.getUTCFullYear(),
-        month : now.getUTCMonth() + 1
-      };
-
-      var queries = [];
-      var user = that.query.user;
-      var year, month;
-
-      if ( !start ) {
-        return null;
-      }
-
-      for (
-        year = start.year;
-        year <= end.year;
-        year += 1
-      ) {
-        for (
-          month = year === start.year ? start.month : 1;
-          month <= (year === end.year ? end.month : 12);
-          month += 1
-        ) {
-          queries.push(client.buildQuery({
-            user: user,
-            year: year,
-            month: month
-          }));
-        }
-      }
-
-      return queries;
-    }());
-
-    that.link = (function () {
-      var query = that.query;
-      var queries = that.queries;
-
-      var last = queries && queries.length && (queries.length - 1);
-      var self;
-
-      if ( !queries ) {
-        return null;
-      }
-
-      foreach(queries, function (q, i) {
-        if ( q.year === query.year && q.month === query.month ) {
-          self = i;
-          return false;
-        }
-      });
-
-      return {
-        first : (self !== 0    ? queries[0]      : null),
-        prev  : (self > 0      ? queries[self-1] : null),
-        next  : (self < last   ? queries[self+1] : null),
-        last  : (self !== last ? queries[last]   : null)
-      };
-    }());
- 
-    that.games = (function () {
-      var games = that.body && that.body.content.games;
-      var gameObjects = [];
-
-      if ( !games ) {
-        return null;
-      }
-
-      foreach(games, function (game) {
-        gameObjects.push(Archives.Client.Game({
-          baseUrl: that.client.baseUrl,
-          game: game
-        }));
-      });
-
-      return gameObjects;
-    }());
-
-    that.getStatus = function () {
-      return this.xhr.status;
-    };
- 
-    that.headerGet = function (field) {
-      return this.xhr.getResponseHeader( field );
-    };
-
-    that.headerToString = function () {
-      return this.xhr.getAllResponseHeaders();
-    };
-
-    that.getDate = function () {
-      var date = this.headerGet('Date');
-      return date && new Date(date);
-    };
-
-    that.getRetryAfter = function () {
-      var retryAfter = that.headerGet('Retry-After');
-      var date;
-
-      if ( retryAfter && retryAfter.match(/^\d+$/) ) {
-        date = this.getDate() || new Date();
-        date.setSeconds( date.getSeconds()+parseInt(retryAfter, 10) );
-      }
-      else if ( retryAfter ) {
-        date = new Date( retryAfter );
-      }
-
-      return date;
-    };
-
-    return that;
-  };
-
-  Archives.Client.User = function (args) {
-    var that = {
-      name: args.user.name,
-      rank: args.user.rank,
-      baseUrl: args.baseUrl || ''
-    };
-
-    that.hasRank = function () {
-      return this.rank && this.rank !== '-' ? true : false;
-    };
-
-    that.getHtmlUrl = function () {
-      return this.baseUrl + '/users/' + this.name;
-    };
-
-    return that;
-  };
-
-  Archives.Client.Game = function (args) {
-    var that = {
-      sgfUrl    : args.game.sgf_url,
-      boardSize : args.game.board_size,
-      handicap  : args.game.handicap || 0,
-      result    : args.game.result,
-      baseUrl   : args.baseUrl
-    };
-
-    that.date = (function () {
-      var date = new Date( args.game.started_at );
-
-      date.utcStrftime = function (format) {
-        var offset = this.getTimezoneOffset() * 60 * 1000;
-        return (new Date(this.getTime() + offset)).strftime(format);
-      };
-
-      return date;
-    }());
-
-    that.type = {
-      'Review'       : 'Demonstration',
-      'Rengo Review' : 'Demonstration',
-      'Simul'        : 'Simultaneous'
-    }[args.game.type] || args.game.type;
-
-    foreach(['white', 'black'], function (role) {
-      var players = [];
-
-      foreach(args.game[role] || [], function (arg) {
-        players.push(Archives.Client.User({
-          baseUrl: that.baseUrl,
-          user: arg
-        }));
-      });
-
-      that[role] = players;
-    });
-
-    that.getShortType = function () {
-       return {
-        'Demonstration' : 'Demo',
-        'Simultaneous'  : 'Simul',
-        'Tournament'    : 'Tourn'
-      }[this.type] || this.type;
-    };
-
-    that.getTypeInitial = function () {
-      return {
-        'Demonstration' : 'D',
-        'Free'          : 'F',
-        'Ranked'        : 'R',
-        'Rengo'         : '2',
-        'Simultaneous'  : 'S',
-        'Teaching'      : 'T',
-        'Tournament'    : '*'
-      }[this.type];
-    };
-
-    that.isDraw = function () {
-      return this.result === 'Draw';
-    };
-
-    that.wonBy = function (arg) {
-      var name = arg.toLowerCase();
-      var found = false;
-
-      var winners = ( this.result.match(/^([WB])\+/) || [] )[1];
-          winners = winners ? this[ winners === 'W' ? 'white' : 'black' ] : [];
-
-      foreach(winners, function (winner) {
-        if ( winner.name.toLowerCase() === name ) {
-          found = true;
-          return false;
-        }
-      });
-
-      return found;
-    };
-
-    that.isFinished = function () {
-      return this.result !== 'Unfinished';
-    };
-
-    that.isPrivate = function () {
-      return !this.sgfUrl;
-    };
-
-    that.getHtmlUrl = function () {
-      var path = this.sgfUrl.match(/(\/games\/.*)\.sgf$/)[1];
-      return this.baseUrl + path;
-    };
-
-    that.getSetup = function () {
-      var setup = this.boardSize + '\u00D7' + this.boardSize;
-      setup += this.handicap ? ' H'+this.handicap : '';
-      return setup;
-    };
-
-    return that;
-  };
-
-  Archives.ArgumentError = function (message) {
-    var that = new Error( message );
-    that.name = 'ArgumentError';
-    return that;
-  };
-
-  Archives.NotImplementedError = function (message) {
-    var that = new Error( message );
-    that.name = 'NotImplementedError';
-    return that;
-  };
-
-  Archives.ParsingError = function (message) {
-    var that = new Error( message );
-    that.name = 'ParsingError';
-    return that;
-  };
-
-  Archives.ConnectionFailed = function (message) {
-    var that = new Error( message );
-    that.name = 'ConnectionFailed';
-    return that;
-  };
-
-  Archives.TimoutError = function (message) {
-    var that = new Error( message );
-    that.name = 'TimeoutError';
-    return that;
-  };
-
-  MetaKGS.App.Archives = Archives;
+  MetaKGS.app.archives = archives;
 
 }());
 

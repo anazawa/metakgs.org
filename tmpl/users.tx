@@ -19,7 +19,7 @@
 
       <h1>User "<: $user :>"</h1>
 
-      <div class="user" data-app="User" data-namespace="js-user" data-name="<: $user :>">
+      <div class="user" data-app="user" data-name="<: $user :>">
         <ul class="list-unstyled">
           <li class="hide js-user-if-istop100">
             <i class="fa fa-trophy text-muted"></i>
