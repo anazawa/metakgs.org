@@ -12,7 +12,7 @@ sub show {
             user
         )],
         constraint_methods => {
-            user  => sub { $_[1] =~ m/^[a-z][a-z0-9]{0,9}$/ },
+            user  => sub { $_[1] =~ m/^[a-z][a-z0-9]{0,9}$/i },
         },
     });
 
