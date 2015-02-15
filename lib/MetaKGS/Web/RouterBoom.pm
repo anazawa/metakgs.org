@@ -12,6 +12,9 @@ get '/users/:user/games' => 'Users::Games#show';
 get '/users/:user/games/:year/:month' => 'Users::Games#show';
 get '/users/:user/rank' => 'Users::Rank#show';
 
+get '/games/:year/:month/:day/:slug' => 'Games#show';
+get '/games/:year/:month/:day/:slug/kifu' => 'Games::Kifu#show';
+
 get '/api/archives/:user' => 'API::GameArchives#show';
 get '/api/archives/:user/:year/:month' => 'API::GameArchives#show';
 

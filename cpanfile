@@ -10,6 +10,7 @@ requires 'Scalar::Util';
 requires 'Time::HiRes';
 requires 'Time::Piece', '1.20';
 requires 'Time::Seconds';
+requires 'Date::Simple';
 
 # Web Application Framework
 requires 'Amon2', '6.02';
@@ -66,6 +67,7 @@ requires 'URI';
 requires 'URI::Escape';
 requires 'HTTP::Request';
 requires 'HTTP::Headers::Util';
+requires 'URI::Fetch';
 
 # Validator
 requires 'Data::FormValidator';

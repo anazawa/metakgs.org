@@ -103,6 +103,17 @@ sub upstream_uri {
     $self->{upstream_uri};
 }
 
+sub upstream_files_uri {
+    my $self = shift;
+
+    unless ( exists $self->{upstream_files_uri} ) {
+        my $config = $self->config->{'MetaKGS::Web'} || {};
+        $self->{upstream_files_uri} = $config->{upstream_files_uri};
+    }
+
+    $self->{upstream_files_uri};
+}
+
 sub dispatch {
     my $self = shift;
     my $env = $self->request->env;
@@ -124,6 +135,10 @@ sub dispatch {
         warn $request->method, ' ', $request->path_info, " failed: $_";
         $self->res_500;
     };
+}
+
+sub res_502 {
+    $_[0]->create_simple_status_page( 502, 'Bad Gateway' );
 }
 
 1;

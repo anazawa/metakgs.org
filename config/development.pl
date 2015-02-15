@@ -21,12 +21,19 @@ my $dbpath = File::Spec->catfile( $basedir, 'db', 'development.db' );
     },
     'MetaKGS::Web' => {
         upstream_uri => 'http://localhost:5001/',
+        upstream_files_uri => 'http://localhost:5002/',
         user_agent => {
             from => 'anazawa@cpan.org',
         },
     },
     'MetaKGS::Upstream' => {
         delay => 1.0,
+        user_agent => {
+            timeout => 10,
+        },
+    },
+    'MetaKGS::UpstreamFiles' => {
+        delay => 0.1,
         user_agent => {
             timeout => 10,
         },

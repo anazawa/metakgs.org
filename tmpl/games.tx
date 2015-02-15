@@ -1,0 +1,7 @@
+: cascade "include/layout.tx" {
+: }
+
+: after content -> {
+    <section class="container">
+    </section>
+: }
