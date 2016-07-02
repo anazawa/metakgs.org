@@ -6,7 +6,7 @@
     <title><: $title || "MetaKGS - Unofficial JSON API for KGS Go Server" :></title>
     <link rel="stylesheet" href="<: static_file('/static/css/normalize.css') :>">
 : block fonts -> {
-    <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Open+Sans">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans">
 : }
 : block stylesheets -> {
     <link rel="stylesheet" href="<: static_file('/static/css/metakgs.css') :>">
